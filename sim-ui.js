@@ -41,51 +41,65 @@
     ["내 풀이를 말로 설명하면?", "바로 설명해요", "준비하면 잘해요", "말로는 어려워요"],
     ["내 생각을 글로 쓰면?", "근거까지 잘 써요", "생각은 정리돼요", "쓰는 게 어려워요"]
   ];
-  let editingGrade;
-  const rowHeight=48;
   function gradeGroup(exam){
     const title=exam?'수능':'내신',key=exam?'exam':'school',max=exam?9:5;
     const fields=(exam?examOrder:schoolOrder).map(i=>{
-      const name=(exam?Game.mockSubjects:schoolNames)[i];
-      return '<button type="button" class="gradeTile" aria-haspopup="dialog" aria-label="'+title+' '+name+' '+entry[key][i]+'등급 변경" data-grade="'+key+'" data-index="'+i+'"><small>'+name+'</small><strong>'+entry[key][i]+'<em>등급</em></strong></button>';
+      const name=(exam?Game.mockSubjects:schoolNames)[i],value=entry[key][i];
+      const numbers=Array.from({length:max},(_,j)=>'<span aria-hidden="true" data-number="'+(j+1)+'" class="'+(value===j+1?'current':'')+'">'+(j+1)+'</span>').join('');
+      return '<div class="gradeColumn"><div class="gradeSubject">'+name.replace('통합','통합<wbr>')+'</div>'+
+        '<div class="gradeReel" tabindex="0" role="spinbutton" aria-label="'+title+' '+name+' 등급" aria-valuemin="1" aria-valuemax="'+max+'" aria-valuenow="'+value+'" aria-valuetext="'+value+'등급" data-grade="'+key+'" data-index="'+i+'">'+numbers+'</div></div>';
     });
-    return '<fieldset class="gradeInput"><legend>'+title+' <small>'+max+'등급제</small></legend><div>'+fields.join('')+'</div></fieldset>';
+    return '<fieldset class="gradeInput"><legend>'+title+' <small>'+max+'등급제</small></legend><div style="--subjects:'+fields.length+'">'+fields.join('')+'</div></fieldset>';
   }
-  function openWheel(tile){
-    const key=tile.dataset.grade,index=Number(tile.dataset.index),max=key==='exam'?9:5;
-    editingGrade={key,index,max,tile};
-    $('wheelTitle').textContent=(key==='exam'?'수능 '+Game.mockSubjects[index]:'내신 '+schoolNames[index])+' 등급';
-    const wheel=$('wheel');
-    wheel.innerHTML=Array.from({length:max},(_,i)=>'<button tabindex="-1" type="button" aria-label="'+(i+1)+'등급" data-wheel="'+(i+1)+'">'+(i+1)+'</button>').join('');
-    wheel.setAttribute('aria-valuemax',max);
-    $('wheelDialog').showModal();
-    wheel.scrollTop=(entry[key][index]-1)*rowHeight;syncWheel();wheel.focus();
+  function setReelValue(reel,value){
+    const clamped=Math.max(1,Math.min(Number(reel.getAttribute('aria-valuemax')),value));
+    reel.scrollTop=(clamped-1)*reel.firstElementChild.offsetHeight;
+    syncReel(reel);
   }
-  function wheelValue(){return Math.max(1,Math.min(editingGrade.max,1+Math.round($('wheel').scrollTop/rowHeight)));}
-  function syncWheel(){
-    if(!$('wheelDialog').open)return;
-    const value=wheelValue(),wheel=$('wheel');
-    wheel.setAttribute('aria-valuenow',value);wheel.setAttribute('aria-valuetext',value+'등급');
-    for(const el of wheel.children)el.classList.toggle('current',Number(el.dataset.wheel)===value);
+  function syncReel(reel){
+    const height=reel.firstElementChild.offsetHeight;
+    if(!height)return;
+    const value=Math.max(1,Math.min(reel.children.length,1+Math.round(reel.scrollTop/height)));
+    if(Number(reel.getAttribute('aria-valuenow'))!==value){
+      reel.setAttribute('aria-valuenow',value);reel.setAttribute('aria-valuetext',value+'등급');
+      for(const el of reel.children)el.classList.toggle('current',Number(el.dataset.number)===value);
+    }
+    const list=entry[reel.dataset.grade],i=Number(reel.dataset.index);
+    if(list[i]!==value){list[i]=value;saveDraft();}
   }
-  $('wheel').addEventListener('scroll',syncWheel,{passive:true});
-  $('wheel').addEventListener('keydown',event=>{
-    const v=wheelValue(),values={ArrowUp:v-1,ArrowDown:v+1,Home:1,End:editingGrade.max};
-    if(event.key==='Enter'){event.preventDefault();applyWheel();return;}
-    if(!(event.key in values))return;
-    event.preventDefault();$('wheel').scrollTop=(values[event.key]-1)*rowHeight;syncWheel();
-  });
-  function applyWheel(){
-    const {key,index}=editingGrade;
-    entry[key][index]=wheelValue();saveDraft();$('wheelDialog').close();
-    renderEntry('manual',false);
-    document.querySelector('[data-grade="'+key+'"][data-index="'+index+'"]').focus();
+  function activateReels(){
+    for(const reel of $('manualGrades').querySelectorAll('.gradeReel')){
+      setReelValue(reel,entry[reel.dataset.grade][Number(reel.dataset.index)]);
+      reel.addEventListener('scroll',()=>syncReel(reel),{passive:true});
+      reel.addEventListener('keydown',event=>{
+        const current=Number(reel.getAttribute('aria-valuenow'));
+        const keys={ArrowUp:current-1,ArrowDown:current+1,Home:1,End:reel.children.length};
+        if(!(event.key in keys))return;
+        event.preventDefault();setReelValue(reel,keys[event.key]);
+      });
+      reel.addEventListener('click',event=>{
+        const number=event.target.closest('[data-number]');
+        if(number)setReelValue(reel,Number(number.dataset.number));
+      });
+      // Trackpads send small pixel deltas; a mouse notch should advance just one grade.
+      let remainder=0,lastWheel=0;
+      reel.parentElement.addEventListener('wheel',event=>{
+        if(event.ctrlKey||Math.abs(event.deltaX)>Math.abs(event.deltaY)||!event.deltaY)return;
+        event.preventDefault();
+        const delta=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?reel.clientHeight:1);
+        if(event.timeStamp-lastWheel>220||Math.sign(delta)!==Math.sign(remainder))remainder=0;
+        lastWheel=event.timeStamp;remainder+=delta;
+        if(Math.abs(remainder)<18)return;
+        setReelValue(reel,Number(reel.getAttribute('aria-valuenow'))+Math.sign(remainder));
+        remainder=0;
+      },{passive:false});
+    }
   }
   function renderEntry(route,focus){
     let title,content,back='#',counter='';
     if(route==='manual'){
       title='과목별 등급을 입력하세요';
-      content='<form id="manualGrades">'+gradeGroup(false)+gradeGroup(true)+'<button class="primary" type="submit">성적표 보기 →</button></form>';
+      content='<p class="gradeHint">숫자를 위아래로 밀거나 휠을 돌려 등급을 맞추세요.</p><form id="manualGrades">'+gradeGroup(false)+gradeGroup(true)+'<button class="primary" type="submit">성적표 보기 →</button></form>';
     }else if(route==='generate'){
       title='성적을 어떻게 만들까요?';
       content='<div class="entryOptions">'+btn('전부 랜덤 생성','randomGrades','entryOption')+
@@ -98,6 +112,7 @@
     }
     $('entryStep').innerHTML='<div class="entryNav"><a aria-label="뒤로가기" href="'+back+'">← 뒤로</a>'+counter+'</div>'+
       '<h1 tabindex="-1" id="entryTitle">'+title+'</h1>'+content;
+    if(route==='manual')activateReels();
     if(focus)$('entryTitle').focus({preventScroll:true});
   }
   function beginProfile(mode,input){
@@ -127,7 +142,9 @@
   }
   document.addEventListener('submit',e=>{
     if(e.target.id!=='manualGrades')return;
-    e.preventDefault();beginProfile('manual',entry);
+    e.preventDefault();
+    for(const reel of e.target.querySelectorAll('.gradeReel'))syncReel(reel);
+    beginProfile('manual',entry);
   });
   function art(id,cl=''){return '<div aria-hidden="true" class="art '+cl+'" style="--ax:'+(id%3*50)+'%;--ay:'+Math.floor(id/3)*50+'%"></div>';}
   function map(){
@@ -308,7 +325,8 @@ function decisionDifference(x){
       (otherMajors.length?'<details class="majorAlternatives"><summary>내가 지원한 대학의 다른 합격 가능 학과</summary><ul>'+otherMajors.map(x=>'<li><b>'+offerTitle(x)+'</b> · '+offerTrack(x)+' · '+x.row.status+'</li>').join('')+'</ul></details>':'')+
       '<h2 class="routeHeading">전형별로 어디까지 가능했을까요?</h2><ul class="routeResults">'+routeList+'</ul>'+
       '<p class="fine basis">수시는 고3 1학기까지의 학생부와 저장된 추천 자격을, 정시는 수시 합격이 없는 경로를 적용했습니다. 성적·경쟁자·충원은 이번 회차와 같습니다. 2024 정시 일반전형 모집단위별 70%컷 백분위의 중앙값으로 대학을 비교합니다. ‘최선’은 이 지표가 가장 높은 합격 사례입니다. 개별 학과의 합격선은 다를 수 있습니다. 각 행은 따로 선택했을 때의 사후 결과입니다.</p>'+
-      btn('내 지원 결과로 돌아가기','ending','thin');
+      '<div class="actionbar resultActions">'+btn('내 지원 결과로 돌아가기','ending','thin')+
+      btn('입시설명회 참석하기','openInvite','primary')+'</div>';
   }
   function render(focus=false){
     $('desk').dataset.phase=r?.phase;
@@ -323,21 +341,22 @@ function decisionDifference(x){
   }
   const invite=$('seminarInvite');
   const hiddenDayKey='pandong.seminar.hiddenDay';
-  let hiddenDay='';
+  let hiddenDay='',inviteOpener=null;
   function closeInvite(){
     invite.close();
-    $('stageTitle')?.focus({preventScroll:true});
+    (inviteOpener?.isConnected?inviteOpener:$('stageTitle'))?.focus({preventScroll:true});
+    inviteOpener=null;
   }
-  function showInvite(){
+  function showInvite(opener=null){
     if(location.hash!=='#play'||r.phase!=='best')return;
     let savedDay;
     try{savedDay=localStorage.getItem(hiddenDayKey);}catch{}
     const today=new Date().toDateString();
-    if(savedDay===today||hiddenDay===today){
-      if(invite.open)closeInvite();
+    if(!opener&&(savedDay===today||hiddenDay===today)){
+      if(invite.open&&!inviteOpener)closeInvite();
       return;
     }
-    if(!invite.open)invite.showModal();
+    if(!invite.open){inviteOpener=opener;invite.showModal();}
   }
   $('dismissInvite').addEventListener('click',closeInvite);
   $('hideInviteToday').addEventListener('click',()=>{
@@ -355,12 +374,9 @@ function decisionDifference(x){
     render(true);showInvite();
   }
   document.addEventListener('click',e=>{
-    const tile=e.target.closest('[data-grade]');if(tile){openWheel(tile);return;}
-    const number=e.target.closest('[data-wheel]');if(number){$('wheel').scrollTop=(Number(number.dataset.wheel)-1)*rowHeight;syncWheel();return;}
     const el=e.target.closest('[data-act]');if(!el)return;
     const act=el.dataset.act,v=el.dataset.v,phase=r?.phase;
-    if(act==='applyWheel'){applyWheel();return;}
-    if(act==='cancelWheel'){$('wheelDialog').close();return;}
+    if(act==='openInvite'){showInvite(el);return;}
     if(act==='help'){help();return;}
     if(act==='randomGrades'){beginProfile('random');return;}
     if(act==='quizAnswer'){
