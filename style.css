@@ -289,3 +289,44 @@ body[data-former-map-count] .family-panel:not([hidden]) { animation: none; }
 @media print {
   [data-cue], .zones { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* Entry cues for the grade guide and the first minimum-score legend. */
+.family-topic {
+  align-self: flex-start;
+  padding: .32cqw .9cqw;
+  background: #19544b;
+  color: white;
+  font-size: 1.45cqw;
+  font-weight: 700;
+}
+.cohorts .reform-possible { background-color: #fbefd4; }
+.legend-intro [data-legend="minimum"], .legend-intro [data-source-ink="minimum"] { --entry-delay: 500ms; }
+.legend-intro [data-legend="plain"], .legend-intro [data-source-ink="plain"] { --entry-delay: 1450ms; }
+.legend-intro [data-legend="medical"], .legend-intro [data-source-ink="medical"] { --entry-delay: 2400ms; }
+.slide.legend-intro .content [data-source-ink="plain"] { --reference-ink: var(--ref-plain); font-weight: inherit; }
+
+@keyframes grade-fill { from { background-size: 0% 100%; } to { background-size: 100% 100%; } }
+@keyframes legend-appear { from { opacity: 0; } to { opacity: 1; } }
+@keyframes legend-ink { from { color: #111; } to { color: var(--reference-ink); } }
+@keyframes plain-underline {
+  0%, 100% { text-decoration-color: transparent; }
+  35%, 70% { text-decoration-color: currentColor; }
+}
+@media screen and (prefers-reduced-motion: no-preference) {
+  .family-guide:not([hidden]) .cohorts tr.reform-possible {
+    background: linear-gradient(#fbefd4, #fbefd4) left center / 100% 100% no-repeat;
+    animation: grade-fill 850ms ease-out both;
+  }
+  .legend-intro:not([hidden]) [data-legend] {
+    animation: legend-appear 330ms ease-out var(--entry-delay) both;
+  }
+  .legend-intro:not([hidden]) [data-source-ink] {
+    animation: legend-ink 420ms ease-out var(--entry-delay) both;
+  }
+  .legend-intro:not([hidden]) [data-source-ink="plain"] {
+    text-decoration: underline transparent;
+    text-underline-offset: .12em;
+    animation: legend-ink 420ms ease-out var(--entry-delay) both,
+               plain-underline 850ms ease-in-out var(--entry-delay) both;
+  }
+}
