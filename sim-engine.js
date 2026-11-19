@@ -40,11 +40,6 @@ const EARLY_LIMIT = 5;
       r.plan=fastPlan(r,i);r.phase='plan';finishTerm(r);
     }
   }
-  function band(r,c,late=false){
-    const gap=late?lateScore(c,r.exam.scores,r.checkpoint.history)-(c.lateTarget||c.target):estimate(r,c);
-    if(gap < -4||(!late&&!minMet(c,r.checkpoint.history.at(-1).mockGrades)))return '상향';
-    return gap>5?'하향':'적정';
-  }
   function addEarly(r,id){
     if(r.phase!=='early'||r.early.length>=EARLY_LIMIT||r.early.includes(id))return;
     const c=EarlyCases.find(c=>c.id===id);
@@ -163,11 +158,6 @@ const EARLY_LIMIT = 5;
     if(c.name==='충남대')return .8*exam+.15*academic+5;
     return exam*(1-schoolShare)+academic*schoolShare;
   }
-  function estimate(r,c,late=false){
-    const hist=r.checkpoint.history,last=hist.at(-1);
-    const value=late?lateScore(c,last.mock,hist):earlyScore(c,hist);
-    return value-(late?(c.lateTarget||c.target):c.target);
-  }
   function toggleLate(r,id){
     const c=Admissions.find(u=>u.name===id),list=r.late;
     if(!c||r.phase!=='late')return;
@@ -175,9 +165,24 @@ const EARLY_LIMIT = 5;
     if(list.some(n=>Admissions.find(u=>u.name===n).group===c.group))return;
     list.push(id);
   }
+  function editApplications(r){
+    if(r.phase!=='ending')return;
+    r.lastTerm=clone(r.history[5]);
+    r.history=clone(r.checkpoint.history);
+    r.referred=r.checkpoint.referred;
+    r.registered=null;
+    r.replay=true;
+    r.phase='early';
+  }
   function submitEarly(r){
     if(r.phase!=='early'||r.early.length>EARLY_LIMIT)return;
-    if(r.replay){r.history.push(clone(r.lastTerm));r.exam=finalExam(r);r.phase='exam';}
+    if(r.replay){
+      r.history.push(clone(r.lastTerm));
+      r.exam??=finalExam(r);
+      // An early offer closes regular admission, including any drafts retained on return.
+      if(results(r).some(row=>row.accepted))r.late=[];
+      r.phase='exam';
+    }
     else if(r.quick){
       r.plan=fastPlan(r,5);r.phase='plan';finishTerm(r);nextReport(r);
     }else{r.plan=clone(r.history[4].plan);r.phase='plan';}
@@ -219,5 +224,5 @@ function compareStrategies(r){
         route,top:offers.find(x=>x.route===route),tested:scenarios.filter(x=>x.route===route).length
       }))};
   }
-  return {subjects,mockSubjects,types,typesText,terms,tasks,events,blank,fresh,finishTerm,nextReport,submitEarly,saveEnding,compareStrategies,results,toggleLate,band,category,quickStart,addEarly,removeEarly,EARLY_LIMIT,minMet,mean,bound};
+  return {subjects,mockSubjects,types,typesText,terms,tasks,events,blank,fresh,finishTerm,nextReport,submitEarly,saveEnding,compareStrategies,results,toggleLate,editApplications,category,quickStart,addEarly,removeEarly,EARLY_LIMIT,minMet,mean,bound};
 })();
