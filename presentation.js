@@ -116,9 +116,45 @@ window.addEventListener('keydown',e=>{
  else if(e.key==='Home'||e.key==='End'){e.preventDefault();go(e.key==='Home'?1:total)}
  else if(e.key.toLowerCase()==='m'){showPanel('toc')}
 });
+// Wide tables scroll independently on phones. Restore the original DOM for desktop and print.
+const phoneLayout = matchMedia('screen and (pointer: coarse) and (max-width: 700px), screen and (pointer: coarse) and (orientation: landscape) and (max-height: 550px) and (max-width: 1000px)');
+function preparePhoneLayout() {
+ if (isMapDeck) return;
+ if (!phoneLayout.matches) {
+  main.querySelectorAll('.phone-scroll').forEach(box => box.replaceWith(box.firstElementChild));
+  main.querySelectorAll('.phone-row-label').forEach(cell => cell.classList.remove('phone-row-label'));
+  return;
+ }
+ main.querySelectorAll('.slide table, .slide .chart, .slide .grade-rows').forEach(item => {
+  if (item.tagName === 'TABLE') {
+   for (const section of [item.tHead, ...item.tBodies].filter(Boolean)) {
+    let occupied = 0;
+    for (const row of section.rows) {
+     if (occupied > 0) { occupied--; continue; }
+     const label = row.cells[0];
+     if (!label) continue;
+     occupied = label.rowSpan - 1;
+     if (label.tagName === 'TH' && label.colSpan === 1 && !item.matches('.cohorts')) {
+      label.classList.add('phone-row-label');
+     }
+    }
+   }
+  }
+  if (item.parentElement.matches('.aligned-scroll, .phone-scroll')) return;
+  const box = document.createElement('div');
+  box.className = 'phone-scroll';
+  item.before(box);
+  box.append(item);
+ });
+}
+if (!isMapDeck) {
+ preparePhoneLayout();
+ phoneLayout.addEventListener('change', preparePhoneLayout);
+}
+
 let touch=null;
 main.addEventListener('touchstart',e=>{
- const t=e.touches[0],p=e.target.closest('.content');
+ const t=e.touches[0],p=e.target.closest(!isMapDeck && phoneLayout.matches ? '.phone-scroll, .aligned-scroll, .content' : '.content');
  touch=e.touches.length===1&&!main.classList.contains('zoom')&&!(p&&p.scrollWidth>p.clientWidth+3)?[t.clientX,t.clientY]:null;
 },{passive:true});
 main.addEventListener('touchend',e=>{if(!touch||e.changedTouches.length!==1)return;const t=e.changedTouches[0],dx=t.clientX-touch[0],dy=t.clientY-touch[1];touch=null;if(Math.abs(dx)>75&&Math.abs(dx)>Math.abs(dy)*1.8)advance(dx<0?1:-1)},{passive:true});
