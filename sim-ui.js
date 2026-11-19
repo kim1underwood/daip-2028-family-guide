@@ -233,17 +233,32 @@ const earlyCase=id=>earlyById.get(id);
     const id=c.id;
     $('desk').querySelector('[data-act="caseDetails"][data-v="'+CSS.escape(id)+'"]')?.focus({preventScroll:true});
   }
+  function regularBasis(c,sourceUrl){
+    const b=regularBenchmarks[c.id];
+    const link=(year,label)=>'<a href="'+sourceUrl.replace('searchSyr=2025','searchSyr='+(year+1))+'" target="_blank" rel="noopener">'+year+'학년도 공개표</a> · '+label;
+    const scalar=(v,average)=>c.name==='세명대'?'최종합격자 80% 지점 '+v+' / 1,000점':
+      (average?'국어·수학·탐구 공개값 평균':c.name==='가천대'?'대학 공개 70% 지점':'등록자 70% 지점 평균 백분위')+' '+v.toFixed(2);
+    const lines=[];
+    if(b.y24!=null)lines.push(link(2024,scalar(b.y24,b.avg24)));
+    if(b.y25!=null)lines.push(link(2025,b.sum25?'백분위 합 70% 지점 '+Math.round(b.y25*3)+' / 300점 (영역 평균 '+b.y25.toFixed(2)+')':scalar(b.y25,false)));
+    if(b.subjects25){
+      const [k,m,q1,q2,e]=b.subjects25;
+      const inquiry=b.inquiryAverage?'탐구 평균 '+q1:b.oneInquiry?'탐구 '+q1:'탐구 '+q1+'·'+q2;
+      lines.push(link(2025,'등록자 70% 지점 성적 · 국어 '+k+', 수학 '+m+', '+inquiry+', 영어 '+e+'등급'));
+    }
+    if(b.note)lines.push(b.note);
+    lines.push('입력한 등급을 점수로 추정하고 과거 입결을 참고해 모의 기준선을 정합니다. 과목별 자료는 모집단위 반영 방식으로 다시 계산합니다. 실제 합격선은 해마다 달라집니다.');
+    return lines.map(line=>'<p class="fine">'+line+'</p>').join('');
+  }
   function caseDetails(id){
     const late=r.phase==='late',c=late?regularById.get(id):earlyCase(id);
     if(!c)return;
-    const calibration=(late?AdmissionCalibration.late:AdmissionCalibration.early)[c.id];
-    const statistic=late?c.examCut:c.schoolCut;
-    const measure=late?'정시 최종등록자 70%컷 백분위':(c.name==='세명대'?'교과 환산등급 80%컷':'최종등록자 교과등급 70%컷');
     const sourceUrl='https://www.adiga.kr/ucp/uvt/uni/univDetailSelection.do?menuId=PCUVTINF2000&amp;searchSyr=2025&amp;unvCd='+c.adigaCode;
-    const cuts=late&&koreaRegularCuts[id];
-    const basis=cuts?'정시 일반전형 최종등록자 70% 지점 평균 백분위는 2024학년도 '+cuts[0].toFixed(2)+', 2025학년도 '+cuts[1].toFixed(2)+'입니다. 시뮬레이션은 이 범위에서 회차 기준선을 정합니다. 실제 전형은 국어·수학·탐구 표준점수를 사용하며, 여기서는 입력한 등급으로 백분위를 추정합니다.':c.baseId?(statistic?'2024학년도 해당 모집단위 '+measure+' '+statistic+' · 과거 전형 참고':'이 모집단위는 공개 비교값이 부족해 대학의 시뮬레이션 기준선을 적용합니다.'):(calibration?.basis||'시뮬레이션 추정 경쟁선');
+    const measure=c.name==='세명대'?'교과 환산등급 80%컷':'최종등록자 교과등급 70%컷';
+    const earlyBasis=c.baseId?(c.schoolCut?'2024학년도 해당 모집단위 '+measure+' '+c.schoolCut+' · 과거 전형 참고':'이 모집단위는 공개 비교값이 부족해 대학의 시뮬레이션 기준선을 적용합니다.'):(AdmissionCalibration.early[c.id]?.basis||'시뮬레이션 추정 경쟁선');
+    const basis=late?regularBasis(c,sourceUrl):'<p class="fine">'+earlyBasis+' <a href="'+sourceUrl+'" target="_blank" rel="noopener">어디가 공개표</a></p>';
     const description=late?c.lateRule||'대학별 수능 반영 영역과 환산 방법은 시행계획을 확인하세요.':c.rule;
-    dialog(c.name+' '+caseTitle(c,late),'<h3>'+caseTrack(c,late)+'</h3><p>'+description+'</p><p>'+(late?'고교 졸업예정 및 해당 수능 응시':c.minimum)+'</p><p>'+src(c,late)+'</p><p class="fine">'+basis+' <a href="'+sourceUrl+'" target="_blank" rel="noopener">'+(cuts?'2024 공개표':'어디가 공개표')+'</a>'+(cuts?' · <a href="'+sourceUrl.replace('searchSyr=2025','searchSyr=2026')+'" target="_blank" rel="noopener">2025 공개표</a>':'')+'</p><p><a href="'+PlanSources[c.name]+'" target="_blank" rel="noopener">2028 시행계획 자료</a></p>');
+    dialog(c.name+' '+caseTitle(c,late),'<h3>'+caseTrack(c,late)+'</h3><p>'+description+'</p><p>'+(late?'고교 졸업예정 및 해당 수능 응시':c.minimum)+'</p><p>'+src(c,late)+'</p>'+basis+'<p><a href="'+PlanSources[c.name]+'" target="_blank" rel="noopener">2028 시행계획 자료</a></p>');
   }
   function notices(rows){
     return rows.length?rows.map(x=>'<div class="notice"><div><b>'+x.name+' '+x.major+'</b><small>'+x.kind+'</small>'+(x.reason?'<small class="decisionReason">'+x.reason+'</small>':'')+'</div><strong class="'+(x.accepted?'success':'')+'">'+x.status+'</strong>'+(x.wait?'<p>예비 '+x.position+'번 · '+x.moved+'번까지 충원</p>':'')+'</div>').join(''):'<p class="muted">제출한 원서가 없습니다.</p>';
@@ -338,7 +353,7 @@ function decisionDifference(x){
   }
   function dialog(title,html){$('dialogTitle').textContent=title;$('dialogBody').innerHTML=html;if(!$('drawer').open)$('drawer').showModal();}
   function sources(){
-    dialog('공식 전형과 시뮬레이션의 가정','<p>2026년 중3 학생이 2030학년도에 지원하는 가상 상황입니다. 대학 사례는 2028학년도 시행계획을 사용합니다. 2030학년도 실제 전형은 해당 연도 모집요강을 확인하세요.</p><p>학생은 국내 일반고 전 과정을 이수하고 수능 6개 과목에 응시합니다. 수시는 학생부교과·학생부종합·논술 사례에서 게임용 원서 5장을 고릅니다. 실제 일반대학 수시 지원 한도는 원칙적으로 6회입니다. 같은 대학의 복수지원 가능 여부는 해당 연도 모집요강을 확인하세요.</p><p>대학별 반영 구조를 등급 기반 내부 점수로 근사합니다. 실제 표준점수·가감점과 다른 모의 점수입니다. 자동 생성 학생은 같은 과목의 내신과 수능을 연동하고 두 대학 이상에 합격 가능한 경로를 확인합니다. 내부 점수와 경쟁선·지원자·예비 이동은 시뮬레이션에서 생성합니다. 공개 입시결과가 있는 사례는 원서 상세에 과거 연도와 지표를 적었습니다. 게임의 경쟁선과 합격 결과는 모의 수치입니다. 이전 회차를 이어 하면 처음 시작할 때의 계산식을 사용합니다. 새 회차의 학생부·면접·논술 역량은 성적표를 만들 때 함께 정해지며, 다시 지원할 때도 같습니다.</p><p class="fine">자료 · 교육부 「2028 대학입시제도 개편 확정안」, 한국대학교육협의회 「2028학년도 대학입학전형기본사항」.</p><details class="rankBasis"><summary>대학 정렬 기준과 입결 자료</summary><p>대입정보포털 어디가의 2024학년도 정시 일반전형 결과를 사용합니다. 각 대학이 공개한 모집단위별 최종등록자 70%컷 백분위를 한 줄당 한 값으로 집계한 중앙값입니다. 모집인원으로 가중하지 않으며 대학별 반영 과목과 방식은 다를 수 있습니다.</p><p>조선대는 세 영역 공개값의 평균을 사용했습니다. 강원대 사례는 통합 전 국립강릉원주대 자료입니다. 경북대는 백분위 합의 산출 기준을 동일하게 확인하기 어려웠고, 세명대는 80%컷 환산점수만 공개해 두 대학은 입결 비교에서 제외했습니다.</p>'+Admissions.slice().sort(compareAdmissionOrder).map(c=>'<p class="fine"><a href="https://www.adiga.kr/ucp/uvt/uni/univDetailSelection.do?menuId=PCUVTINF2000&amp;searchSyr=2025&amp;unvCd='+c.adigaCode+'" target="_blank" rel="noopener">'+c.name+' 공개표</a> · '+rankLabel(c)+(c.rankSample?' · 모집단위 '+c.rankSample+'건':'')+'</p>').join('')+'</details>'+Admissions.map(c=>'<p><b>'+c.name+'</b><br>'+EarlyCases.filter(track=>track.name===c.name).map(track=>track.major+' · '+track.early+' · '+src(track,false)).join('<br>')+'<br>'+RegularCases.filter(track=>track.name===c.name).map(track=>track.group+'군 '+caseTitle(track,true)+' · '+src(track,true)).join('<br>')+'</p>').join(''));
+    dialog('공식 전형과 시뮬레이션의 가정','<p>2026년 중3 학생이 2030학년도에 지원하는 가상 상황입니다. 대학 사례는 2028학년도 시행계획을 사용합니다. 2030학년도 실제 전형은 해당 연도 모집요강을 확인하세요.</p><p>학생은 국내 일반고 전 과정을 이수하고 수능 6개 과목에 응시합니다. 수시는 학생부교과·학생부종합·논술 사례에서 게임용 원서 5장을 고릅니다. 실제 일반대학 수시 지원 한도는 원칙적으로 6회입니다. 같은 대학의 복수지원 가능 여부는 해당 연도 모집요강을 확인하세요.</p><p>대학별 반영 구조를 등급 기반 내부 점수로 근사합니다. 실제 표준점수·가감점과 다른 모의 점수입니다. 자동 생성 학생은 같은 과목의 내신과 수능을 연동하고 두 대학 이상에 합격 가능한 경로를 확인합니다. 내부 점수와 경쟁선·지원자·예비 이동은 시뮬레이션에서 생성합니다. 공개 입시결과가 있는 사례는 원서 상세에 과거 연도와 지표를 적었습니다. 게임의 경쟁선과 합격 결과는 모의 수치입니다. 정시 모의 기준선은 모집단위별 2024·2025학년도 공개 자료를 기준으로 합니다. 한 학년도만 비교할 수 있으면 그 해의 값을 사용합니다. 교과·서류평가의 영향은 입력한 내신 등급으로 추정합니다. 새 회차의 학생부·면접·논술 역량은 성적표를 만들 때 함께 정해지며, 다시 지원할 때도 같습니다.</p><p class="fine">자료 · 교육부 「2028 대학입시제도 개편 확정안」, 한국대학교육협의회 「2028학년도 대학입학전형기본사항」.</p><details class="rankBasis"><summary>대학 정렬 기준과 입결 자료</summary><p>대입정보포털 어디가의 2024학년도 정시 일반전형 결과를 사용합니다. 각 대학이 공개한 모집단위별 최종등록자 70%컷 백분위를 한 줄당 한 값으로 집계한 중앙값입니다. 모집인원으로 가중하지 않으며 대학별 반영 과목과 방식은 다를 수 있습니다.</p><p>조선대는 세 영역 공개값의 평균을 사용했습니다. 강원대 사례는 통합 전 국립강릉원주대 자료입니다. 경북대는 백분위 합의 산출 기준을 동일하게 확인하기 어려웠고, 세명대는 80%컷 환산점수만 공개해 두 대학은 입결 비교에서 제외했습니다.</p>'+Admissions.slice().sort(compareAdmissionOrder).map(c=>'<p class="fine"><a href="https://www.adiga.kr/ucp/uvt/uni/univDetailSelection.do?menuId=PCUVTINF2000&amp;searchSyr=2025&amp;unvCd='+c.adigaCode+'" target="_blank" rel="noopener">'+c.name+' 공개표</a> · '+rankLabel(c)+(c.rankSample?' · 모집단위 '+c.rankSample+'건':'')+'</p>').join('')+'</details>'+Admissions.map(c=>'<p><b>'+c.name+'</b><br>'+EarlyCases.filter(track=>track.name===c.name).map(track=>track.major+' · '+track.early+' · '+src(track,false)).join('<br>')+'<br>'+RegularCases.filter(track=>track.name===c.name).map(track=>track.group+'군 '+caseTitle(track,true)+' · '+src(track,true)).join('<br>')+'</p>').join(''));
   }
   const invite=$('seminarInvite');
   const hiddenDayKey='pandong.seminar.hiddenDay';

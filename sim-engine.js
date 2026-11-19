@@ -139,23 +139,25 @@ const EARLY_LIMIT = 5;
     const fraction=(score-band[0]+.5)/band.length;
     return percentileEdges[grade]+fraction*(percentileEdges[grade-1]-percentileEdges[grade]);
   }
-  function examComponent(c,scores){
-    const [k,e,m,s,p]=scores,t=Math.max(s,p),natural=['자연','공학'].includes(c.lateField||c.field);
+  function examComponent(c,k,m,s,p,englishGrade,historyGrade=1){
+    const natural=['자연','공학'].includes(c.lateField||c.field),t=Math.max(s,p);
+    // Approximate English grade points when the university-specific conversion is unavailable.
+    const e=[100,95,85,70,55,40,25,15,5][englishGrade-1];
     switch(c.name){
       case '아주대':return natural?.2*k+.4*m+.1*e+.05*s+.25*p:.25*k+.35*m+.15*e+.2*s+.05*p;
       case '부산대':return natural?.2*k+.3*m+.2*e+.075*s+.225*p:.3*k+.25*m+.2*e+.1875*s+.0625*p;
       case '경북대':return natural?(2*k+3*m+e+s+2*p)/9:(3*k+2*m+e+2*s+p)/9;
       case '서울대':{
-        const englishPenalty=[0,.5,2,4,6,8,10,12,14][mockGrade(e,1)-1];
+        const englishPenalty=[0,.5,2,4,6,8,10,12,14][englishGrade-1];
         return (100*k+120*m+(natural?30:50)*s+(natural?50:30)*p)/300-englishPenalty/3;
       }
       case '연세대':return (3*k+2*m+e+2*s+p)/9;
       case '경희대':return .35*k+.35*m+.3*t;
       case '고려대':{
         const math=natural?240:200,inquiry=natural?200:160;
-        const english=[0,1,3,6,12,15,18,21,24][mockGrade(e,1)-1];
-        const history=[0,0,0,0,.2,.4,.6,.8,2][mockGrade(scores[5],5)-1];
-        const weighted=200*gradePercentile(k)+math*gradePercentile(m)+inquiry*(gradePercentile(s)+gradePercentile(p))/2;
+        const english=[0,1,3,6,12,15,18,21,24][englishGrade-1];
+        const history=[0,0,0,0,.2,.4,.6,.8,2][historyGrade-1];
+        const weighted=200*k+math*m+inquiry*(s+p)/2;
         // Percentile proxy on a 100-point scale; absolute-grade penalties come from the 1,000-point scale.
         return weighted/(200+math+inquiry)-(english+history)/10;
       }
@@ -164,7 +166,10 @@ const EARLY_LIMIT = 5;
         const top=[k,e,m,s,p].sort((a,b)=>b-a);
         return (5*top[0]+4*top[1]+3*top[2]+2*top[3])/14;
       }
-      case '세명대':return mean([k,e,m,s,p].sort((a,b)=>b-a).slice(0,2));
+      case '세명대':{
+        const converted=[100,95,80,55,35,25,20,10,5][englishGrade-1];
+        return mean([k,converted,m,s,p].sort((a,b)=>b-a).slice(0,2));
+      }
       case '한남대':{
         const rest=[natural?k:m,e,t].sort((a,b)=>b-a);
         return ((natural?m:k)+rest[0]+rest[1])/3;
@@ -174,7 +179,7 @@ const EARLY_LIMIT = 5;
         return c.lateMajor==='수학교육과'?(m+core[0]+core[1])/3:mean([...core,m].sort((a,b)=>b-a).slice(0,3));
       }
       case '전남대':return .4*k+.3*m+.1*e+.1*(s+p);
-      case '충남대':return .4*k+.3*m+.15*(s+p)-[0,2,5,8,11,14,18,22,26][mockGrade(e,1)-1]/3;
+      case '충남대':return .4*k+.3*m+.15*(s+p)-[0,2,5,8,11,14,18,22,26][englishGrade-1]/3;
       case '전북대':return natural?.2*k+.3*m+.2*e+.05*s+.25*p:.3*k+.2*m+.2*e+.2*s+.1*p;
       case '제주대':return (natural?.2*k+.3*m:.3*k+.2*m)+.2*e+.3*t;
       case '인하대':return natural?.25*k+.35*m+.1*e+.15*(s+p):.35*k+.25*m+.15*e+.125*(s+p);
@@ -188,24 +193,41 @@ const EARLY_LIMIT = 5;
       default:return natural?.20*k+.15*e+.35*m+.10*s+.20*p:.30*k+.18*e+.24*m+.18*s+.10*p;
     }
   }
-  function lateScore(c,scores,profile,model){
-    const [k,e,m,s,p]=scores;
-    if(!model&&c.name==='조선대')return .25*k+.15*e+.35*m+.25*p;
-    const academic=mean(profile.school);
-    const field=c.lateField||c.field;
-    const exam=model?examComponent(c,scores):field==='공학'||field==='자연'?.20*k+.15*e+.35*m+.10*s+.20*p:.30*k+.18*e+.24*m+.18*s+.10*p;
-    const schoolShare=({'서울대':.4,'연세대':.1,'경북대':.1,'부산대':.2,'충남대':.15})[c.name]||0;
-    if(c.name==='충남대')return .8*exam+.15*academic+5;
-    return exam*(1-schoolShare)+academic*schoolShare;
+  function benchmarkRange(c){
+    const b=regularBenchmarks[c.id],scale=c.name==='세명대'?10:1;
+    const values=[b.y24,b.y25].filter(Number.isFinite).map(v=>v/scale);
+    if(b.subjects25){
+      const [k,m,q1,q2,eng]=b.subjects25;
+      // Before the reform, inquiry subjects were electives, not integrated social/science.
+      // Preserve the two scores for best-of rules; use their mean for unequal subject weights.
+      const avg=(q1+q2)/2;
+      const bestOf=['경희대','건국대','국립공주대','강원대','한남대','인천대'].includes(c.name);
+      let social=bestOf?q1:avg,science=bestOf?q2:avg;
+      if(c.name==='조선대'&&c.lateMajor==='약학과')science=Math.max(q1,q2);
+      values.push(examComponent(c,k,m,social,science,eng));
+    }
+    return [Math.min(...values),Math.max(...values)];
+  }
+  const regularRanges=new Map(RegularCases.map(c=>[c.id,benchmarkRange(c)]));
+  function lateScore(c,scores,profile){
+    const [k,e,m,s,p,h]=scores;
+    const exam=examComponent(c,gradePercentile(k),gradePercentile(m),gradePercentile(s),
+      gradePercentile(p),mockGrade(e,1),mockGrade(h,5));
+    const share=({'서울대':.4,'연세대':.1,'경북대':.1,'부산대':.2,'충남대':.15})[c.name]||0;
+    if(!share)return exam;
+    // A grade-based proxy for document review, centred on an applicant at this program's exam benchmark.
+    const referenceGrade=1+(100-mean(regularRanges.get(c.id)))/20;
+    const schoolGradeMean=mean(profile.grades);
+    return bound(exam+share*2.5*(referenceGrade-schoolGradeMean));
   }
   function subjectReason(c,run){
     const scores=run.exam.scores;
-    const full=lateScore(c,scores,run.profile,run.programModel||c.baseId);
+    const full=lateScore(c,scores,run.profile);
     let greatest=0,subject='';
     for(let i=0;i<5;i++){
       const adjusted=scores.slice();
       adjusted[i]=65;
-      const difference=full-lateScore(c,adjusted,run.profile,run.programModel||c.baseId);
+      const difference=full-lateScore(c,adjusted,run.profile);
       if(difference>greatest){greatest=difference;subject=mockSubjects[i];}
     }
     return greatest>.05?'이 모집단위의 반영 방식에서 '+subject+' 성적이 내부 기준점 대비 총점을 가장 많이 높였습니다.':'이 모집단위는 이번 성적의 영역별 반영점수를 합산해 평가합니다.';
@@ -230,28 +252,27 @@ const EARLY_LIMIT = 5;
     r.phase=r.early.length?'fill':'late';
   }
   function outcome(r,c,late){
-    const profile=r.profile, baseline=late?(c.lateTarget||c.target):c.target;
-    const key=c.id;
-    const calibration=(late?AdmissionCalibration.late:AdmissionCalibration.early)[c.baseId||key];
-    const modern=r.balanceVersion===2;
-    const inherited=c.baseId&&c.name==='조선대'&&late?c.target:baseline;
-    const target=(modern&&calibration&&!(c.baseId&&c.name==='조선대'&&late)?calibration.target:inherited)+(late?c.lateShift||0:c.earlyShift||0);
-    const score=late?lateScore(c,r.exam.scores,profile,r.programModel||c.baseId):earlyScore(c,profile,modern);
+    const key=c.id,modern=r.balanceVersion===2;
+    const earlyBase=AdmissionCalibration.early[c.baseId||key];
+    const target=(modern&&earlyBase?earlyBase.target:c.target)+(c.earlyShift||0);
+    const score=late?lateScore(c,r.exam.scores,r.profile):earlyScore(c,r.profile,modern);
     const draw=key+(late?'정시':'수시');
     // Selective pools share part of the same cohort. Drawing each in isolation
     // would inflate the chance that at least one of three schools offers a place.
     const selective=modern&&['서울대','연세대','고려대'].includes(c.name);
     const localPool=noise(r.seed,draw+'pool');
     const pool=selective ? .55*noise(r.seed,'selective-cohort')+.45*localPool : localPool;
-    const cuts=late&&koreaRegularCuts[key];
-    const cutoff=cuts?Math.min(...cuts)+pool*Math.abs(cuts[0]-cuts[1]):target+(pool-.5)*10;
+    const cuts=late&&regularRanges.get(key);
+    const cutoff=cuts?cuts[0]+pool*(cuts[1]-cuts[0]):target+(pool-.5)*10;
     const margin=score-cutoff;
     const passes=late||minMet(c,r.exam.grades);
     const step=cuts ? 0.35 : 1;
     const waiting=passes&&margin<0&&margin>=-6*step;
     const moved=1+Math.floor(noise(r.seed,draw+'moves')*(selective?2:5)),position=Math.max(1,Math.ceil(-margin/step));
     const status=!passes?'최저 미충족':margin>=0?'최초합격':waiting&&position<=moved?'충원합격':waiting?'예비 종료':'불합격';
-    const reason=cuts?'모의 환산점수 '+score.toFixed(2)+' · 이번 회차 모의 기준선 '+cutoff.toFixed(2):!late&&c.kind==='논술'&&!['최초합격','충원합격'].includes(status)?(!passes?'수능최저 미충족':(c.minimum.includes('없음')?'수능최저 없음':'수능최저 충족')+' · 논술전형 총점 부족'):'';
+    const scale=late&&c.name==='세명대'?10:1;
+    const unit=scale===10?' / 1,000점':' / 100점';
+    const reason=late?'모의 환산점수 '+(score*scale).toFixed(2)+' · 이번 회차 모의 기준선 '+(cutoff*scale).toFixed(2)+unit:!late&&c.kind==='논술'&&!['최초합격','충원합격'].includes(status)?(!passes?'수능최저 미충족':(c.minimum.includes('없음')?'수능최저 없음':'수능최저 충족')+' · 논술전형 총점 부족'):'';
     return {reason,name:c.name,major:late?(c.lateMajor||c.major):c.major,kind:late?c.group+'군 '+c.late:c.early,status,wait:waiting,position,moved,accepted:['최초합격','충원합격'].includes(status)};
   }
   const results=(r,late=false)=>(late?r.late:r.early).map(id=>outcome(r,late?regularById.get(id):earlyById.get(id),late));
