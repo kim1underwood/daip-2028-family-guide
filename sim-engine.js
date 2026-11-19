@@ -26,6 +26,35 @@ const Game = (() => {
     h=Math.imul(h^(h>>>16),0x85ebca6b); h=Math.imul(h^(h>>>13),0xc2b2ae35);
     return ((h^(h>>>16))>>>0)/4294967296;
   }
+const EARLY_LIMIT = 5;
+  const category = c => ({교과:'학생부교과',서류:'학생부종합',면접:'학생부종합',논술:'논술'})[c.kind];
+  function fastPlan(r,i){
+    const draw=(key,count)=>Math.floor(noise(r.seed,'quick-'+i+'-'+key)*count);
+    const tokens=[0,0,0,0];
+    for(let j=0;j<6;j++)tokens[draw('time'+j,4)]++;
+    return {tokens,focus:draw('school',5),mockFocus:draw('mock',5),event:draw('event',2)};
+  }
+  function quickStart(r){
+    if(r.phase!=='setup')return;
+    r.quick=true;
+    for(let i=0;i<5;i++){
+      r.plan=fastPlan(r,i);r.phase='plan';finishTerm(r);
+    }
+  }
+  function band(r,c){
+    const gap=estimate(r,c);
+    if(!minMet(c,r.checkpoint.history.at(-1).mockGrades)||gap < -4)return '상향';
+    return gap>5?'하향':'적정';
+  }
+  function addEarly(r,id){
+    if(r.phase!=='early'||r.early.length>=EARLY_LIMIT||r.early.includes(id))return;
+    const c=EarlyCases.find(c=>c.id===id);
+    if(!c||(c.name==='경희대'&&!r.referred))return;
+    r.early.push(id);
+  }
+  function removeEarly(r,id){
+    if(r.phase==='early')r.early=r.early.filter(item=>item!==id);
+  }
   function fresh(seed=crypto.getRandomValues(new Uint32Array(1))[0]) {
     return {version:3,seed,phase:'setup',type:0,avatar:0,start:[72,72,72,72,72],history:[],plan:blank(),early:[],late:[],interest:'모두',risk:'균형',referred:false,replay:false,first:null,checkpoint:null};
   }
@@ -93,6 +122,7 @@ const Game = (() => {
   }
   function minMet(c,g){
     const [k,e,m,s,p,h]=g, t=Math.min(s,p), v=[k,m,e,t].sort((a,b)=>a-b);
+    if(c.id==='inha-essay')return v[0]+v[1]<=6;
     switch(c.name){
       case '경희대':return v[0]+v[1]<=5&&h<=5;
       case '경북대':return v[0]+v[1]<=6;
@@ -110,7 +140,7 @@ const Game = (() => {
     if(c.kind==='논술')return .42*academic+.58*write;
     const document=.70*academic+.30*record;
     if(c.kind!=='면접')return document;
-    const share=({'서울대':.5,'연세대':.3,'가천대':.5,'인천대':.4,'충남대':1/3,'국립공주대':.3,'전북대':.2,'인하대':.3,'전남대':.3})[c.name]??.3;
+    const share=({'아주대':.3,'동아대':.4,'서울대':.5,'연세대':.3,'가천대':.5,'인천대':.4,'충남대':1/3,'국립공주대':.3,'전북대':.2,'인하대':.3,'전남대':.3})[c.name]??.3;
     return (1-share)*document+share*speak;
   }
   function lateScore(c,scores,hist){
@@ -131,7 +161,7 @@ const Game = (() => {
   function advice(r,late=false){
     if(!r.replay||!r.first)return [];
     const delta={도전:-4,균형:2,안정:7}[r.risk];
-    return Admissions.filter(c=>late||c.name!=='경희대'||r.referred).map(c=>{
+    return (late?Admissions:EarlyCases).filter(c=>late||c.name!=='경희대'||r.referred).map(c=>{
       const gap=estimate(r,c,late);
       const aligned=r.interest==='모두'||r.interest===(late?(c.lateField||c.field):c.field);
       const gate=late||minMet(c,r.checkpoint.history.at(-1).mockGrades);
@@ -148,23 +178,24 @@ const Game = (() => {
       return {c,gap,gate,offers,rank:-Math.abs(gap-delta)+(aligned?5:0)+(gate?2:-8)};
     }).sort((a,b)=>b.rank-a.rank).slice(0,3);
   }
-  function toggle(r,id,late){
-    const c=Admissions.find(u=>u.name===id),list=late?r.late:r.early;
-    if(!c)return;
+  function toggleLate(r,id){
+    const c=Admissions.find(u=>u.name===id),list=r.late;
+    if(!c||r.phase!=='late')return;
     if(list.includes(id)){list.splice(list.indexOf(id),1);return;}
-    if(late){if(list.some(n=>Admissions.find(u=>u.name===n).group===c.group))return;}
-    else if(list.length>=6||(c.name==='경희대'&&!r.referred))return;
+    if(list.some(n=>Admissions.find(u=>u.name===n).group===c.group))return;
     list.push(id);
   }
   function submitEarly(r){
-    if(r.phase!=='early')return;
+    if(r.phase!=='early'||r.early.length>EARLY_LIMIT)return;
     if(r.replay){r.history.push(clone(r.lastTerm));r.exam=finalExam(r);r.phase='exam';}
-    else{r.plan=clone(r.history[4].plan);r.phase='plan';}
+    else if(r.quick){
+      r.plan=fastPlan(r,5);r.phase='plan';finishTerm(r);nextReport(r);
+    }else{r.plan=clone(r.history[4].plan);r.phase='plan';}
   }
   function outcome(r,c,late){
     const hist=r.checkpoint.history, target=late?(c.lateTarget||c.target):c.target;
     const score=late?lateScore(c,r.exam.scores,hist):earlyScore(c,hist);
-    const key=c.name+(late?'정시':'수시');
+    const key=(late?c.name:c.id)+(late?'정시':'수시');
     const cutoff=target+(noise(r.seed,key+'pool')-.5)*10;
     const margin=score-cutoff;
     const passes=late||minMet(c,r.exam.grades);
@@ -173,7 +204,7 @@ const Game = (() => {
     const status=!passes?'최저 미충족':margin>=0?'최초합격':waiting&&position<=moved?'충원합격':waiting?'예비 종료':'불합격';
     return {name:c.name,major:late?(c.lateMajor||c.major):c.major,kind:late?c.group+'군 '+c.late:c.early,status,wait:waiting,position,moved,accepted:['최초합격','충원합격'].includes(status)};
   }
-  const results=(r,late=false)=>(late?r.late:r.early).map(id=>outcome(r,Admissions.find(c=>c.name===id),late));
+  const results=(r,late=false)=>(late?r.late:r.early).map(id=>outcome(r,late?Admissions.find(c=>c.name===id):EarlyCases.find(c=>c.id===id),late));
   function saveEnding(r,name){
     r.registered=name;r.phase='ending';
     const snapshot={early:results(r),late:results(r,true),registered:name};
@@ -184,5 +215,5 @@ const Game = (() => {
     r.history=clone(r.checkpoint.history);r.early=[];r.late=[];r.registered=null;
     r.exam=null;r.replay=true;r.phase='early';r.referred=r.checkpoint.referred;
   }
-  return {subjects,mockSubjects,names,types,typesText,terms,tasks,events,blank,fresh,finishTerm,nextReport,submitEarly,saveEnding,replay,results,advice,toggle,minMet,mean,bound};
+  return {subjects,mockSubjects,names,types,typesText,terms,tasks,events,blank,fresh,finishTerm,nextReport,submitEarly,saveEnding,replay,results,advice,toggleLate,band,category,quickStart,addEarly,removeEarly,EARLY_LIMIT,minMet,mean,bound};
 })();

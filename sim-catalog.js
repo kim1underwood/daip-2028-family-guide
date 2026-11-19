@@ -436,3 +436,14 @@ const Admissions = [
     "lateRule": "AI컴퓨터학부는 수능 100%로 선발합니다."
   }
 ];
+
+// Keep the original school keys for portfolios saved by the first release.
+const EarlyCases = Admissions.map(c => ({...c,id:c.name}));
+for (const extra of [
+  {name:'인하대',id:'inha-document',early:'학종 인하미래인재(서류형)',kind:'서류',pages:'6, 12',rule:'기계공학과는 서류종합평가 100%로 일괄 선발합니다.'},
+  {name:'인하대',id:'inha-essay',early:'논술우수자',kind:'논술',pages:'6, 18',rule:'논술 90%와 학생부교과 10%를 합산합니다.',minimum:'국·수·영·탐(상위 1) 중 2합 6'},
+  {name:'아주대',id:'ajou-interview',early:'학종 ACE전형 면접형',kind:'면접',pages:'3~4, 7',rule:'경영학과는 서류로 4배수를 선발한 뒤 1단계 성적 70%와 면접 30%를 반영합니다.'},
+  {name:'동아대',id:'donga-interview',early:'학종 잠재능력우수자',kind:'면접',pages:'6~7',rule:'경영학과는 서류로 5배수를 선발한 뒤 1단계 성적 60%와 면접 40%를 반영합니다.'}
+]){
+  EarlyCases.push({...Admissions.find(c=>c.name===extra.name),...extra});
+}
