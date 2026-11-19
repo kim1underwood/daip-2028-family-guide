@@ -50,7 +50,7 @@ const EARLY_LIMIT = 5;
     if(r.phase==='early')r.early=r.early.filter(item=>item!==id);
   }
   function fresh(seed=crypto.getRandomValues(new Uint32Array(1))[0]) {
-    return {version:3,seed,phase:'setup',type:0,start:[72,72,72,72,72],history:[],plan:blank(),early:[],late:[],referred:false,replay:false,checkpoint:null};
+    return {version:3,balanceVersion:2,seed,phase:'setup',type:0,start:[72,72,72,72,72],history:[],plan:blank(),early:[],late:[],referred:false,replay:false,checkpoint:null};
   }
   function blank(){return {tokens:[2,2,1,1],focus:0,mockFocus:2,event:0};}
   const relative=(p,cuts)=>1+cuts.filter(c=>p<c).length;
@@ -98,7 +98,7 @@ const EARLY_LIMIT = 5;
     const hidden={...(prev?.hidden||{record:43,speak:46,write:46})};
     hidden.record=bound(hidden.record+research*(run.type===2?3.7:3.1));
     hidden.speak=bound(hidden.speak+expression*2.6);
-    hidden.write=bound(hidden.write+expression*2.8);
+    hidden.write=bound(hidden.write+expression*2.8+(run.balanceVersion===2?practice*.7:0));
     if(effect!=='mock')hidden[effect]=bound(hidden[effect]+gain);
     const record=[events[i][4+plan.event]];
     if(i===2&&research>0)record.push(run.history[1].plan.event===0?'지난 학기 통학 설문 자료를 다시 분석함':'지난 학기 온도 측정 자료와 비교함');
@@ -121,7 +121,10 @@ const EARLY_LIMIT = 5;
     }else{r.plan=clone(r.plan);r.phase='plan';}
   }
   function finalExam(r){
-    const last=r.history[5],scores=last.practice.map((v,i)=>Math.round(bound(v+(noise(r.seed,'csat'+i)-.5)*9+(last.plan.event===1?1:0))));
+    const last=r.history[5];
+    const rehearsal=mean(r.history.map(term=>term.plan.tokens[1]));
+    const examPressure=r.balanceVersion===2?Math.max(0,4.4-.75*rehearsal):0;
+    const scores=last.practice.map((v,i)=>Math.round(bound(v+(noise(r.seed,'csat'+i)-.5)*9+(last.plan.event===1?1:0)-examPressure)));
     scores.push(Math.round(bound(last.mock[5]+(noise(r.seed,'csat-history')-.5)*7)));
     return {scores,grades:scores.map(mockGrade)};
   }
@@ -149,14 +152,14 @@ const EARLY_LIMIT = 5;
       default:return true;
     }
   }
-  function earlyScore(c,hist){
+  function earlyScore(c,hist,modern){
     const academic=mean(hist.map(t=>mean(t.school))), {record,speak,write}=hist.at(-1).hidden;
     if(c.name==='부산대'||c.id==='knu-grades')return .80*academic+.20*(.65*academic+.35*record);
     if(c.name==='경희대')return .70*academic+.30*(.65*academic+.35*record);
     if(c.kind==='교과')return academic;
     if(c.kind==='논술'){
       const exam=.42*academic+.58*write;
-      const weight=c.essayWeight??1;
+      const weight=c.essayWeight??(modern&&c.id==='inha-essay' ? .9 : 1);
       return weight*exam+(1-weight)*academic;
     }
     const document=.70*academic+.30*record;
@@ -204,16 +207,26 @@ const EARLY_LIMIT = 5;
     }else{r.plan=clone(r.history[4].plan);r.phase='plan';}
   }
   function outcome(r,c,late){
-    const hist=r.checkpoint.history, target=late?(c.lateTarget||c.target):c.target;
-    const score=late?lateScore(c,r.exam.scores,hist):earlyScore(c,hist);
-    const key=(late?c.name:c.id)+(late?'정시':'수시');
-    const cutoff=target+(noise(r.seed,key+'pool')-.5)*10;
+    const hist=r.checkpoint.history, baseline=late?(c.lateTarget||c.target):c.target;
+    const key=late?c.name:c.id;
+    const calibration=(late?AdmissionCalibration.late:AdmissionCalibration.early)[key];
+    const modern=r.balanceVersion===2;
+    const target=modern&&calibration?calibration.target:baseline;
+    const score=late?lateScore(c,r.exam.scores,hist):earlyScore(c,hist,modern);
+    const draw=key+(late?'정시':'수시');
+    // Selective pools share part of the same cohort. Drawing each in isolation
+    // would inflate the chance that at least one of three schools offers a place.
+    const selective=modern&&['서울대','연세대','고려대'].includes(c.name);
+    const localPool=noise(r.seed,draw+'pool');
+    const pool=selective ? .55*noise(r.seed,'selective-cohort')+.45*localPool : localPool;
+    const cutoff=target+(pool-.5)*10;
     const margin=score-cutoff;
     const passes=late||minMet(c,r.exam.grades);
     const waiting=passes&&margin<0&&margin>=-6;
-    const moved=1+Math.floor(noise(r.seed,key+'moves')*5),position=Math.max(1,Math.ceil(-margin));
+    const moved=1+Math.floor(noise(r.seed,draw+'moves')*(selective?2:5)),position=Math.max(1,Math.ceil(-margin));
     const status=!passes?'최저 미충족':margin>=0?'최초합격':waiting&&position<=moved?'충원합격':waiting?'예비 종료':'불합격';
-    return {name:c.name,major:late?(c.lateMajor||c.major):c.major,kind:late?c.group+'군 '+c.late:c.early,status,wait:waiting,position,moved,accepted:['최초합격','충원합격'].includes(status)};
+    const reason=!late&&c.kind==='논술'&&!['최초합격','충원합격'].includes(status)?(!passes?'수능최저 미충족':(c.minimum.includes('없음')?'수능최저 없음':'수능최저 충족')+' · 논술전형 총점 부족'):'';
+    return {reason,name:c.name,major:late?(c.lateMajor||c.major):c.major,kind:late?c.group+'군 '+c.late:c.early,status,wait:waiting,position,moved,accepted:['최초합격','충원합격'].includes(status)};
   }
   const results=(r,late=false)=>(late?r.late:r.early).map(id=>outcome(r,late?Admissions.find(c=>c.name===id):EarlyCases.find(c=>c.id===id),late));
   function saveEnding(r,name){
