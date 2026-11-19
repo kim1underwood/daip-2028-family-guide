@@ -141,3 +141,39 @@ main.zoom{display:block}.zoom .slide{width:max(1120px,110vw);margin:0 auto}.zoom
 .slide[data-n="35"] [data-zone-key="2"]{background:#f9dc93}
 .slide[data-n="35"] [data-zone-key="3"]{background:#e2dcf0}
 .slide[data-n="35"] [data-zone-key="4"]{background:#d5ebee}
+
+/* Data and keys share semantic ink. Cell shading is independent of the glyph color. */
+:root{
+  --ref-minimum:#a52457; --ref-medical:#713c91; --ref-science:#196136;
+  --ref-record:#006c85; --ref-subject:#007080; --ref-plain:var(--ink,#112d31);
+}
+.legend [data-legend="minimum"],[data-source-ink="minimum"]{--reference-ink:var(--ref-minimum)}
+.legend [data-legend="plain"]{--reference-ink:var(--ref-plain)}
+.legend [data-legend="medical"],[data-source-ink="medical"]{--reference-ink:var(--ref-medical)}
+.legend [data-legend="record"],[data-source-ink="record"]{--reference-ink:var(--ref-record)}
+.legend [data-legend="science"],[data-source-ink="science"]{--reference-ink:var(--ref-science)}
+[data-source-ink="subject"]{--reference-ink:var(--ref-subject)}
+[data-source-ink="blue-note"]{--reference-ink:#344d82}
+[data-source-ink="total"],[data-source-ink="coral"]{--reference-ink:#9c3c40}
+[data-source-ink="on-dark"],[data-source-ink="header-focus"]{--reference-ink:#ffdc81}
+.slide .legend b[data-legend]{background:var(--reference-ink);color:#fff}
+.slide .content [data-source-ink]{color:var(--reference-ink);font-weight:750}
+[data-source-paper="white"]{--reference-paper:#fffefa}
+[data-source-paper="blue"]{--reference-paper:#e8f2f5}
+[data-source-paper="sky"]{--reference-paper:#c1e4f3}
+[data-source-paper="cream"]{--reference-paper:#fcf3df}
+[data-source-paper="lemon"]{--reference-paper:#f6f3ad}
+[data-source-paper="gold"]{--reference-paper:#f9dc86}
+[data-source-paper="peach"]{--reference-paper:#f9e2d0}
+[data-source-paper="pink"]{--reference-paper:#f5d5e2}
+[data-source-paper="lilac"]{--reference-paper:#e3dff1}
+[data-source-paper="gray"]{--reference-paper:#e6e6e2}
+.slide[data-n] .content .native tr>[data-source-paper],
+.slide[data-n] .content .itemlist>[data-source-paper]{background:var(--reference-paper)}
+.slide[data-n="34"] .itemlist+.letters span:nth-child(-n+2){background:#91466a;color:#fff}
+.slide[data-n="34"] .letters span:nth-child(3){color:#ffdf85;font-weight:750}
+
+
+[data-source-paper="mint"]{--reference-paper:#d9e9d4}
+.slide[data-n="29"] thead th{background:#d5e9ed;color:#213d42}
+.slide[data-n="6"] mark.inkEm{color:#252e2a;background:#f9df8c}
