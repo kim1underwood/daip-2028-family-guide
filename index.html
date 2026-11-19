@@ -1,0 +1,323 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>2028 대입 · 학부모 설명회</title><style>/* ===========================================
+   FIXED 16:9 STAGE: MANDATORY BASE STYLES
+   Include this ENTIRE file in every presentation.
+   Slides are authored at 1920×1080 and scaled as a whole.
+   =========================================== */
+
+/* 1. Lock the browser viewport */
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: var(--stage-bg, #000);
+}
+
+/* 2. Full-window deck viewport */
+.deck-viewport {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    background: var(--stage-bg, #000);
+}
+
+/* 3. Fixed 16:9 design canvas.
+   JavaScript sets transform: translate(...) scale(...). */
+.deck-stage {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    transform-origin: 0 0;
+    background: var(--slide-bg, #fff);
+}
+
+/* 4. Slides stack inside the fixed stage.
+   Content must be laid out at 1920×1080, not reflowed per device. */
+.slide {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    display: block;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    background: var(--slide-bg, #fff);
+}
+
+.slide.active,
+.slide.visible {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 1;
+}
+
+/* 5. Keep media inside authored slide bounds */
+img,
+video,
+canvas,
+svg {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* 6. Presentation chrome stays outside the slide design system */
+.deck-controls {
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    transform: translateX(-50%);
+    z-index: 1000;
+}
+
+/* 7. Print one fixed-size slide per page */
+@media print {
+    html,
+    body {
+        width: 1920px;
+        height: auto;
+        overflow: visible;
+        background: #fff;
+    }
+
+    .deck-viewport {
+        position: static;
+        overflow: visible;
+        background: #fff;
+    }
+
+    .deck-stage {
+        position: static;
+        width: auto;
+        height: auto;
+        transform: none !important;
+        background: none;
+    }
+
+    .slide {
+        position: relative;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        width: 1920px;
+        height: 1080px;
+        break-after: page;
+        page-break-after: always;
+    }
+
+    .slide:last-child {
+        break-after: auto;
+        page-break-after: auto;
+    }
+
+    .deck-controls {
+        display: none !important;
+    }
+}
+
+/* 8. Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.2s !important;
+    }
+}
+
+:root{--paper:#f9f7ef;--ink:#142f32;--teal:#00675c;--mint:#c8edbe;--line:#a9bab1;--light:#e8eee4;--red:#9a402b;--stage-bg:#101e20;--slide-bg:var(--paper);font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:var(--ink);font-variant-numeric:tabular-nums}
+*{box-sizing:border-box}body{word-break:keep-all}button,select{font:inherit}button,a{touch-action:manipulation}button{cursor:pointer}button:focus-visible,select:focus-visible,a:focus-visible{outline:4px solid #ce7231;outline-offset:4px}button:disabled{opacity:.36;cursor:default}.deck-stage{background:var(--paper)}.slide{padding:66px 104px 138px}.mast{display:flex;align-items:center;justify-content:space-between;font-size:27px;font-weight:700;letter-spacing:-.03em;border-bottom:2px solid var(--ink);padding-bottom:23px}.mast .part{color:var(--teal)}.mast .folio{font-weight:500;letter-spacing:.04em}h1,h2,h3,p,figure{margin:0}h1,h2{font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;letter-spacing:-.07em;line-height:1.22;text-wrap:balance}.head{margin:62px 0 40px}.head h2{font-size:70px}.head p{font-size:33px;color:#425957;margin-top:17px;line-height:1.45;letter-spacing:-.035em}
+.visual{height:555px;display:flex;flex-direction:column;justify-content:center;gap:25px}.visual b,.visual strong{font-weight:750}.board{position:relative}.grid{display:grid;gap:32px}.col2{grid-template-columns:repeat(2,1fr)}.col3{grid-template-columns:repeat(3,1fr)}.entry{border-top:4px solid var(--teal);padding:36px 12px 25px 0}.entry small,.kicker{font-size:26px;font-weight:700;color:var(--teal);letter-spacing:.03em}.entry h3{font-size:52px;margin:36px 0 22px;line-height:1.24;letter-spacing:-.07em}.entry p,.note,.callout{font-size:34px;line-height:1.55;letter-spacing:-.035em}.path-line{height:7px;background:var(--teal);position:relative;margin-bottom:10px}.path-line:before{content:"";width:25px;height:25px;background:var(--mint);border:5px solid var(--teal);border-radius:50%;position:absolute;top:-14px}.path-line:after{content:"";position:absolute;right:0;top:-7px;width:16px;height:16px;border:solid var(--teal);border-width:5px 5px 0 0;transform:rotate(45deg)}.route .entry{border:0;padding-top:0}.rowline{display:grid;grid-template-columns:340px 390px 1fr;gap:26px;align-items:center;border-top:2px solid var(--line);padding:27px 0;font-size:32px;line-height:1.42}.rowline b{font-size:37px;color:var(--teal)}.rowline strong{font-size:35px}.matrix{display:grid;grid-template-columns:1fr 1fr;gap:22px 50px}.matrix .entry{padding:22px 0}.matrix h3{font-size:42px;margin:0 0 12px}.matrix .entry p{font-size:30px}.pair .entry:first-child{background:var(--light)}.pair .entry{padding:32px 40px 42px}.pair .entry h3{margin:8px 0 30px}.callout{padding:19px 30px;border-left:9px solid var(--teal);background:var(--light)}.note{font-size:27px;color:#455d58}.large{font-family:Georgia,"Malgun Gothic",serif;font-size:128px;font-weight:500;letter-spacing:-.065em;line-height:1.1}.smalllarge{font-size:80px}.green{color:var(--teal)}.warning{color:var(--red)}.statbar{display:flex;height:68px;overflow:hidden;background:#d4dbd3}.statbar i{background:var(--teal)}.statbar i+i{background:#95b2a1}.statpair{display:flex;align-items:end;justify-content:space-between}.statpair span{font-size:36px}.bars3{display:grid;grid-template-columns:240px repeat(4,1fr);align-items:center;gap:16px 32px}.bars3>strong{font-size:32px;color:var(--teal)}.bars3 .th{font-size:26px;border-bottom:2px solid var(--line);padding-bottom:10px}.barcell{font-size:31px;font-weight:700}.barcell i{background:#dfe5da;display:block;height:13px;margin-top:6px}.barcell b{height:100%;display:block;background:var(--teal)}.dim{opacity:.16}.reveal{transition:opacity .32s ease}.sourcepic{position:relative;width:690px;flex:none}.sourcepic img{display:block;width:100%}.sourcepic i{position:absolute;top:26.5%;height:15.4%;left:3.2%;right:3.2%;border:4px solid #af4930;background:#efd05d25}.evidenceCompare{display:flex;gap:48px;align-items:center}.evidenceCompare h3{font-size:42px;margin:12px 0}.evidenceCompare p{font-size:30px;line-height:1.5}.gradebar{display:flex;height:106px;align-items:stretch}.gradebar div{border-right:3px solid var(--paper);display:grid;place-content:center;background:#bdd2c4;font-size:32px;text-align:center}.gradebar div:nth-child(2n){background:#dce5d6}.gradebar div:first-child{background:var(--teal);color:white}.gradebar.old{height:57px}.gradebar.old div{font-size:24px}.gradebar small{font-size:21px}.figureline{display:flex;align-items:center;gap:35px}.figureline>strong{font-size:37px;min-width:150px}.figureline>.gradebar{flex:1}.datat{width:100%;border-collapse:collapse;font-size:32px}.datat th,.datat td{text-align:left;padding:18px;border-bottom:2px solid var(--line)}.datat th{background:var(--light);font-size:27px;color:var(--teal)}.datat td.emph{font-weight:750;color:var(--teal);background:#d8ebd1}.gradepts{display:flex;gap:10px}.gradepts>div{flex:1;background:var(--light);padding:30px;font-size:34px;border-top:4px solid var(--teal)}.gradepts b{display:block;font:66px Georgia;color:var(--teal);margin-top:20px}.equation{font-size:52px;color:var(--teal);font-weight:750;line-height:1.5}.axis{display:grid;grid-template-columns:190px repeat(5,1fr);gap:2px 10px;align-items:center}.axis .month{font-size:26px;padding:0 0 15px;color:var(--ink);border-bottom:2px solid var(--line)}.axis .lane{font-size:32px;font-weight:700}.event{font-size:28px;line-height:1.31;padding:17px 16px;background:#d3e9d1;border-left:6px solid var(--teal);margin:6px 0}.event.exam{background:#eee0ad;border-color:#a27417}.event.reg{background:#dae5f0;border-color:#4c6989}.guideFoot{min-height:74px}.sr{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden}.toolbar{position:absolute;z-index:4;bottom:0;left:104px;right:104px;height:100px;border-top:2px solid var(--ink);display:flex;align-items:center;gap:12px;background:var(--paper)}.toolbar button,.jumplink{border:1.5px solid #9bad9f;background:transparent;color:var(--ink);border-radius:8px;padding:12px 22px;font-size:26px;line-height:1.25;font-weight:650}.toolbar .go,.jumplink{background:var(--ink);color:#fff;border-color:var(--ink)}.toolbar .count{font-size:25px;margin-left:auto;margin-right:14px}.toolbar .step{color:var(--teal);font-size:23px}.cover{display:grid;grid-template-columns:1.15fr .85fr;align-items:center;gap:42px;height:775px}.cover h1{font-size:97px}.year{font:154px/1 Georgia;color:var(--teal);letter-spacing:-.09em}.cover p{font-size:36px;margin:36px 0}.cover aside{background:var(--ink);color:white;padding:65px 52px;position:relative;border-radius:2px}.cover aside h3{font-size:46px;letter-spacing:-.045em}.cover .routekey{display:grid;grid-template-columns:48px 1fr;gap:0 19px;margin-top:38px}.routekey i{width:24px;height:24px;margin:10px;border:5px solid var(--mint);border-radius:50%;position:relative}.routekey i:not(:nth-last-child(2)):after{content:"";position:absolute;height:61px;background:var(--mint);width:4px;left:5px;top:18px}.routekey b{font-size:31px;padding-bottom:32px}.routekey b:last-child{padding-bottom:0}.jumplink{display:inline-block;margin:8px 12px 0 0;padding:20px 30px}.jumplink.alt{background:transparent;color:var(--ink)}.jumpall{display:grid;grid-template-columns:1fr 1fr;gap:9px}.jumpall button{text-align:left}.in{animation:arrive .28s ease-out}@keyframes arrive{from{opacity:.45;transform:translateY(8px)}to{opacity:1;transform:none}}
+dialog{position:fixed;border:0;padding:0;width:min(1100px,95vw);max-width:none;max-height:91dvh;border-radius:12px;background:var(--paper);color:var(--ink);box-shadow:0 20px 80px #102d3050}dialog::backdrop{background:#0c2225be}.dhead{position:sticky;top:0;background:var(--paper);border-bottom:1px solid var(--line);z-index:2;padding:13px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px}.dhead h2{font-size:23px}.inner{padding:18px 24px 24px;line-height:1.65}.inner h3{font-size:20px;margin:13px 0 6px}.inner p{margin:6px 0 12px}.inner a{color:var(--teal);text-underline-offset:3px}.inner button,.dhead button,.inner select{font:inherit;color:var(--ink);background:white;border:1px solid var(--line);border-radius:6px;padding:7px 12px}.inner button:hover,.dhead button:hover{background:var(--light)}.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.tools select{max-width:100%}.orig{overflow:auto;border:1px solid var(--line);background:white;margin-top:10px}.orig img{width:100%;display:block;max-height:none}.orig.zoom img{width:1500px;max-width:none}.refrow{border-top:1px solid var(--line);padding:11px 0}.refrow small{display:block;color:#41544b}.tag{color:var(--teal);font-weight:bold}.verify{background:var(--light);padding:11px 15px}.indexitem{display:block;width:100%;text-align:left;margin:3px 0}.tiny{font-size:14px;color:#486058}.stamps{margin:8px 0}.actions{display:flex;gap:12px}.axis .event,.gradebar div{transition:opacity .25s}.frameStat{border-top:3px solid var(--line);padding-top:20px;font-size:35px}.frameStat b{display:block;font-size:56px;margin:10px 0;letter-spacing:-.055em}.slide[data-kind=cover] .mast{border-color:var(--teal)}@media(max-width:650px){.inner{padding:12px}.jumpall{grid-template-columns:1fr}.tools button{padding:6px}.dhead{padding:9px 12px}}@media print{.toolbar,dialog{display:none!important}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.axis .span-period{border:0;border-top:4px solid #659882;background:repeating-linear-gradient(135deg,#e4ede2,#e4ede2 10px,#edf1e9 10px,#edf1e9 18px);font-size:23px;color:#275945;text-align:center;padding:6px;margin:0}.axis .spot{box-shadow:0 0 0 4px #8e6518 inset}.axis .from-exam{position:relative}.axis .from-exam:after{content:"";position:absolute;width:6px;height:16px;background:#966614;bottom:-15px;left:48%;z-index:2}.axis .from-exam.up:after{bottom:auto;top:-15px}.visual.timelineview{gap:12px}.timelineview .event{padding:11px 13px;font-size:26px}.timelineview .callout{font-size:30px}.topicIndex{margin:12px 0 20px;display:flex;gap:8px;flex-wrap:wrap}.topicIndex button{border-color:var(--teal);color:var(--teal)}@media(prefers-reduced-motion:no-preference){.statbar i:first-child,.barcell b{transform-origin:left;animation:grow .4s cubic-bezier(.24,.6,.24,1)}@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}}
+@media (max-width:850px) and (orientation:portrait) {
+ html,body {height:100%;--paper:#f9f7ef}
+ .deck-viewport {position:fixed;inset:0;display:flex;padding:0}
+ .deck-stage {position:relative;display:flex;flex-direction:column;width:100%;height:100%;transform:none!important}
+ #page {position:relative;flex:1;min-height:0;inset:auto;width:100%;height:auto;padding:18px 18px 26px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain}
+ .mast {font-size:13px;padding-bottom:12px;gap:10px}.mast .folio{font-size:12px;white-space:nowrap}
+ .head{margin:26px 0 20px}.head h2{font-size:clamp(27px,7vw,42px);line-height:1.29;letter-spacing:-.06em;text-wrap:pretty}
+ .head p{font-size:16px;margin-top:12px}.visual,.visual.timelineview{height:auto;gap:15px;display:flex;justify-content:flex-start}
+ .cover{height:auto;display:flex;flex-direction:column;align-items:stretch;gap:20px;padding-block:20px 0}
+ .year{font-size:72px}.cover h1{font-size:44px}.cover p{font-size:18px;margin:16px 0}
+ .jumplink{font-size:15px;padding:12px 14px;margin:2px 5px 4px 0}
+ .cover aside{padding:17px 21px}.cover aside h3{font-size:21px}.cover .routekey{margin-top:12px;grid-template-columns:18px 1fr;gap:0 8px}
+ .routekey i{width:12px;height:12px;border-width:2px;margin:5px 0}.routekey b{font-size:16px;padding-bottom:10px}.routekey i:not(:nth-last-child(2)):after{height:20px;top:8px;left:3px;width:2px}
+ .grid,.matrix{display:grid;grid-template-columns:1fr;gap:12px}.entry,.matrix .entry,.pair .entry,.route .entry{padding:14px 12px 12px 0;border-top:2px solid var(--teal)}
+ .pair .entry{padding:14px}.entry h3,.matrix h3,.pair .entry h3{font-size:23px;margin:2px 0 8px}.entry p,.matrix .entry p,.callout,.timelineview .callout{font-size:17px}
+ .entry small,.kicker,.note{font-size:14px}.callout{padding:10px 12px;border-left-width:4px}.route .path-line{display:none}
+ .rowline{grid-template-columns:1fr;gap:4px;padding:13px 0;font-size:16px}.rowline b{font-size:16px}.rowline strong{font-size:20px}
+ .large{font-size:52px}.smalllarge{font-size:32px}.statpair span{font-size:16px}.statbar{height:28px}
+ .bars3{grid-template-columns:58px repeat(4,minmax(0,1fr));gap:8px 5px}.bars3 .th{font-size:12px}.bars3>strong,.barcell{font-size:15px}.barcell i{height:7px}
+ .evidenceCompare{display:block}.sourcepic{width:100%}.sourcepic i{border-width:2px}.evidenceCompare h3{font-size:21px}.evidenceCompare .kicker{margin-top:12px}.evidenceCompare p,.frameStat{font-size:16px}.frameStat{padding-top:12px}.frameStat b{font-size:29px}
+ .figureline{display:block}.figureline>strong{font-size:16px}.gradebar{height:58px}.gradebar div,.gradebar.old div{font-size:12px;border-right-width:1px}.gradebar.old{height:34px}.gradebar small{font-size:11px}
+ .datat{font-size:14px;table-layout:fixed}.datat th,.datat td{padding:9px 4px;overflow-wrap:anywhere}.datat th{font-size:13px}.gradepts{gap:4px}.gradepts>div{padding:12px 4px;font-size:14px}.gradepts b{font-size:25px;margin-top:6px}
+ .equation{font-size:25px}.axis{grid-template-columns:45px repeat(5,minmax(0,1fr));gap:3px}.axis .month{font-size:12px;padding:0 0 5px}.axis .lane{font-size:14px}.timelineview .event,.axis .event{font-size:12px;padding:6px 3px;line-height:1.45;overflow-wrap:anywhere;border-left-width:2px}.axis .span-period{font-size:12px}.guideFoot{min-height:0}.axis .spot{box-shadow:inset 0 0 0 2px #8e6518}.axis .from-exam:after{height:9px;width:3px;bottom:-9px}.axis .from-exam.up:after{top:-9px}
+ .toolbar{position:relative;flex:none;left:auto;right:auto;bottom:auto;height:auto;padding:6px 8px max(6px,env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;border-top-width:1px}
+ .toolbar button{font-size:14px;padding:6px 2px;min-height:40px}.toolbar .count,.toolbar .step{margin:0;align-self:center;text-align:center;font-size:13px}.toolbar .count{grid-column:2}.toolbar .step{grid-column:1}
+ dialog{width:96vw;max-height:93dvh}.dhead h2{font-size:18px}.inner select,.tools button{font-size:14px}.inner .kicker{font-size:14px}
+}
+</style></head><body><main class="deck-viewport"><div class="deck-stage" id="stage"><section id="page" class="slide active" aria-label="발표 화면"></section><nav class="toolbar" aria-label="발표 조작"><button id="menu">목차</button><button id="detail">상세표 보기</button><button id="source">근거 보기</button><button id="full">전체화면</button><span class="step" id="phase"></span><span class="count" id="counter"></span><button id="back" aria-label="이전 단계">← 이전</button><button id="next" class="go">다음 →</button></nav></div></main><dialog id="modal"><div class="dhead"><h2 id="dialogtitle"></h2><button id="close">닫기 ×</button></div><div class="inner" id="inner"></div></dialog><script type="application/json" id="deckdata">{"slides":[{"g":0,"title":"2028 대입,\n무엇이 달라질까요?","sub":"고등학생 자녀를 둔 학부모를 위한 설명회","kind":"cover","rows":[],"lo":1,"hi":2,"src":[],"proof":"대교협 설명회 제2부의 여섯 주제를 재구성했습니다. 이어지는 학부모 지도는 이 발표를 위해 구성한 해설입니다."},{"g":1,"title":"전국 모집인원 100명 중 약 81명이 수시입니다","sub":"2028학년도 전국 194개 대학 · 정원 내외 합산 · 모집계획 기준","kind":"share","rows":[],"lo":3,"hi":4,"src":["stats"],"proof":"대교협 표 2쪽에서 281,895명과 66,894명을 확인했습니다. 두 수의 합은 348,789명입니다. 2027학년도 수시 277,583명에서 4,312명 증가했습니다. 원본 4번의 비수도권 수시 191,152명은 공식 집계 191,512명과 차이가 있습니다."},{"g":1,"title":"어느 지역을 보느냐에 따라 전형의 비중이 달라집니다","sub":"2028학년도 · 각 권역 전체 모집인원 중 해당 전형 비율(%)","kind":"region","rows":[],"lo":5,"hi":7,"src":["stats","support"],"proof":"원본 7번은 전국 수시 77.7%로 인쇄돼 있습니다. 281,895 ÷ 348,789 = 80.8%입니다. 본편 차트는 대교협 2~3쪽의 수시·정시 인원을 전형별로 합쳐 권역 총원으로 나눈 값입니다. 시행계획 통계와 원본 표의 일부 비율은 다릅니다. 사업 선정은 별개의 정책 자료입니다."},{"g":1,"title":"전국 수시 비율, 두 표의 값을 확인했습니다","sub":"같은 학년도와 모집 시기를 기준으로 인원부터 다시 계산합니다.","kind":"audit","rows":[],"lo":4,"hi":7,"src":["stats"],"proof":"원본 7번 전국 행의 수시 77.7%와 4번 합계 80.8%가 서로 다릅니다. 대교협 시행계획 2쪽의 원자료로 다시 계산하면 80.8%입니다. 공식 비수도권 수시 191,512명과 수도권 수시 90,383명의 합도 전국 수시와 일치합니다."},{"g":1,"title":"전국 비율을 우리 아이의 지원 확률로 읽을 수 있을까요?","sub":"관심 대학을 정하면 비교의 기준도 달라집니다.","kind":"path","rows":[["전국","194개 대학 전체에서 모집 규모를 살펴봅니다."],["관심 대학","대학 안에서 수시와 정시, 전형별 인원을 비교합니다."],["모집단위","희망 학과의 실제 정원과 선발 방법을 확인합니다."]],"lo":8,"hi":8,"src":["stats","dong"],"proof":"동국대의 수시 70%·정시 30%는 대학 발표 기준입니다. 전국 80.8%와는 분모가 다릅니다. 원본 8번의 다른 개별 대학 값은 자료집 수록값입니다."},{"g":2,"title":"내신 한 등급에 들어가는 학생 수가 달라집니다","sub":"석차등급을 산출하는 과목의 등급별 비율 · 누적 비율과 구분해서 봅니다.","kind":"grade","rows":[],"lo":9,"hi":11,"src":["reform","record"],"proof":"교육부 확정안과 원본 10번을 대조했습니다. 5등급의 구간별 비율은 10·24·32·24·10%입니다. 사회·과학 융합선택 과목의 석차등급은 기재하지 않습니다."},{"g":2,"title":"학생부 한 줄을 읽는 세 가지 질문","sub":"같은 과목에도 점수, 성취 수준, 상대 위치가 각각 기록될 수 있습니다.","kind":"rows","rows":[["원점수","얼마를 얻었나","해당 과목에서 평가받아 얻은 점수입니다."],["성취도","무엇을 얼마나 익혔나","과목의 성취기준에 비추어 도달한 수준을 봅니다."],["석차등급","수강 집단에서 어디쯤인가","상대 위치를 구간으로 나타냅니다. 과목별 기재 방식도 함께 봅니다."]],"lo":12,"hi":12,"src":["record","reform"],"proof":"교육부 학생부 기재·제공 항목을 대조했습니다. 원본에는 과목 평균, 수강자 수, 성취도 분포와 과목 개설 유형도 있습니다."},{"g":2,"title":"학생부교과 전형, 반영표에서 먼저 볼 세 칸","sub":"대학별로 성적을 환산하는 방식과 추가 평가가 다릅니다.","kind":"path","rows":[["반영 과목","어느 학년의 어떤 교과를 몇 과목 반영할까요?"],["환산 방식","등급·성취도에 대학이 어떤 점수를 줄까요?"],["추가 조건","추천, 서류평가, 면접, 수능최저가 붙을까요?"]],"lo":13,"hi":15,"src":["dong"],"proof":"동국대 학교장추천인재는 2~3학년 선택과목 중 우수 10과목 반영을 발표했습니다. 원본 전 대학 표의 추천·최저·인원은 지원 전 각 대학 요강과 대조해야 합니다."},{"g":2,"title":"같은 평균등급이어도 평가 자료는 달라집니다","sub":"학생부교과에 서류평가가 포함된 전형을 읽는 법","kind":"pair","rows":[["성적표에서","반영 과목과 성취도, 등급의 환산점을 확인합니다."],["서류에서","대학이 어떤 과목 이수와 수업 활동을 평가하는지 봅니다."]],"lo":16,"hi":17,"src":["dong"],"proof":"강연자는 원본의 지원자 분포를 통해 평균등급 하나로 합격 순서를 정하기 어렵다고 설명합니다. 과거 합격자 분포는 2028학년도의 합격선이 아닙니다. 영상 약 16분 07초에서는 문화콘텐츠 관련 학과의 과목 이수와 성취를 가정해 지원자 분포를 풀이합니다. 개별 지원자의 실제 불합격 사유를 확인한 사례는 아닙니다."},{"g":2,"title":"“2합 5”는 어떤 뜻일까요?","sub":"수능최저학력기준은 일부 수시 전형이 요구하는 수능 성적 조건입니다.","kind":"example","rows":[["국어 2등급","＋","수학 3등급"],["합계 5","예시의 두 영역이 모두 인정된다면 충족합니다."],["함께 볼 조건","지정 영역, 탐구 계산 방식, 영어·한국사 별도 기준"]],"lo":18,"hi":22,"src":["snu","rules"],"proof":"2합 5는 표기법을 설명하는 가상 예입니다. 실제 기준은 대학·전형·모집단위마다 다릅니다. 서울대 시행계획에는 ‘3개 영역 이상 각각 3등급 이내’와 같이 합산 방식과 다른 사례도 있습니다."},{"g":2,"title":"학생부종합은 수업에서 남긴 근거를 함께 봅니다","sub":"학업과 진로를 어떻게 이어 왔는지 서류와 면접에서 확인하는 전형입니다.","kind":"path","rows":[["과목 선택","관심 분야와 학교 개설 과목 안에서 무엇을 골랐나요?"],["수업과 탐구","어떤 질문을 세우고 자료나 풀이로 답했나요?"],["서류와 면접","대학이 정한 평가 항목에 맞게 그 과정을 설명할 수 있나요?"]],"lo":23,"hi":27,"src":["dong"],"proof":"동국대 Do Dream의 2단계 면접 비중은 30%에서 40%로 확대됐습니다. 대학 발표와 원본의 변화 방향을 대조했습니다. 세부 학종 전형표는 원자료입니다."},{"g":2,"title":"종합전형도 수능과 연결될 수 있습니다","sub":"학생부종합과 수능최저, 면접 일정을 지원할 모집단위 기준으로 확인하세요.","kind":"pair","rows":[["수능최저가 있는 경우","서류평가 준비와 별개로 지정 영역의 요구 등급을 확인합니다."],["면접이 있는 경우","수능 전후 일정과 다른 대학 고사와의 겹침을 달력에 표시합니다."]],"lo":28,"hi":31,"src":["rules"],"proof":"강연자의 지원 전략과 사례를 재구성했습니다. 원본 29번의 출신 고교 유형 분포로 개인 합격 확률을 계산할 수 없습니다. 원본 28·30번 개별 최저 수치는 별도 확인 전입니다."},{"g":2,"title":"같은 성적표를 대학마다 다르게 환산합니다","sub":"강연에서는 대학별 교과 반영 방식을 네 갈래로 묶었습니다.","kind":"matrix","rows":[["등급 환산","석차등급을 대학의 점수표에 대입"],["등급과 성취도","두 정보를 각각 계산하거나 과목별로 구분"],["교차표","등급의 행과 성취도의 열이 만나는 칸을 사용"],["성취도·원점수","분포와 원점수 등 대학이 정한 지표 반영"]],"lo":32,"hi":34,"src":["dong"],"proof":"네 유형은 강연자의 분류입니다. 동국대가 상대등급과 성취도를 결합한다고 공식 발표한 사례를 확인했습니다."},{"g":2,"title":"동국대 사례로 교과 환산표 읽기","sub":"학교장추천인재 · 같은 석차등급 안에서도 성취도에 따라 영역이 달라질 수 있습니다.","kind":"zone","rows":[],"lo":35,"hi":36,"src":["dong"],"proof":"자료집 35번 교차표의 일부를 확대 재구성했습니다. 동국대는 2028 개편안에서 2차원 산출표와 우수 선택과목 10과목 반영을 발표했습니다."},{"g":3,"title":"논술전형은 세 가지를 함께 읽습니다","sub":"논술고사에서 무엇을 쓰는지, 점수가 어떻게 합산되는지, 통과 기준이 있는지 봅니다.","kind":"path","rows":[["고사 유형","인문·수리·통합 등 모집단위별 출제 범위를 확인합니다."],["반영 비중","논술 점수와 교과·출결 등의 반영 여부를 확인합니다."],["수능최저","적용 여부, 필수 영역, 등급 조건을 따로 표시합니다."]],"lo":37,"hi":40,"src":["stats","dong"],"proof":"대교협 주요사항의 논술위주 선발 현황과 대조했습니다. 2028 수시 논술위주 인원은 12,727명입니다. 개별 대학 시험시간·최저는 자료집에 수록된 계획입니다. 영상 약 39분 20초에서는 대학별 문항 수와 시험시간을 대비해 같은 논술이라는 이름 안에서도 준비 방식이 달라진다고 설명합니다."},{"g":3,"title":"논서술형 답안은 이렇게 연습할 수 있습니다","sub":"강연자 제안 · 평소 수업의 토론, 발표, 글쓰기를 활용합니다.","kind":"path","rows":[["주장","질문이 요구한 결론을 한 문장으로 정리합니다."],["근거","지문·표·계산에서 주장을 지지하는 내용을 찾습니다."],["설명","그 근거로 왜 그 결론이 나오는지 연결합니다."]],"lo":41,"hi":41,"src":[],"proof":"발표자가 설명한 준비 방향을 학부모용 연습 순서로 풀었습니다. 대학별 채점 기준이나 공식 배점표를 뜻하지 않습니다."},{"g":4,"title":"통합형 수능에서 함께 공부하는 범위가 넓어집니다","sub":"2028학년도부터 국어·수학·사회·과학의 선택과목 체제가 바뀝니다.","kind":"rows","rows":[["국어·수학","공통된 시험 범위","영역 내 선택과목을 없애고 공통으로 평가합니다."],["사회·과학탐구","통합사회와 통합과학","사회·과학탐구 응시자는 두 과목을 모두 준비합니다."],["고교 과목 선택","이수 기록도 확인","대학이 전공과 연계해 권장하는 과목은 따로 확인합니다."]],"lo":42,"hi":43,"src":["reform","exam"],"proof":"교육부 확정안 기준입니다. 미적분Ⅱ·기하는 수능 심화수학 출제 범위에서 제외됩니다. 대학의 이수 권장과 수능 출제 범위는 다른 기준입니다."},{"g":4,"title":"정시 지원표는 가·나·다군부터 정리합니다","sub":"각 군에서 희망 학과를 찾은 뒤 전형 요소를 읽습니다.","kind":"matrix","rows":[["가군","희망 대학·학과가 이 군에서 모집하는지"],["나군","지원할 모집단위와 수능 응시영역 기준"],["다군","대학별 모집인원과 전형 일자"],["지원 전","일반대는 통상 같은 군에 중복 지원할 수 없습니다."]],"lo":44,"hi":46,"src":["rules","stats"],"proof":"대교협 기본사항의 복수지원 규정을 대조했습니다. 산업대·전문대, 특별법 대학 등에는 예외가 있습니다. 원본 45~46번의 군별 대학 인원은 자료집 값입니다."},{"g":4,"title":"정시에서도 학생부가 쓰일 수 있습니다","sub":"반영 비중이 같아도 실제 등급 간 점수 차이는 다를 수 있습니다.","kind":"pair","rows":[["점수로 반영","어느 과목을 어떻게 환산하는지, 출결이 포함되는지 봅니다."],["내용을 평가","이수한 과목, 학업 수행, 수업 속 기록을 평가 항목에 맞춰 봅니다."]],"lo":47,"hi":48,"src":["snu","dong"],"proof":"동국대의 정시 학생부 정성평가와 서울대의 교과역량평가를 대학 발표에서 확인했습니다. 원본 47번 대학별 수치는 별도 확인 전입니다."},{"g":4,"title":"서울대 정시 일반전형은 두 단계로 선발합니다","sub":"나군 · 인문대학 사례 · 2028 시행계획 기준","kind":"snu","rows":[],"lo":49,"hi":52,"src":["snu"],"proof":"서울대 시행계획 인쇄 15~17쪽. 인문대학 1단계 수능 100%로 3배수, 2단계 수능 60점과 교과역량평가 40점. 교과역량평가의 6개 등급 간 배점은 35~40점입니다. 의대·수의대, 미대·음대, 체육교육과 등은 별도 확인 대상입니다."},{"g":4,"title":"40점 배점에서 실제 등급 간 차이는 얼마일까요?","sub":"서울대 정시 일반전형 · 인문대학 2단계 교과역량평가","kind":"scores","rows":[],"lo":49,"hi":51,"src":["snu"],"proof":"서울대 시행계획 인쇄 17쪽에서 A+ 40, A 39, B+ 38, B 37, C+ 36, C 35점을 확인했습니다. 두 평가자가 독립 평가한 점수의 평균을 사용합니다. 배점 40점과 등급 간 최대 차이 5점을 구분합니다. 영상 약 50분에서는 수능 점수 차이를 환산한 뒤 교과역량평가 한 등급의 점수 차이와 비교합니다. 강연의 가정과 공식 배점표를 구분했습니다."},{"g":4,"title":"같은 수능 성적도 모집단위에 따라 달리 반영됩니다","sub":"서울대 정시 일반전형 2단계 · 영역 간 상대 반영비율","kind":"weight","rows":[],"lo":53,"hi":55,"src":["snu"],"proof":"서울대 시행계획 인쇄 16쪽. 국어 100, 수학 120은 두 예에서 동일합니다. 탐구는 인문대 사회 50·과학 30, 공과대 사회 30·과학 50입니다. 영어·한국사는 별도 감점 기준을 적용합니다."},{"g":5,"title":"이름이 비슷한 세 전형의 차이","sub":"지원자격을 확인할 때는 전형의 정확한 이름부터 찾습니다.","kind":"rows","rows":[["지역균형","고교 추천 등","대학별 추천 요건과 선발 방법을 봅니다."],["지역인재","지역에서 학교를 다닌 이력","모집단위와 대상 지역에 따라 필요한 이수·거주 조건을 확인합니다."],["지역의사","의대 지역 선발과 복무","대상 학교·거주 구역과 졸업 후 의무복무 조건을 함께 확인합니다."]],"lo":56,"hi":57,"src":["health","law","stats"],"proof":"대교협의 특별전형 구분과 복지부의 지역의사제 안내를 대조했습니다. 지역균형과 지역인재의 지원자격을 이름만으로 확정할 수 없습니다."},{"g":5,"title":"지역의사 지원자격은 학교와 주소를 함께 봅니다","sub":"학교별 선발 권역 → 이수·거주 이력 → 해당 대학 제출 서류","kind":"path","rows":[["진료권·광역권","대학이 어느 지역의 지원자를 뽑는지 공고에서 찾습니다."],["학교·거주 이력","전학이나 학교 배정이 있었다면 학년별 학교와 주소를 맞춰봅니다."],["적용 학년도","법령의 경과규정과 대학의 2028학년도 지원자격을 확인합니다."]],"lo":58,"hi":71,"src":["health","law","update"],"proof":"7월 자료집 발행 후, 둘 이상의 진료권에 걸친 지정 학교군 규정이 추가됐습니다. 복지부 8월 27일 설명 및 9월 10일 시행 고시 제4조의2·별표 2를 연결했습니다. 모든 학교군에 적용되는 예외가 아닙니다."},{"g":5,"title":"경기·인천 사례에서 우리 지역의 표로","sub":"강연에서는 경기·인천 표를 펼쳐 설명합니다. 다른 권역의 표는 상세자료에서 확인할 수 있습니다.","kind":"rows","rows":[["모집 대상","관심 의과대학 선택","진료권인지 광역권인지, 학교가 어느 권역에 속하는지 봅니다."],["전형 조건","일반·지역인재와 비교","각 전형의 자격과 중복지원 가능 여부를 대학 요강에서 확인합니다."],["입학 이후","복무 조건 검토","졸업 후 지역 의무복무까지 가족과 함께 검토합니다."]],"lo":72,"hi":74,"src":["health","law"],"proof":"보건복지부 안내에서 지역의사 10년 의무복무를 확인했습니다. 권역별 학교·인원·지원자격 세부값은 7월 자료집 기준이며 개별 지원자격 판정에는 최신 요강과 고시를 사용합니다. 영상 55분 25초 무렵의 농어촌전형 영향은 강연자의 전망이며 모집 결과로 확인된 수치가 아닙니다."},{"g":5,"title":"7월 자료집 이후 달라진 거주요건","sub":"둘 이상의 진료권에 걸쳐 학생을 배정하는 지정 학교군의 사례","kind":"revision","rows":[],"lo":58,"hi":61,"src":["update","law"],"proof":"8월 27일 자료는 입법예고였고 9월 10일 시행 고시가 제4조의2와 별표 2를 규정합니다. 적용 학교군은 고시의 별표를 대조합니다. 그 밖의 지원요건은 그대로 별도 확인해야 합니다."},{"g":6,"title":"2028 대입을 준비하는 세 가지 습관","sub":"강연 마무리 · 학부모가 자녀와 나눌 수 있는 질문으로 바꿨습니다.","kind":"path","rows":[["수업","이번 학기에 스스로 설명할 수 있게 된 것은 무엇인가요?"],["전형","관심 있는 학과에서 실제로 보는 자료는 무엇인가요?"],["일정","그 자료를 준비하려면 다음 학기에 무엇을 해야 할까요?"]],"lo":75,"hi":78,"src":[],"proof":"강연자가 제안한 학업·평가·전형 준비의 방향을 정리한 대화 예시입니다. 구체적인 지원 판단은 대학의 학년도별 공고를 확인합니다. 영상 56분 55초 무렵에는 석차등급 부담 때문에 진로 관련 과목을 피할 때 생길 수 있는 문제를 설명합니다."},{"g":7,"title":"우리 아이의 대입 준비 시간표","sub":"고교 생활부터 등록까지 · 2028학년도 4년제 일반대 · 9월은 2027년, 1월은 2028년입니다.","kind":"timeline","rows":[],"lo":3,"hi":4,"src":["stats","rules","exam"],"proof":"2027년 수시 원서접수는 9월 20~23일 중 대학별 3일 이상입니다. 수능 11월 18일, 최초 수시 등록 12월 22~24일, 정시 원서접수 2028년 1월 3~6일 중 3일 이상, 정시 최초 등록 2월 11~14일입니다. 대교협 7월 개정 기본사항에서 날짜와 최초·충원합격 규정을 다시 확인했습니다."},{"g":7,"title":"수능은 수시와 정시에 어떻게 연결될까요?","sub":"같은 시간표에서 11월 수능의 역할을 두 갈래로 따라갑니다.","kind":"bridge","rows":[],"lo":18,"hi":20,"src":["stats","rules","exam"],"proof":"수능일은 교육부 발표, 대학별 평가 기간과 모집시기는 대교협 기준입니다. 수시 대학별 고사는 대학에 따라 수능 전후로 나뉩니다. 모든 수시 전형에 수능최저가 있는 것은 아닙니다."},{"g":7,"title":"대학은 어떤 자료로 학생을 선발할까요?","sub":"네 전형을 같은 기준으로 비교합니다. 실기·실적 중심 전형 등은 별도로 운영됩니다.","kind":"types","rows":[],"lo":13,"hi":15,"src":["stats","rules","dong","snu"],"proof":"전형유형은 주된 평가 요소에 따른 분류입니다. 면접·서류·수능최저 등의 추가 요소는 대학과 모집단위에 따라 다릅니다."},{"g":7,"title":"수시 결과를 받은 뒤의 갈림길","sub":"4년제 일반대의 통상적인 지원 흐름 · 최초합격과 충원합격 모두 확인","kind":"fork","rows":[],"lo":3,"hi":4,"src":["rules","stats"],"proof":"수시 최초·충원 합격자는 등록 의사와 관계없이 정시와 추가모집 지원이 제한됩니다. 예비순위만 받은 상태와 최종 충원합격은 구분합니다. 특별법 대학 등 예외는 기본사항에서 확인합니다."},{"g":7,"title":"서울대 인문대학을 생각하는 학생이라면","sub":"실제 시행계획을 열어 지원 조건과 준비 시점을 연결해 봅니다.","kind":"case","rows":[],"lo":49,"hi":53,"src":["snu","stats","exam"],"proof":"서울대 2028 시행계획 PDF의 인쇄 15~17쪽, 33~34쪽을 사용했습니다. 평소 교과 이수와 학업 → 2027년 11월 수능 → 2028년 1월 정시 나군 전형으로 연결됩니다. 서울대는 교과역량평가에서 과목 이수 내용, 교과 성취도, 학업 수행 내용, 공동체 역량을 평가합니다."},{"g":7,"title":"지원 대학 하나를 달력에 옮겨 적어 보세요","sub":"입학처에서 2028학년도와 캠퍼스, 모집단위를 먼저 맞춥니다.","kind":"rows","rows":[["모집단위","무엇을 어디에서 보나","전형명, 수시·정시, 정시라면 모집군을 적습니다."],["평가 방법","무엇을 준비하나","전형 요소와 배점, 수능최저, 면접 여부 옆에 원문 쪽수를 적습니다."],["지원 달력","언제 확인할까","접수·대학별 고사·합격 발표·등록 날짜를 대학 요강과 맞춥니다."]],"lo":75,"hi":76,"src":["rules","snu"],"proof":"서울대 사례와 대교협 모집 일정을 활용한 가정용 정리 방법입니다. 대학별 확정 일정은 해당 모집요강 기준입니다."},{"g":7,"title":"다음 대화는 우리 아이의 한 학기에서 시작하세요","sub":"공부할 과목 하나와 확인할 대학 한 곳을 정하면 두 지도가 연결됩니다.","kind":"end","rows":[],"lo":76,"hi":78,"src":["rules","stats"],"proof":"시간표와 전형 비교는 같은 파일에서 오프라인으로 다시 볼 수 있습니다. 공식 출처 링크를 열 때만 인터넷 연결이 필요합니다."}],"refs":{"stats":["한국대학교육협의회","2028학년도 대학입학전형시행계획 주요사항","2026.04.29. 집계 · 1~3쪽, 전형별 부록","https://kcue.or.kr/_upload/news/2026/04/30/application_ea0382f8ef4d92cda46a7e015aec3fef.pdf"],"rules":["한국대학교육협의회","2028학년도 대학입학전형 기본사항","2026년 7월 개정본 · 모집 일정·복수지원·등록 규정","https://www.kcue.or.kr/_upload/news/2026/10/20/application_ab1942705812e69b5fd5bd8277987ab3.pdf"],"reform":["교육부","2028 대학입시제도 개편 확정안","2023.12.27. · 통합형 수능 및 내신 5등급","https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=294&boardSeq=97551&lev=0&m=0204"],"record":["교육부 학교생활기록부 종합지원포털","2028 대입전형자료 제공 항목","교과학습발달상황 및 과목별 평가 정보","https://star.moe.go.kr/web/contents/m30103.do?id=77149&schM=view"],"exam":["교육부","2028학년도 수능 시행일","시험일 2027.11.18.","https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=294&boardSeq=103512&lev=0&m=020402&s=moe"],"snu":["서울대학교 입학본부","2028학년도 대학 신입학생 입학전형 시행계획","2026.04.30. · 인쇄 15~18쪽, 33~34쪽","https://admission.snu.ac.kr/undergraduate/notice?bbsidx=168854&md=v"],"dong":["동국대학교","2028학년도 대입전형 개편안","2026.04.27. · 학교장추천인재·Do Dream","https://www.dongguk.edu/article/news/detail/26764509"],"health":["보건복지부","지역필수공공의료 인력 양성 계획","2026.02.10. · 지역의사 선발 구조와 복무","https://mohw.go.kr/gallery.es?act=view&bid=0003&list_no=379870&mid=a10606030000&tag="],"law":["국가법령정보센터","지역의사선발전형 선발 등에 관한 고시","2026.09.10. 시행 · 제4조의2 및 별표 2","https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=2100000284702"],"update":["보건복지부","둘 이상 진료권에 걸친 학교군의 거주요건 보완","2026.08.27. · 개정 취지와 적용 대상","https://www.mohw.go.kr/board.es?act=view&bid=0027&list_no=1491693&mid=a10503010100"],"support":["교육부","고교교육 기여대학 지원사업 선정 결과","2025.05.29. · 2025~2026년 사업","https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=294&boardSeq=103458&lev=0&m=0204"]},"titles":["2028 대입전형 주요사항","강연 목차","2028 인원 분석","수시·정시 비율","2028 전형별 비율","고교교육 기여대학 지원사업 선정 결과","지역별 전형별 선발 비율","변화가 큰 대학들","5등급제 실시에 따른 변화","상대평가 9등급에서 5등급으로","개편된 내신 평가방법이 고등학교에 미칠 영향","교과학습발달상황 용어","학생부교과 변경사항","학생부교과 전형 비교 ①","학생부교과 전형 비교 ②","학생부교과 전형의 서류평가","등급과 실제 지원자 분포","교과 수능최저 ①","교과 수능최저 ②","교과 수능최저 · 의약계열","5등급과 9등급 비교","학생부교과 대비 방안","학생부종합 변경사항","학생부종합 비교 ①","학생부종합 비교 ②","학생부종합 비교 ③","학생부종합 비교 ④","종합 수능최저","학교 유형과 학생부종합 지원","종합 수능최저 · 의약계열","학생부종합 대비 방안","교과성적 산출 방식","대학별 교과성적 반영 네 유형","원점수 관리","동국대 성취도·교과등급 영역","대학별 교과성적 반영 대비","논서술형 평가 역량 변화","논술 변경사항","논술 대학별 전형","논술 수능최저","논술 대비 방안","통합형 수능에 따른 변화","개편된 수능과 고교 생활","수능위주 변경사항","수능 군별 일반전형 인원 ①","수능 군별 일반전형 인원 ②","교과성적을 반영하는 정시","정시 서류평가 반영","서울대 교과역량평가","서울대 교과역량평가의 영향","서울대 교과역량평가 항목","정시 서류평가 항목","계열별 수능 반영 ①","계열별 수능 반영 ②","정시 수능위주 대비 방안","지역의사제","지역균형·지역인재·지역의사 비교","진료권 선발과 광역권 선발","지역의사 · 대전·충남","지역의사 · 충북","지역의사 · 대전·충남·충북 비교","지역의사 · 전남광주","지역의사 · 전북","지역의사 · 전남광주·전북 비교","지역의사 · 대구·경북 ①","지역의사 · 대구·경북 ②","지역의사 · 부산·울산·경남 ①","지역의사 · 부산·울산·경남 ②","지역의사 · 강원 ①","지역의사 · 강원 ②","지역의사 · 제주","지역의사 · 경기·인천 ①","지역의사 · 경기·인천 ②","지역의사제의 영향","마무리","2028 대입 대비 방안","학부모에게 전하는 말","감사의 말"],"images":["slides/01.webp","slides/02.webp","slides/03.webp","slides/04.webp","slides/05.webp","slides/06.webp","slides/07.webp","slides/08.webp","slides/09.webp","slides/10.webp","slides/11.webp","slides/12.webp","slides/13.webp","slides/14.webp","slides/15.webp","slides/16.webp","slides/17.webp","slides/18.webp","slides/19.webp","slides/20.webp","slides/21.webp","slides/22.webp","slides/23.webp","slides/24.webp","slides/25.webp","slides/26.webp","slides/27.webp","slides/28.webp","slides/29.webp","slides/30.webp","slides/31.webp","slides/32.webp","slides/33.webp","slides/34.webp","slides/35.webp","slides/36.webp","slides/37.webp","slides/38.webp","slides/39.webp","slides/40.webp","slides/41.webp","slides/42.webp","slides/43.webp","slides/44.webp","slides/45.webp","slides/46.webp","slides/47.webp","slides/48.webp","slides/49.webp","slides/50.webp","slides/51.webp","slides/52.webp","slides/53.webp","slides/54.webp","slides/55.webp","slides/56.webp","slides/57.webp","slides/58.webp","slides/59.webp","slides/60.webp","slides/61.webp","slides/62.webp","slides/63.webp","slides/64.webp","slides/65.webp","slides/66.webp","slides/67.webp","slides/68.webp","slides/69.webp","slides/70.webp","slides/71.webp","slides/72.webp","slides/73.webp","slides/74.webp","slides/75.webp","slides/76.webp","slides/77.webp","slides/78.webp"],"matches":{"2":[16,36,0.998],"3":[37,55,0.973],"4":[56,105,0.996],"5":[106,129,0.921],"6":[130,313,0.989],"7":[314,425,0.974],"8":[426,453,0.994],"9":[454,508,0.971],"10":[511,605,0.992],"11":[606,683,0.968],"12":[684,725,0.985],"13":[726,754,0.98],"14":[755,839,0.981],"15":[840,871,0.97],"16":[872,888,0.957],"17":[889,1022,0.937],"18":[1023,1101,0.98],"19":[1102,1108,0.965],"20":[1109,1137,0.959],"21":[1138,1197,0.946],"22":[1198,1344,0.979],"23":[1345,1362,0.951],"24":[1363,1432,0.982],"25":[1433,1457,0.949],"26":[1458,1500,0.98],"27":[1501,1522,0.966],"28":[1549,1665,0.985],"29":[1667,1728,0.957],"30":[1729,1738,0.84],"31":[1739,1921,0.958],"32":[1922,1956,0.988],"33":[1957,2081,0.95],"34":[2105,2144,0.986],"35":[2167,2231,0.966],"36":[2232,2311,0.985],"37":[2312,2319,0.973],"38":[2320,2341,0.985],"39":[2342,2429,0.959],"40":[2430,2450,0.974],"41":[2451,2515,0.971],"42":[2516,2517,0.989],"43":[2518,2686,0.99],"44":[2687,2712,0.986],"45":[2713,2763,0.933],"46":[2764,2773,0.969],"47":[2803,2887,0.981],"48":[2895,2944,0.991],"49":[2945,2966,0.946],"50":[2968,3058,0.991],"51":[3059,3078,0.972],"52":[3079,3093,0.978],"53":[3094,3142,0.946],"54":[3143,3178,0.982],"55":[3179,3267,0.966],"56":[3268,3273,0.99],"57":[3274,3283,0.99],"58":[3284,3285,0.993],"72":[3286,3305,0.984],"73":[3306,3317,0.977],"74":[3318,3370,0.986],"75":[3371,3387,0.966],"76":[3388,3531,0.985],"77":[3532,3549,0.992]}}</script><script>'use strict';
+const {slides, refs, titles, images, matches} = JSON.parse(document.getElementById('deckdata').textContent);
+const by=id=>document.getElementById(id);
+const chapters=['학부모 설명회','모집인원과 전형 비율','내신 5등급제','논서술형 평가','통합형 수능','지역의사제','강연 마무리','학부모를 위한 대입 지도'];
+const video='https://www.youtube.com/watch?v=ZMjOk8nCt9Y';
+const steps={region:3,timeline:3,bridge:2,types:3,case:3};
+let index=0,step=0,original=1,dialogMode='',priorFocus=null;
+const esc=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+const tm=t=>Math.floor(t/60)+':'+String(t%60).padStart(2,'0');
+const note=t=>'<div class="note">'+t+'</div>';
+const call=t=>'<div class="callout">'+t+'</div>';
+const cap=t=>'<div class="kicker">'+t+'</div>';
+const big=(t,small=false)=>'<b class="large green '+(small?'smalllarge':'')+'">'+t+'</b>';
+const jump=(n,t,alt=false)=>'<button class="jumplink '+(alt?'alt':'')+'" data-jump="'+n+'">'+t+'</button>';
+const table=(cols,rows)=>'<table class="datat"><thead><tr>'+cols.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+row.map(x=>'<td class="'+(String(x).startsWith('!')?'emph':'')+'">'+String(x).replace(/^!/,'')+'</td>').join('')+'</tr>').join('')+'</tbody></table>';
+const group=(rows,cls='route col3')=>'<div class="grid '+cls+'">'+rows.map(r=>'<div class="entry">'+(cls.includes('route')?'<div class="path-line"></div>':'')+'<h3>'+r[0]+'</h3><p>'+r[1]+'</p></div>').join('')+'</div>';
+const lines=rows=>rows.map(r=>'<div class="rowline"><b>'+r[0]+'</b><strong>'+r[1]+'</strong><span>'+r[2]+'</span></div>').join('');
+const fade=(on)=>on?'reveal':'reveal dim';
+function regions(){
+ const areas=[['전국',348789,158501,84806,12727,61779],['수도권',135420,27954,40846,11443,42314],['비수도권',213369,130547,43960,1284,19465]];
+ if(step===2)return '<div class="evidenceCompare"><div class="sourcepic"><img src="'+images[6]+'" alt="원본 지역별 선발 표. 강조한 행은 전국, 수도권, 비수도권"><i></i></div><div>'+cap('원본 7번 · 강조한 세 지역')+'<h3>원표로 돌아가 분모를 확인합니다.</h3><p>원본 전국 교과 45.5%<br>공식 인원 합산 158,501 ÷ 348,789 ≈ <b>45.4%</b></p><p>모집단·집계 기준이 확인되는 공식 수치로 앞의 막대를 그렸습니다.</p></div></div>';
+ return '<div class="bars3">'+['권역','학생부교과','학생부종합','논술','수능'].map(k=>'<b class="th">'+k+'</b>').join('')+areas.map((r,i)=>'<strong class="'+fade(!i||step)+'">'+r[0]+'</strong>'+r.slice(2).map(n=>{let pct=100*n/r[1];return '<div class="barcell '+fade(!i||step)+'">'+pct.toFixed(1)+'%<i><b style="width:'+pct+'%"></b></i></div>'}).join('')).join('')+'</div>'+note('같은 0~100% 축 · 수시와 정시를 합친 비율 · 실기·실적과 기타는 생략')+call(step?'수도권은 학생부종합이 교과보다 크고, 비수도권은 교과의 비중이 큽니다.':'전국에서는 학생부교과가 가장 큰 비중을 차지합니다. 다음 단계에서 권역을 펼칩니다.');
+}
+function timeline(isBridge){
+ const on=(phase)=>isBridge||step>=phase;
+ const event=(txt,at,len,style,visible)=>'<div class="event '+style+' '+fade(visible)+'" style="grid-column:'+at+' / span '+len+'">'+txt+'</div>';
+ return '<div class="axis"><b></b>'+['고1·고2~고3','2027년 9월','11월 18일','12월','2028년 1~2월'].map(x=>'<b class="month">'+x+'</b>').join('')+
+ '<div class="lane">학교생활</div>'+event('과목 선택·수업·기록',2,2,'',true)+'<span style="grid-column:4/7"></span>'+
+ '<div class="lane">수시</div><span></span>'+event('9.20~23 중<br>원서접수',3,1,'',on(1))+event(isBridge?'필요 시<br>최저 충족 확인':'대학별 평가<br>수능 전·후',4,1,isBridge&&step===0?'spot':'',on(1))+event('12.22~24<br>최초 등록',5,1,'',on(1))+'<span></span>'+
+ '<span></span><span></span>'+event('대학별 전형기간　9.24~12.20 · 대학별 고사일은 서로 다름',3,3,'span-period',on(1))+'<span></span>'+
+ '<div class="lane">수능</div><span style="grid-column:2/4"></span>'+event('11.18 수능',4,1,isBridge?'exam from-exam '+(step?'down':'up'):'exam',on(1))+'<span style="grid-column:5/7"></span>'+
+ '<div class="lane">정시</div><span style="grid-column:2/4"></span>'+event(isBridge?'수능 성적<br>대학별 환산':'수능 응시',4,1,isBridge&&step===1?'reg spot':'reg',on(2))+'<span></span>'+event('1.3~6 중 접수<br>2.11~14 최초 등록',6,1,'reg',on(2))+'</div>'+
+ '<div class="guideFoot">'+call(isBridge?(step?'정시는 대학이 정한 방식으로 수능 성적을 환산합니다. 학생부를 함께 반영하는 대학도 있습니다.':'일부 수시 전형은 수능 등급을 지원자가 넘어야 할 최소 조건으로 사용합니다.'):[ '고교 생활에서 고른 과목과 수업 활동이 학생부 기록으로 이어집니다.','수시 원서를 먼저 내고, 대학별 평가와 수능최저 적용 여부를 함께 확인합니다.','수시 최초·충원 미합격 등 정시 지원이 가능한 경우, 1월 접수와 2월 등록으로 이어집니다.'][step])+'</div>';
+}
+function visuals(s){
+ switch(s.kind){
+ case 'path':return group(s.rows);
+ case 'pair':return group(s.rows,'pair col2');
+ case 'rows':return '<div>'+lines(s.rows)+'</div>';
+ case 'matrix':return group(s.rows,'matrix');
+ case 'share':return '<div class="statpair"><div>'+big('80.8%')+' <span>수시</span></div><div>'+big('19.2%',true)+' <span>정시</span></div></div><div class="statbar"><i style="width:80.8%"></i><i style="width:19.2%"></i></div><div class="statpair"><span>281,895명</span><span>66,894명</span></div>'+note('전체 348,789명 · 전년도 대비 수시 +4,312명 / 정시 −1,240명');
+ case 'region':return regions();
+ case 'audit':return '<div class="grid col2"><div class="frameStat">자료집 7번 표의 전국 수시<b class="warning">77.7%</b>자료집 4번 합계는 80.8%입니다.</div><div class="frameStat">대교협 집계로 재계산<b class="green">80.8%</b>281,895명 ÷ 348,789명 × 100</div></div>'+call('발표에는 대교협 공식 인원을 사용합니다. 분모는 194개 대학의 정원 내외 전체 모집인원입니다.');
+ case 'grade':{const bar=(nums,old)=>'<div class="gradebar '+(old?'old':'')+'">'+nums.map((v,i)=>'<div style="width:'+v+'%">'+(old?v+'%':'<b>'+v+'%</b><small>'+(i+1)+'등급</small>')+'</div>').join('')+'</div>';return '<div class="figureline"><strong>9등급제</strong>'+bar([4,7,12,17,20,17,12,7,4],true)+'</div><div class="figureline"><strong>5등급제</strong>'+bar([10,24,32,24,10],false)+'</div>'+call('상위 두 구간의 누적 비율은 34%입니다. 과거 9등급제의 등급 숫자를 그대로 대입하기 어렵습니다.')+note('왼쪽부터 1등급 · 석차등급 미기재 과목 등은 별도');}
+ case 'example':return cap('표기 읽기 · 가상 사례')+'<div class="equation">국어 2등급 ＋ 수학 3등급 ＝ 합계 5</div>'+call('두 영역을 인정하는 “2개 영역 등급 합 5 이내”라면 이 조건을 충족합니다.')+note('반드시 볼 조건  ·  지정 영역  /  탐구 등급의 처리  /  한국사 등 별도 기준');
+ case 'zone':return table(['석차등급 ＼ 성취도','A','B','C'],[['1등급','!영역 1','!영역 1','영역 2'],['2등급','!영역 1','영역 2','영역 3'],['3등급','영역 2','영역 3','영역 4']])+note('원본 교차표 중 일부 · 행과 열이 만나는 칸으로 환산 · 전체 5×5 표는 상세표 35번')+call('1등급·B와 2등급·A가 같은 영역 1에 들어갑니다.');
+ case 'snu':return '<div class="grid col2"><div class="frameStat">1단계<b>수능 100%</b>지원자 가운데 3배수 선발</div><div class="frameStat">2단계<b class="green">수능 60점 ＋ 교과 40점</b>1단계 합격자의 최종 선발</div></div>'+note('서울대 정시 나군 일반전형 인문대학 기준 · 의대·수의대 등은 요소와 배점이 다름');
+ case 'scores':return '<div class="gradepts">'+['A+','A','B+','B','C+','C'].map((v,i)=>'<div>'+v+'<b>'+(40-i)+'</b></div>').join('')+'</div>'+call('양 끝 등급의 점수 차이는 5점입니다. 평가자 2명이 부여한 점수의 평균을 반영합니다.');
+ case 'weight':return table(['모집단위 예','국어','수학','사회탐구','과학탐구'],[['인문대학','100','120','!50','30'],['공과대학','100','120','30','!50']])+call('시험 과목은 같아도 인문대와 공대는 사회·과학을 서로 다른 비중으로 계산합니다.')+note('상대 가중치 · 합계 100% 표가 아닙니다. 영어·한국사는 별도 감점 기준 적용');
+ case 'revision':return group([['7월 · 설명회','학교 소재지와 거주지를 진료권 또는 광역권 기준으로 확인하도록 안내했습니다.'],['9월 10일 · 개정 고시','둘 이상 진료권에 걸쳐 배정하는 지정 학교군을 별표로 정했습니다. 해당 학교군은 거주요건 인정 범위를 다시 봅니다.']],'pair col2')+note('보건복지부 8월 27일 입법예고 → 9월 4일 고시 → 9월 10일 시행');
+ case 'timeline':return timeline(false);
+ case 'bridge':return timeline(true);
+ case 'types':{let rows=[['학생부교과','교과 성적','반영 과목·환산표','추천·서류·수능최저'],['학생부종합','학생부 기록','학업·진로 등 종합평가','면접·수능최저'],['논술위주','대학별 논술 답안','문항 유형·논술 반영 비중','교과·출결·수능최저'],['수능위주','수능 성적','영역별 가중치·감점','학생부·면접']];return table(['전형','주로 보는 자료','평가에서 읽을 칸','추가 확인 가능 항목'],rows.map(r=>r.map((v,i)=>i>step+1?'<span style="visibility:hidden">'+v+'</span>':v)))+note('대학과 모집단위에 따라 조합이 달라집니다. 화살표로 다음 열을 펼칩니다.');}
+ case 'fork':return group([['최초 또는 충원 합격','등록 의사와 관계없이 일반대 정시·추가모집 지원 제한이 적용됩니다. 등록 대학은 한 곳을 선택합니다.'],['최종 미합격','정시 지원자격을 확인하고 가·나·다군별 모집단위와 원서 일정을 정리합니다.']],'pair col2')+note('예비순위는 충원합격 발표까지 확인 · 특별법 대학 등 예외는 대입전형기본사항 참조');
+ case 'case':return '<div class="grid col3 route">'+[['고교 생활','인문대학의 수능 응시영역 기준과 교과역량평가 항목을 확인합니다.'],['11월 수능','1단계는 수능 100%로 3배수 선발. 국어·수학·탐구 등 필요한 영역을 치릅니다.'],['1월 정시 나군','2단계 수능 60점, 교과역량평가 40점. 2월에는 합격 발표와 등록일을 확인합니다.']].map((r,i)=>'<div class="entry '+fade(i<=step)+'"><div class="path-line"></div><h3>'+r[0]+'</h3><p>'+r[1]+'</p></div>').join('')+'</div>'+note('서울대학교 정시 일반전형 인문대학 사례 · 입학본부 시행계획 인쇄 15~17쪽');
+ case 'end':return '<div class="grid col2"><div class="entry"><small>시간으로 보기</small><h3>언제 무엇을 준비할까?</h3>'+jump(27,'준비 시간표로 →')+'</div><div class="entry"><small>전형으로 보기</small><h3>대학은 무엇을 볼까?</h3>'+jump(29,'전형 비교로 →',true)+'</div></div>'+note('발표 근거 · 한국대학교육협의회 2028 대입 정보 설명회 자료집 및 각 기관의 공식 발표');
+ }
+}
+
+function render(){
+ by("page").scrollTop=0;
+ const s=slides[index],p=by('page'),total=steps[s.kind]||1;
+ const tag=s.g===0?'학부모 설명회':s.g===7?'2부　/　대입 과정 한눈에 보기':'1부　/　'+chapters[s.g];
+ const mast='<div class="mast"><span class="part">'+tag+'</span><span class="folio">2028학년도 대학입시</span></div>';
+ p.dataset.kind=s.kind;p.setAttribute('aria-label',s.title);
+ if(s.kind==='cover'){
+  p.innerHTML=mast+'<div class="cover in"><div><div class="year">2028</div><h1>대입, 무엇이<br>달라질까요?</h1><p>학부모를 위한 전형 해설과 준비 시간표</p>'+jump(1,'1부　전형 변화 →')+jump(27,'2부　대입 지도 →',true)+'</div><aside><h3>지원까지 가는 길</h3><div class="routekey"><i></i><b>학교생활과 과목 선택</b><i></i><b>전형별 평가 자료</b><i></i><b>수시·수능·정시</b><i></i><b>합격과 등록</b></div></aside></div>';
+ }else{
+  p.innerHTML=mast+'<header class="head"><h2>'+esc(s.title)+'</h2><p>'+esc(s.sub)+'</p></header><div class="visual '+(step===0?'in':'')+'">'+visuals(s)+'</div>';
+ }
+ p.querySelector('.visual')?.classList.toggle('timelineview',['timeline','bridge'].includes(s.kind));
+ by('counter').textContent=(index+1)+' / '+slides.length;
+ by('phase').textContent=total>1?'설명 '+(step+1)+' / '+total:'';
+ by('back').disabled=index===0&&step===0;by('next').disabled=index===slides.length-1&&step===total-1;
+ by('next').textContent=step<total-1?'이어서 →':'다음 →';
+ by('detail').textContent=s.g===7?'관련 원본':'상세표 보기';
+ document.title=(index? s.title:'2028 대입 학부모 설명회')+' · '+(index+1)+'/'+slides.length;
+}
+function setState(n,k=0){
+ const phaseSelector='.visual .reveal,.visual table tbody td,.visual .guideFoot';
+ const oldKind=slides[index].kind,oldIndex=index;
+ const before=[...by('page').querySelectorAll(phaseSelector)].map(el=>({opacity:Number(getComputedStyle(el).opacity),text:el.innerText,visible:el.firstElementChild?.style.visibility!=='hidden'}));
+ index=Math.max(0,Math.min(slides.length-1,n));step=Math.max(0,Math.min((steps[slides[index].kind]||1)-1,k));
+ const hash='#'+(index+1)+'-'+(step+1);
+ if(location.hash!==hash)history.replaceState(null,'',hash);
+ render();
+ if(!matchMedia('(prefers-reduced-motion: reduce)').matches && (index===oldIndex || [oldKind,slides[index].kind].every(k=>['timeline','bridge'].includes(k)))){
+  [...by('page').querySelectorAll(phaseSelector)].forEach((el,i)=>{
+   const was=before[i],now=Number(getComputedStyle(el).opacity);
+   if(!was)return;
+   const changed=was.text!==el.innerText||was.visible!==(el.firstElementChild?.style.visibility!=='hidden');
+   if(was.opacity!==now||changed)el.animate([{opacity:changed?0.25:was.opacity,transform:changed?'translateY(7px)':'none'},{opacity:now,transform:'none'}],{duration:350,easing:'ease-out'});
+  });
+ }
+}
+function fromHash(){const m=/^#(\d+)(?:-(\d+))?$/.exec(location.hash);setState(m?Number(m[1])-1:0,m&&m[2]?Number(m[2])-1:0)}
+function move(dir){
+ if(dir>0 && step+1<(steps[slides[index].kind]||1))setState(index,step+1);
+ else if(dir<0 && step>0)setState(index,step-1);
+ else if(index+dir>=0 &&index+dir<slides.length)setState(index+dir,dir<0?(steps[slides[index-1].kind]||1)-1:0);
+}
+function fit(){const z=Math.min(innerWidth/1920,innerHeight/1080);by('stage').style.transform='translate('+((innerWidth-1920*z)/2)+'px,'+((innerHeight-1080*z)/2)+'px) scale('+z+')'}
+function show(mode,title,content){
+ const m=by('modal');dialogMode=mode;
+ if(!m.open){priorFocus=document.activeElement;m.showModal()}
+ by('dialogtitle').textContent=title;by('inner').innerHTML=content;m.scrollTop=0;
+}
+function clipLink(n){
+ const s=matches[n];if(!s)return '<span class="tiny">자료집 수록 · 1초 간격 영상 대조에서 같은 화면을 식별하지 못함</span>';
+ return '<a href="'+video+'&amp;t='+s[0]+'s" target="_blank" rel="noopener">영상 '+tm(s[0])+'–'+tm(s[1])+' ↗</a> <span class="tiny">같은 화면이 확인된 대표 구간</span>';
+}
+function linkrow(key){const r=refs[key];return '<div class="refrow"><strong>'+esc(r[0])+'</strong> · <a href="'+esc(r[3])+'" target="_blank" rel="noopener">'+esc(r[1])+' ↗</a><small>'+esc(r[2])+'</small></div>'}
+function details(n){
+ original=n;const s=slides[index],page=27+Math.floor((n-1)/2),pick=Array.from({length:78},(_,i)=>'<option value="'+(i+1)+'" '+(i+1===n?'selected':'')+'>'+(i+1)+'. '+esc(titles[i])+'</option>').join('');
+ const marks={4:'대조 결과 · 비수도권 수시 인원은 대교협 191,512명. 원본에는 191,152명으로 표기돼 있습니다.',7:'대조 결과 · 전국 수시는 대교협 기준 80.8%. 원본의 77.7%와 다릅니다. 권역별 전형 수치는 본편에서 동일 분모로 재계산했습니다.',35:'대조 결과 · 동국대 발표에서 석차등급과 성취도의 교차표 사용을 확인했습니다.',49:'대조 결과 · 서울대 정시 일반전형의 해당 모집단위에서 35~40점 배점을 확인했습니다.',58:'후속 변경 · 2026.09.10. 시행 고시에 둘 이상의 진료권에 걸친 지정 학교군 규정이 추가됐습니다.'};
+ show('detail','원본 상세자료', '<div class="tools"><button id="oprev" '+(n===1?'disabled':'')+'>← 이전 원본</button><select aria-label="원본 슬라이드 선택" id="origselect">'+pick+'</select><button id="onext" '+(n===78?'disabled':'')+'>다음 원본 →</button><button id="zoom" aria-pressed="false">확대</button></div><p class="stamps"><strong>PDF '+page+'쪽 '+(n%2?'위':'아래')+'</strong> · 책자 '+(page-4)+'쪽　'+clipLink(n)+'</p><div class="orig" id="origbox"><img alt="'+esc(titles[n-1])+' · 원본 '+n+'번" src="'+images[n-1]+'"></div><p class="verify">'+esc(marks[n]||'2026년 7월 자료집 원문입니다. 공식 문서와 대조한 범위는 이 발표의 근거 보기에서 확인할 수 있습니다. 상세표 각 셀의 개별 검증은 별도 표시된 항목에 한합니다.')+'</p><div class="tools"><button id="detailproof">근거 보기</button><button data-indexlist>78장 대조표</button></div>');
+ by('oprev').onclick=()=>details(n-1);by('onext').onclick=()=>details(n+1);by('origselect').onchange=e=>details(Number(e.target.value));
+ by('zoom').onclick=e=>{const zoom=by('origbox').classList.toggle('zoom');e.target.textContent=zoom?'화면에 맞춤':'확대';e.target.setAttribute('aria-pressed',String(zoom))};
+ by('detailproof').onclick=()=>proof(n);
+}
+function related(n){return slides.map((s,i)=>[s,i]).filter(([s])=>s.g<7&&n>=s.lo&&n<=s.hi)}
+function proof(n){
+ const fromDetail=Number.isInteger(n),s=fromDetail?(related(n).find(([s])=>s.src.length)?.[0]||related(n)[0][0]):slides[index];
+ const first=fromDetail?n:s.lo,last=fromDetail?n:s.hi;
+ const links=Array.from({length:last-first+1},(_,i)=>{const x=first+i;return '<div class="refrow"><button data-orig="'+x+'">원본 '+x+' · '+esc(titles[x-1])+'</button>　'+clipLink(x)+'</div>'}).join('');
+ show('proof','발표 근거',cap('대조일 2026.11.19')+'<h3>'+esc(s.title.replace('\n',' '))+'</h3><p class="verify">'+esc(s.proof)+'</p>'+s.src.map(linkrow).join('')+'<h3>강연과 원본</h3><p>한국대학교육협의회 대입상담센터, 2028 대입 정보 설명회 자료집 제2부(2026년 7월). PDF '+(27+Math.floor((first-1)/2))+'~'+(27+Math.floor((last-1)/2))+'쪽. 표와 대학별 수치는 해당 자료의 기준 시점에 따릅니다.</p>'+links+'<button data-indexlist>전체 원본 대조표 보기</button>');
+}
+function indexList(){
+ const rows=titles.map((t,k)=>{const n=k+1;const items=related(n);return '<div class="refrow"><button data-orig="'+n+'">'+n+'. '+esc(t)+'</button> · PDF '+(27+Math.floor(k/2))+'쪽　'+clipLink(n)+'<small>연결 화면　'+items.map(([s,i])=>'<button data-jump="'+i+'">'+esc(s.title.replace('\n',' '))+'</button>').join(' ')+'</small></div>'}).join('');
+ show('index','원본 78장 대조표','<p>영상 오른쪽 슬라이드와 PDF를 1초 간격으로 대조했습니다. 시각은 같은 화면을 식별한 구간입니다. 발표에서 생략된 권역도 자료집 순서대로 열 수 있습니다.</p>'+rows);
+}
+function menu(){
+ show('menu','발표 목차','<div class="tools">'+jump(1,'1부 전형 변화')+jump(27,'2부 대입 지도')+'<button data-indexlist>원본 78장 대조표</button></div><div class="topicIndex"><button data-jump="2">지역별 비율 도표</button><button data-jump="27">준비 시간표</button><button data-jump="29">전형 비교표</button></div>'+chapters.slice(1).map((c,j)=>'<h3>'+esc(c)+'</h3><div class="jumpall">'+slides.map((s,i)=>s.g===j+1?'<button data-jump="'+i+'" class="indexitem">'+(i+1)+'　'+esc(s.title)+'</button>':'').join('')+'</div>').join(''));
+}
+by('close').onclick=()=>by('modal').close();by('modal').onclose=()=>{dialogMode='';if(priorFocus?.isConnected)priorFocus.focus()};
+document.onclick=e=>{const target=e.target.closest('button');if(!target)return;
+ if(target.hasAttribute('data-jump')){if(by('modal').open)by('modal').close();setState(Number(target.dataset.jump))}
+ if(target.hasAttribute('data-orig'))details(Number(target.dataset.orig));
+ if(target.hasAttribute('data-indexlist'))indexList();
+};
+by('menu').onclick=menu;by('source').onclick=()=>proof();by('detail').onclick=()=>details(slides[index].kind==='region'?7:slides[index].lo);
+by('next').onclick=()=>move(1);by('back').onclick=()=>move(-1);
+async function full(){try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen()}catch{show('help','전체화면','<p>브라우저의 전체화면 메뉴 또는 F11을 사용하세요.</p>')}}
+by('full').onclick=full;document.onfullscreenchange=()=>{by('full').textContent=document.fullscreenElement?'전체화면 종료':'전체화면';fit()};
+document.addEventListener('keydown',e=>{
+ if(e.ctrlKey||e.metaKey||e.altKey)return;
+ if(by('modal').open){if(dialogMode==='detail' && e.target.tagName!=='SELECT'){if(e.key==='ArrowRight'&&original<78){e.preventDefault();details(original+1)}if(e.key==='ArrowLeft'&&original>1){e.preventDefault();details(original-1)}}return}
+ if(e.key===' ' && e.target.tagName==='BUTTON'&&!['next','back'].includes(e.target.id))return;
+ if(['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)){e.preventDefault();move(1)}
+ else if(['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(e.key)){e.preventDefault();move(-1)}
+ else if(e.key==='Home'){e.preventDefault();setState(0)}else if(e.key==='End'){e.preventDefault();setState(slides.length-1)}else if(e.key.toLowerCase()==='f')full();else if(e.key.toLowerCase()==='m')menu();
+});
+let touch=null;by('page').addEventListener('touchstart',e=>{touch=[e.touches[0].clientX,e.touches[0].clientY]}, {passive:true});
+by('page').addEventListener('touchend',e=>{if(!touch)return;const dx=e.changedTouches[0].clientX-touch[0],dy=e.changedTouches[0].clientY-touch[1];touch=null;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.5)move(dx<0?1:-1)},{passive:true});
+window.addEventListener('hashchange',fromHash);window.addEventListener('resize',fit);fit();fromHash();
+
+</script></body></html>
