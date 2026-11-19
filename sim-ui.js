@@ -52,7 +52,7 @@ const eventCopy={
 function paper(title,period,contents,{open=false,high=false}={}){
     const seal='<span class="paperSeal" aria-hidden="true">학업<br>기록</span>';
     return '<details class="folio'+(high?' distinction':'')+'" '+(open?'open':'')+'><summary>'+
-      '<span class="paperMast"><span>판동샘수학학원</span><span>입시 시뮬레이션</span></span>'+
+      '<span class="paperMast"><span>28학년도 입시 시뮬레이터</span><span>모의 성적표</span></span>'+
       '<span class="paperTitle">'+title+'</span><span class="paperPeriod">'+period+'</span>'+seal+
       '<span class="paperAction"><span class="unfoldHint">성적표 펼치기　⌄</span><span class="foldHint">성적표 접기　⌃</span></span></summary>'+
       '<div class="paperLeaf"><div class="paperInk">'+contents+'</div></div></details>';
