@@ -222,3 +222,69 @@ main.zoom{display:block}.zoom .slide{width:max(1120px,110vw);margin:0 auto}.zoom
  main:not(.zoom) .slide[data-n="1"],main:not(.zoom) .family-guide{width:100%;height:auto;min-height:0;aspect-ratio:16/9;overflow:hidden}
  .zoom .slide[data-n="1"],.zoom .family-guide{aspect-ratio:16/9;min-height:0}
 }
+
+/* Part 1 reading cues. The base rules are also the reduced-motion and print state. */
+body[data-former-map-count] .slide,
+body[data-former-map-count] .family-panel:not([hidden]) { animation: none; }
+[data-cue] {
+  --cue-delay: 100ms;
+  --cue-ease: cubic-bezier(.22,.68,.22,1);
+}
+[data-cue="line"] {
+  --cue-length: 100%;
+  background-image: linear-gradient(currentColor,currentColor);
+  background-repeat: no-repeat;
+  background-position: left bottom;
+  background-size: var(--cue-length) max(1.5px,.09em);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.cover-sub [data-cue="line"] { --cue-length: min(5em,100%); }
+[data-cue]:not([data-cue="line"]) { position: relative; }
+[data-cue]:not([data-cue="line"])::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+[data-cue="sweep"]::after, [data-cue="finish"]::after, [data-cue="down"]::after {
+  background: rgba(41,131,111,.13);
+  box-shadow: inset 0 -2px #367c6a;
+}
+[data-cue="down"]::after { box-shadow: inset 2px 0 #367c6a; }
+[data-cue="ring"]::after, [data-cue="finish"]::after {
+  box-shadow: inset 0 0 0 2px #236a5c, inset 0 0 0 3px #ffffffe0;
+}
+.slide[data-n="35"] .zones [data-zone="1"] { background-color: #dce9ac; }
+@keyframes cue-underline {
+  from { background-size: 0 max(1.5px,.09em); }
+  to { background-size: var(--cue-length) max(1.5px,.09em); }
+}
+@keyframes cue-right { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
+@keyframes cue-down { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0); } }
+@keyframes cue-outline { from { opacity: 0; } to { opacity: 1; } }
+@keyframes cue-zone-fill { from { background-color: #eef1d0; } to { background-color: #dce9ac; } }
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  .cue-active [data-cue="line"] {
+    animation: cue-underline 350ms var(--cue-ease) var(--cue-delay) both;
+  }
+  .cue-active [data-cue]:not([data-cue="line"])::after {
+    animation: var(--cue-reveal, cue-right) 320ms var(--cue-ease) var(--cue-delay) both;
+  }
+  .cue-active [data-cue="down"]::after { --cue-reveal: cue-down; }
+  .cue-active [data-cue="ring"]::after { --cue-reveal: cue-outline; }
+
+  /* Each segment runs inside its own matrix cell and follows it when zoomed. */
+  .slide[data-n="35"].cue-active .zones .zone-col::before { animation: cue-down 125ms linear 100ms both; }
+  .slide[data-n="35"].cue-active .zones tbody tr:first-child .zone-col::before { animation-delay: 225ms; }
+  .slide[data-n="35"].cue-active .zones tbody tr:nth-child(2) .zone-col::before { animation-delay: 350ms; }
+  .slide[data-n="35"].cue-active .zones .zone-row::after { animation: cue-right 125ms linear 450ms both; }
+  .slide[data-n="35"].cue-active .zones td.zone-col.zone-row::after { animation-delay: 575ms; }
+  .slide[data-n="35"].cue-active .zones td.zone-row:not(.zone-col)::after { animation-delay: 700ms; }
+  .slide[data-n="35"].cue-active .zones [data-zone="1"] { animation: cue-zone-fill 310ms ease-out 825ms both; }
+}
+@media print {
+  [data-cue], .zones { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

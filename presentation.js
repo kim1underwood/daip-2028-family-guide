@@ -41,6 +41,12 @@ function show(n,s){
   guidePanels.forEach((panel,i)=>{panel.hidden=i!==s});
   slide.querySelectorAll('[data-step]').forEach((button,i)=>button.setAttribute('aria-pressed',String(i===s)));
  }
+ const cueRoot = n === guidePage ? guidePanels[s] : slide;
+ if (!isMapDeck && (prevPage !== n || previousStep !== s)) {
+  const previousRoot = prevPage === guidePage ? guidePanels[previousStep] : slides[prevPage - 1];
+  previousRoot?.classList.remove('cue-active');
+  cueRoot.classList.add('cue-active');
+ }
  if(isMapDeck){
   slide.innerHTML=sceneHTML(n-1,s);
   drawRoute(slide.querySelector("svg"),n-1,s,prevPage===n?previousStep:null);
