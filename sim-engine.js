@@ -1,138 +1,188 @@
-/* Shared, deterministic rules for the family seminar. Student scores and competitors are fictional. */
+/* A fictional cohort. Every random draw has a stable key so moving an application
+   or opening a report cannot change a semester, another applicant, or the exam. */
 const Game = (() => {
-  const people = [
-    {name:'서윤',type:'내신 강점형',quote:'수업을 정리하는 건 좋은데, 시험에서는 마지막 지문을 자주 놓쳐요.',base:[3.6,3.1,3.0,2.7,3.6,3.8],spread:1.02,school:2.0,record:60,speak:58,write:59,interest:'사회',strength:'수업 정리',weak:'시간 안배'},
-    {name:'민재',type:'시험 강점형',quote:'수학은 금방 풀어요. 왜 그렇게 풀었는지 설명하려면 막힐 때가 있어요.',base:[3.2,2.0,2.9,3.4,2.6,4.0],spread:.69,school:3.0,record:50,speak:47,write:67,interest:'공학',strength:'수학 실전',weak:'풀이 설명'},
-    {name:'지우',type:'진로 탐색형',quote:'교통 문제도, 친환경 기술도 재밌어요. 어떤 수업부터 들어볼까요?',base:[3.3,3.2,3.2,2.9,3.0,3.6],spread:.83,school:2.6,record:67,speak:64,write:55,interest:'융합',strength:'질문과 탐구',weak:'과목 선택'}
+  const subjects = ['국어','영어','수학','통합사회','통합과학'];
+  const mockSubjects = [...subjects,'한국사'];
+  const names = ['서윤','민재','지우'];
+  const types = ['꾸준히 쌓는 형','실전 집중형','탐구 몰입형'];
+  const typesText = ['수업 복습의 효과가 조금 큽니다.','시간을 재고 푸는 연습에 강합니다.','질문을 탐구 기록으로 발전시키기 쉽습니다.'];
+  const terms = ['고1 1학기','고1 2학기','고2 1학기','고2 2학기','고3 1학기','고3 2학기'];
+  const tasks = ['교과 공부','모의고사 연습','교과 탐구','글쓰기·면접'];
+  const events = [
+    ['첫 수행평가를 준비하는 날','자료의 출처가 서로 다릅니다. 무엇부터 할까요?','두 자료의 차이 설명하기','친구 앞에서 근거 말하기','출처를 비교한 첫 탐구 노트','친구 질문에 근거를 들어 답한 발표'],
+    ['선택과목 신청 주간','희망 과목에서 어떤 질문을 이어갈까요?','통학 시간 차이 조사하기','교실 온도 변화 측정하기','사회와 문화 수업으로 이어갈 통학 설문','물리학 수업으로 이어갈 온도 관찰'],
+    ['탐구 결과가 예상과 다릅니다','발표일까지 일주일이 남았습니다.','조건을 바꿔 다시 측정하기','반론을 담아 보고서 고치기','두 조건을 비교한 후속 실험','반론을 검토한 수정 보고서'],
+    ['학교 발표회에 초대받았습니다','지난 학기 탐구를 누구에게 어떻게 설명할까요?','질의응답 발표 맡기','근거를 묶어 글로 내기','청중 질문을 받아 설명한 경험','여러 근거를 연결한 논증문'],
+    ['마지막 수시 학생부를 정리하는 날','선생님이 활동의 변화를 물어봅니다.','처음 질문과 결론 연결하기','모의 면접으로 과정 설명하기','세 학기의 질문과 결론을 연결한 기록','탐구의 한계를 설명한 모의 면접'],
+    ['수능 전 마지막 자습 시간','연습 시험이 끝났습니다. 남은 시간을 어디에 쓸까요?','오답 원인을 다시 쓰기','제한 시간에 한 세트 더 풀기','틀린 이유와 수정 과정을 쓴 오답장','시간 배분을 조절한 마지막 실전 연습']
   ];
-  const subjects=['국어','수학','영어','통합사회','통합과학','한국사'];
-  const stages=[
-    {time:'중3 겨울',title:'고등학교에 가기 전, 어떤 습관을 만들까요?',note:'2026년 겨울입니다. 40분의 자습 시간을 어떻게 쓸지 정해 보세요.',opts:[
-      ['독해 시간을 재기','지문에 근거를 표시하고 제한 시간 안에 다시 풉니다.','국어 실전 안정','수학 연습 시간 감소'],
-      ['수학 풀이 설명하기','같은 문제를 두 방식으로 풀고 친구에게 설명합니다.','수학·설명력 향상','독해 보완이 늦어짐'],
-      ['주간 복습표 쓰기','틀린 개념과 수행 일정을 매주 한 번씩 정리합니다.','학업 습관 향상','실전 연습 시간 감소']]},
-    {time:'고1 · 2027',title:'다음 학년의 선택과목을 정해 볼까요?',note:'공통과목을 배운 뒤 학교가 개설한 과목을 살펴봅니다. 선택한 수업은 이후의 탐구 기록으로 이어집니다.',opts:[
-      ['물리학','움직임과 힘을 배우고 작은 구조물의 하중을 비교합니다.','기계공학 탐구','사회 현상 탐구 기회 감소'],
-      ['사회와 문화','통학 시간 설문을 설계하고 지역 교통 정책을 비교합니다.','정책·사회 탐구','물리 실험 기회 감소'],
-      ['확률과 통계','상점 방문객 자료로 예측 모형을 만들고 오차를 살핍니다.','자료 분석 탐구','한 주제의 심화 시간 감소']]},
-    {time:'고2 · 2028',title:'수업을 마친 뒤, 무엇을 더 남길까요?',note:'수행평가 제출까지 2주. 활동을 학생부에 어떻게 기록할지는 교사가 결정합니다. 학생은 실제로 한 일과 배운 내용을 쌓습니다.',opts:[
-      ['오차를 다시 검토하기','자료를 다시 모아 처음 결론이 달라지는지 확인합니다.','탐구 근거 보강','말하기 연습 시간 감소'],
-      ['친구 질문에 답하기','발표 뒤 받은 질문에 근거를 들어 답해 봅니다.','면접 설명력 향상','자료 추가 수집 시간 감소'],
-      ['교과 개념 다지기','수행에서 놓친 개념을 복습해 다음 지필평가를 준비합니다.','내신 보완','탐구 확장 시간 감소']]},
-    {time:'고2 겨울',title:'겨울방학 여섯 칸을 어디에 쓸까요?',note:'한 칸은 일주일에 반복할 자습 한 묶음입니다. 합계는 모두 6칸입니다.',opts:[
-      ['국어 실전 4 · 탐구 1 · 논술 1','시간을 재고 오답의 원인을 분류합니다.','국어 편차 감소','면접 사례 보강이 적음'],
-      ['국어 실전 1 · 탐구 4 · 논술 1','선택과목 보고서를 다듬고 꼬리 질문을 연습합니다.','서류·면접 보강','국어 편차가 남음'],
-      ['국어 실전 1 · 탐구 1 · 논술 4','제시문을 비교해 답안을 쓰고 근거와 반론을 고칩니다.','논술 답안 향상','국어·면접 연습이 적음']]}
-  ];
-  const sources={
-    kh:['경희대 입학처 · 인쇄 9~14, 20~21쪽','https://iphak.khu.ac.kr/detail.do?board_seq=17147&menuurl=wvOt10B5et6zMa%2FM59G%2BxQ%3D%3D'],
-    ku:['건국대 입학처 · 인쇄 10~14, 24~25쪽','https://enter.konkuk.ac.kr/file/pdfDown.pdf?ofn=2028입학전형시행계획_260330.pdf&sfn=20260430101618182_1292.pdf'],
-    ih:['인하대 입학처 · 인쇄 5, 10쪽 (교육청 게시본)','https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876433&q_fileId=5b884140-e638-4389-bb96-f6aa543c8171'],
-    aj:['아주대 입학처 · 인쇄 2, 7쪽','https://www.iajou.ac.kr/notice/view.php?bn=78459&m_type=ALL'],
-    history:['대입정보포털 어디가 · 인하대 2025학년도 결과','https://www.adiga.kr/ucp/uvt/uni/univDetailSelection.do?menuId=PCUVTINF2000&searchSyr=2026&unvCd=0000169'],
-    rules:['대교협 · 2028학년도 대학입학전형기본사항','https://www.kcue.or.kr/_upload/news/2026/10/20/application_ab1942705812e69b5fd5bd8277987ab3.pdf'],
-    reform:['교육부 · 2028 대입 개편 확정안','https://www.moe.go.kr/boardCnts/viewRenew.do?boardID=294&boardSeq=97551&lev=0']
-  };
-  const cases={
-    kh:{name:'경희대 행정학과',type:'학생부교과 · 지역균형',area:'사회',rule:'학교장 추천과 3학기 이상 교과 성적 필요. 국·수·영·탐구(상위 1) 중 2합 5, 한국사 5 이내. 학생부 교과·비교과 70%와 교과종합평가 30%.'},
-    ih:{name:'인하대 기계공학과',type:'학생부종합 · 인하미래인재(면접형)',area:'공학',rule:'기계공학과는 수능최저 미적용. 1단계 서류 100%로 3.5배수, 2단계는 1단계 성적 70%와 면접 30%.'},
-    ku:{name:'건국대 경영학과',type:'논술 · KU논술',area:'융합',rule:'논술 100%. 한국사·국·수·영·탐구(상위 1) 중 3개 영역 등급 합 8 이내.'},
-    eng:{name:'아주대 기계공학과',type:'정시 다군 · 일반전형',area:'공학',weights:[20,40,10,5,25]},
-    hum:{name:'아주대 행정학과',type:'정시 다군 · 일반전형',area:'사회',weights:[35,20,15,25,5]}
-  };
-  const clamp=(n,a,b)=>Math.min(b,Math.max(a,n));
-  function random(seed){
-    let x=seed>>>0;
-    return ()=>{x=(Math.imul(1664525,x)+1013904223)>>>0;return (x+.5)/4294967296};
+  const effects = [[['record',4],['speak',5]],[['record',4],['record',4]],[['record',5],['write',5]],[['speak',6],['write',6]],[['record',5],['speak',5]],[['write',3],['mock',2]]];
+  const bound=(v,lo=0,hi=100)=>Math.max(lo,Math.min(hi,v));
+  const mean=a=>a.reduce((s,v)=>s+v,0)/a.length;
+  const clone=v=>JSON.parse(JSON.stringify(v));
+  function noise(seed,key) {
+    let h=2166136261;
+    for (const c of seed+'|'+key) h=Math.imul(h^c.charCodeAt(0),16777619);
+    h=Math.imul(h^(h>>>16),0x85ebca6b); h=Math.imul(h^(h>>>13),0xc2b2ae35);
+    return ((h^(h>>>16))>>>0)/4294967296;
   }
-  function normal(r){return Math.sqrt(-2*Math.log(r()))*Math.cos(2*Math.PI*r())}
-  function profile(person, choices){
-    const p=people[person], s={...p,means:[...p.base],evidence:[],course:'',area:p.interest};
-    const [habit,course,project,winter]=choices;
-    if(habit===0){s.means[0]-=.48;s.spread-=.13}
-    if(habit===1){s.means[1]-=.35;s.speak+=9}
-    if(habit===2){s.school-=.38;s.record+=4}
-    if(course!==undefined){
-      s.course=stages[1].opts[course][0];s.area=['공학','사회','융합'][course];
-      s.means[[4,3,1][course]]-=.38;s.record+=5;
-      s.evidence.push(['구조물의 하중을 비교한 물리 실험','통학 시간 설문과 교통정책 비교','방문객 수 예측과 오차 분석'][course]);
+  function fresh(seed=crypto.getRandomValues(new Uint32Array(1))[0]) {
+    return {version:3,seed,phase:'setup',type:0,avatar:0,start:[72,72,72,72,72],history:[],plan:blank(),early:[],late:[],interest:'모두',risk:'균형',referred:false,replay:false,first:null,checkpoint:null};
+  }
+  function blank(){return {tokens:[2,2,1,1],focus:0,mockFocus:2,event:0};}
+  const relative=(p,cuts)=>1+cuts.filter(c=>p<c).length;
+  const achievement=v=>'ABCDE'[v>=90?0:v>=80?1:v>=70?2:v>=60?3:4];
+  const percentile=score=>bound(100/(1+Math.exp(-(score-64)/10.5)),0,100);
+  const schoolGrade=v=>relative(percentile(v),[90,66,34,10]);
+  function mockGrade(v,i){
+    if(i===1)return bound(1+Math.ceil((90-v)/10),1,9);
+    if(i===5)return bound(1+Math.ceil((40-Math.round(v/2))/5),1,9);
+    return relative(percentile(v),[96,89,77,60,40,23,11,4]);
+  }
+  function termReport(run,plan){
+    const i=run.history.length, prev=run.history.at(-1);
+    const a=prev?prev.learned:run.start, b=prev?prev.practice:run.start;
+    const [study,practice,research,expression]=plan.tokens;
+    const rand=(tag,s)=>noise(run.seed,i+'-'+tag+'-'+s)*2-1;
+    function improve(old,effort,focus,kind,index){
+      const diminishing=.35+(100-old)/75;
+      const rate=1.15*effort+(focus===index?.85*effort:0)+(kind===run.type?.65:0);
+      return bound(old+(rate-1.9)*diminishing+rand(kind?'practice':'school',index)*1.6);
     }
-    if(project===0){s.record+=13;s.evidence.push('추가 자료로 첫 결론을 다시 검토함')}
-    if(project===1){s.speak+=17;s.record+=5;s.evidence.push('친구의 질문을 받고 근거를 들어 답함')}
-    if(project===2){s.school-=.4;s.means[1]-=.18}
-    if(winter===0){s.means[0]-=.85;s.spread-=.21;s.write+=3}
-    if(winter===1){s.record+=11;s.speak+=14;s.evidence.push('탐구 한계와 후속 질문을 정리함')}
-    if(winter===2){s.write+=22;s.means[0]-=.2}
-    s.school=clamp(s.school,1,5);s.spread=clamp(s.spread,.35,1.25);
-    return s;
+    const learned=a.map((v,j)=>improve(v,study,plan.focus,0,j));
+    const practiceScores=b.map((v,j)=>improve(v,practice,plan.mockFocus,1,j));
+    const [effect,gain]=effects[i][plan.event];
+    // A course choice in year one establishes a thread that can continue into year two.
+    if(i===1)learned[plan.event===0?3:4]=bound(learned[plan.event===0?3:4]+2);
+    if(i===2&&research>0){
+      const chosen=run.history[1].plan.event===0?3:4;
+      learned[chosen]=bound(learned[chosen]+Math.min(2,research));
+    }
+    const school=learned.map((v,j)=>Math.round(bound(v+rand('class-test',j)*2.6)));
+    const mock=practiceScores.map((v,j)=>Math.round(bound(v+rand('mock-test',j)*3.8+(effect==='mock'?gain:0))));
+    mock.push(Math.round(bound((mean(learned)+learned[3])/2+rand('history',5)*5)));
+    const hidden={...(prev?.hidden||{record:43,speak:46,write:46})};
+    hidden.record=bound(hidden.record+research*(run.type===2?3.7:3.1));
+    hidden.speak=bound(hidden.speak+expression*2.6);
+    hidden.write=bound(hidden.write+expression*2.8);
+    if(effect!=='mock')hidden[effect]=bound(hidden[effect]+gain);
+    const record=[events[i][4+plan.event]];
+    if(i===2&&research>0)record.push(run.history[1].plan.event===0?'지난 학기 통학 설문 자료를 다시 분석함':'지난 학기 온도 측정 자료와 비교함');
+    if(research>=2)record.push('추가 자료를 찾아 탐구 질문을 구체화함');
+    if(expression>=2)record.push('답변을 녹음하고 글의 근거를 다시 다듬음');
+    return {i,plan:clone(plan),learned,practice:practiceScores,school,mock,grades:school.map(schoolGrade),levels:school.map(achievement),mockGrades:mock.map(mockGrade),hidden,record};
   }
-  function exam(s,r){
-    const shared=normal(r)*.32;
-    const values=s.means.map((m,i)=>clamp(m+shared+normal(r)*(i===0?s.spread:.61),1,9));
-    return {grades:values.map(Math.round),values};
+  function finishTerm(r){
+    if(r.phase!=='plan'||r.history.length>=6||r.plan.tokens.reduce((a,b)=>a+b,0)!==6)return;
+    r.history.push(termReport(r,r.plan));r.phase='report';
   }
-  function minimum(id,g){
-    const [ko,ma,en,so,sc,hi]=g;
-    const best=[ko,ma,en,Math.min(so,sc)];
-    if(id==='ku')best.push(hi);
-    best.sort((a,b)=>a-b);
-    if(id==='kh')return best[0]+best[1]<=5&&hi<=5;
-    if(id==='ku')return best[0]+best[1]+best[2]<=8;
-    return true;
+  function nextReport(r){
+    if(r.phase!=='report')return;
+    if(r.history.length===5){
+      r.checkpoint={history:clone(r.history),interest:r.interest,risk:r.risk,referred:r.referred};
+      r.phase='early';
+    }else if(r.history.length===6){
+      r.exam=finalExam(r);r.phase='exam';
+      r.lastTerm=clone(r.history[5]);
+    }else{r.plan=clone(r.plan);r.phase='plan';}
   }
-  function mocks(s,seed){
-    const r=random(seed^0x2671);
-    const exams=[[],[],[]];
-    s.means.forEach((mean,i)=>{
-      const raw=exams.map(()=>normal(r)),avg=raw.reduce((a,b)=>a+b,0)/raw.length;
-      exams.forEach((g,j)=>g.push(Math.round(clamp(mean+(raw[j]-avg)*(i===0?s.spread:.61),1,9))));
-    });
-    return exams;
+  function finalExam(r){
+    const last=r.history[5],scores=last.practice.map((v,i)=>Math.round(bound(v+(noise(r.seed,'csat'+i)-.5)*9+(last.plan.event===1?1:0))));
+    scores.push(Math.round(bound(last.mock[5]+(noise(r.seed,'csat-history')-.5)*7)));
+    return {scores,grades:scores.map(mockGrade)};
   }
-  function preview(s,seed){
-    const r=random(seed^0x22d733),counts={kh:0,ku:0};
-    for(let i=0;i<1000;i++){const g=exam(s,r).grades;for(const id of ['kh','ku'])counts[id]+=Number(minimum(id,g))}
-    return counts;
+  function minMet(c,g){
+    const [k,e,m,s,p,h]=g, t=Math.min(s,p), v=[k,m,e,t].sort((a,b)=>a-b);
+    switch(c.name){
+      case '경희대':return v[0]+v[1]<=5&&h<=5;
+      case '경북대':return v[0]+v[1]<=6;
+      case '부산대':return v[0]+v[1]+v[2]<=7;
+      case '건국대':return [...v,h].sort((a,b)=>a-b).slice(0,3).reduce((a,b)=>a+b,0)<=8;
+      case '연세대':return Math.min(k+Math.min(m,s,p),m+Math.min(s,p))<=4&&e<=3&&h<=4;
+      default:return true;
+    }
   }
-  function rank(score,field){return 1+field.filter(v=>v>score).length}
-  function field(seed,center){const r=random(seed);return Array.from({length:59},()=>center+normal(r)*11)}
-  function rated(id,score,seed,center,competitors=null){
-    const salt={kh:1047,ih:2017,ku:5433,eng:7733,hum:8567}[id];
-    const pos=rank(score,competitors||field(seed^salt,center));
-    const more=2+Math.floor(random(seed^Math.imul(salt,7757))()*9);
-    return {pos,score,first:pos<=10,wait:pos>10&&pos<=24,fill:pos>10&&pos<=10+more,reason:'가상 '+(competitors?'2단계 35명':'경쟁집단 60명')+' 중 '+pos+'위'};
+  function earlyScore(c,hist){
+    const academic=mean(hist.map(t=>mean(t.school))), {record,speak,write}=hist.at(-1).hidden;
+    if(c.name==='부산대')return .80*academic+.20*(.65*academic+.35*record);
+    if(c.name==='경희대')return .70*academic+.30*(.65*academic+.35*record);
+    if(c.kind==='교과')return academic;
+    if(c.kind==='논술')return .42*academic+.58*write;
+    const document=.70*academic+.30*record;
+    if(c.kind!=='면접')return document;
+    const share=({'서울대':.5,'연세대':.3,'가천대':.5,'인천대':.4,'충남대':1/3,'국립공주대':.3,'전북대':.2,'인하대':.3,'전남대':.3})[c.name]??.3;
+    return (1-share)*document+share*speak;
   }
-  function early(id,s,examResult,seed,rec){
-    if(id==='kh'&&!rec)return {reason:'학교장 추천 미확인'};
-    if(!minimum(id,examResult.grades))return {reason:'수능최저 미충족'};
-    const fit=s.area===cases[id].area?6:0;
-    const school=100-(s.school-1)*15;
-    if(id==='kh')return rated(id,school*.7+(s.record+fit)*.3,seed,68);
-    if(id==='ku')return rated(id,s.write,seed,65);
-    const doc=school*.32+s.record*.68+fit;
-    const interviewRng=random(seed^42822);
-    const peers=field(seed^2341,70).map(paper=>({paper,talk:65+normal(interviewRng)*14})).sort((a,b)=>b.paper-a.paper);
-    if(rank(doc,peers.map(p=>p.paper))>35)return {reason:'가상 서류 1단계에서 미선발'};
-    const finalists=peers.slice(0,34).map(p=>p.paper*.7+p.talk*.3);
-    return rated(id,doc*.7+s.speak*.3,seed,65,finalists);
+  function lateScore(c,scores,hist){
+    const [k,e,m,s,p]=scores;
+    if(c.name==='조선대')return .25*k+.15*e+.35*m+.25*p;
+    const academic=mean(hist.map(t=>mean(t.school)));
+    const field=c.lateField||c.field;
+    const exam=field==='공학'||field==='자연'?.20*k+.15*e+.35*m+.10*s+.20*p:.30*k+.18*e+.24*m+.18*s+.10*p;
+    const schoolShare=({'서울대':.4,'연세대':.1,'경북대':.1,'부산대':.2,'충남대':.15})[c.name]||0;
+    if(c.name==='충남대')return .8*exam+.15*academic+5;
+    return exam*(1-schoolShare)+academic*schoolShare;
   }
-  function late(id,ex,seed){
-    const w=cases[id].weights;
-    const english=w[2]===10?[100,98,96,84,60,40,20,10,0]:[150,147,144,126,90,60,30,15,0];
-    const parts=w.map((weight,i)=>i===2?english[ex.grades[2]-1]:weight*10*clamp(1-(ex.values[i]-1)*.07,.36,1));
-    const score=parts.reduce((a,b)=>a+b,0)-[0,0,0,0,5,10,20,30,40][ex.grades[5]-1];
-    return {...rated(id,score/10,seed,78),total:score};
+  function estimate(r,c,late=false){
+    const hist=r.checkpoint.history,last=hist.at(-1);
+    const value=late?lateScore(c,last.mock,hist):earlyScore(c,hist);
+    return value-(late?(c.lateTarget||c.target):c.target);
   }
-  function results(run){
-    const s=profile(run.person,run.choices),ex=exam(s,random(run.seed^0x326787));
-    const rows=run.apps.map(id=>({id,...early(id,s,ex,run.seed,run.rec)}));
-    return {s,ex,rows,offers:rows.filter(row=>row.first||row.fill).map(row=>row.id)};
+  function advice(r,late=false){
+    if(!r.replay||!r.first)return [];
+    const delta={도전:-4,균형:2,안정:7}[r.risk];
+    return Admissions.filter(c=>late||c.name!=='경희대'||r.referred).map(c=>{
+      const gap=estimate(r,c,late);
+      const aligned=r.interest==='모두'||r.interest===(late?(c.lateField||c.field):c.field);
+      const gate=late||minMet(c,r.checkpoint.history.at(-1).mockGrades);
+      // Explore illustrative examination and competitor variation without reading the real draw.
+      let offers=0;
+      const hist=r.checkpoint.history,last=hist.at(-1);
+      for(let sample=0;sample<100;sample++){
+        const trial=last.mock.map((v,i)=>Math.round(bound(v+(noise(42,'trial'+sample+'s'+i)-.5)*12)));
+        const score=late?lateScore(c,trial,hist):earlyScore(c,hist);
+        const line=(late?(c.lateTarget||c.target):c.target)+(noise(42,'trial'+sample+'pool')-.5)*10;
+        const movement=1+Math.floor(noise(42,'trial'+sample+'wait')*5);
+        if((late||minMet(c,trial.map(mockGrade)))&&score>=line-movement)offers++;
+      }
+      return {c,gap,gate,offers,rank:-Math.abs(gap-delta)+(aligned?5:0)+(gate?2:-8)};
+    }).sort((a,b)=>b.rank-a.rank).slice(0,3);
   }
-  function suggest(stage,s,counts){
-    if(stage===0)return s.spread>.9?0:s.school>=2.9?2:1;
-    if(stage===1)return ['공학','사회','융합'].indexOf(s.interest);
-    if(stage===2)return s.school>=2.8?2:s.speak<60?1:0;
-    if(stage===3)return s.area==='융합'&&s.write<80?2:counts.kh<610?0:1;
+  function toggle(r,id,late){
+    const c=Admissions.find(u=>u.name===id),list=late?r.late:r.early;
+    if(!c)return;
+    if(list.includes(id)){list.splice(list.indexOf(id),1);return;}
+    if(late){if(list.some(n=>Admissions.find(u=>u.name===n).group===c.group))return;}
+    else if(list.length>=6||(c.name==='경희대'&&!r.referred))return;
+    list.push(id);
   }
-  return {people,subjects,stages,cases,sources,profile,mocks,preview,minimum,results,late,suggest};
+  function submitEarly(r){
+    if(r.phase!=='early')return;
+    if(r.replay){r.history.push(clone(r.lastTerm));r.exam=finalExam(r);r.phase='exam';}
+    else{r.plan=clone(r.history[4].plan);r.phase='plan';}
+  }
+  function outcome(r,c,late){
+    const hist=r.checkpoint.history, target=late?(c.lateTarget||c.target):c.target;
+    const score=late?lateScore(c,r.exam.scores,hist):earlyScore(c,hist);
+    const key=c.name+(late?'정시':'수시');
+    const cutoff=target+(noise(r.seed,key+'pool')-.5)*10;
+    const margin=score-cutoff;
+    const passes=late||minMet(c,r.exam.grades);
+    const waiting=passes&&margin<0&&margin>=-6;
+    const moved=1+Math.floor(noise(r.seed,key+'moves')*5),position=Math.max(1,Math.ceil(-margin));
+    const status=!passes?'최저 미충족':margin>=0?'최초합격':waiting&&position<=moved?'충원합격':waiting?'예비 종료':'불합격';
+    return {name:c.name,major:late?(c.lateMajor||c.major):c.major,kind:late?c.group+'군 '+c.late:c.early,status,wait:waiting,position,moved,accepted:['최초합격','충원합격'].includes(status)};
+  }
+  const results=(r,late=false)=>(late?r.late:r.early).map(id=>outcome(r,Admissions.find(c=>c.name===id),late));
+  function saveEnding(r,name){
+    r.registered=name;r.phase='ending';
+    const snapshot={early:results(r),late:results(r,true),registered:name};
+    if(!r.first)r.first=clone(snapshot);
+  }
+  function replay(r){
+    if(!r.first||!r.checkpoint||!r.lastTerm)return;
+    r.history=clone(r.checkpoint.history);r.early=[];r.late=[];r.registered=null;
+    r.exam=null;r.replay=true;r.phase='early';r.referred=r.checkpoint.referred;
+  }
+  return {subjects,mockSubjects,names,types,typesText,terms,tasks,events,blank,fresh,finishTerm,nextReport,submitEarly,saveEnding,replay,results,advice,toggle,minMet,mean,bound};
 })();
