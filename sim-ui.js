@@ -264,12 +264,31 @@ function decisionDifference(x){
     dialog('공식 전형과 게임의 가정','<p>2026년 중3 학생이 2030학년도에 지원하는 가상 상황입니다. 대학 사례는 2028학년도 시행계획을 사용합니다. 2030학년도 실제 전형은 해당 연도 모집요강을 확인하세요.</p><p>학생은 국내 일반고 전 과정을 이수하고 수능 6개 과목에 응시합니다. 수시는 학생부교과·학생부종합·논술 사례에서 게임용 원서 5장을 고릅니다. 실제 일반대학 수시 지원 한도는 원칙적으로 6회입니다. 같은 대학의 복수지원 가능 여부는 해당 연도 모집요강을 확인하세요.</p><p>학기 점수·경쟁선·지원자·예비 이동은 게임에서 생성합니다. 게임의 선발 점수는 실제 대학의 환산식이나 실측 합격 확률을 재현하지 않습니다. 학생부는 교과와 탐구 과정, 면접과 논술은 설명과 글쓰기 연습을 반영합니다.</p><p class="fine">자료 · 교육부 「2028 대학입시제도 개편 확정안」, 한국대학교육협의회 「2028학년도 대학입학전형기본사항」.</p><p class="fine">대학 목록 정렬 · 2026년 7월 Webometrics 국내 대학 순위.</p>'+Admissions.map(c=>'<p><b>'+c.name+'</b><br>수시 · '+src(c,false)+'<br>정시 · '+src(c,true)+'</p>').join(''));
   }
   const invite=$('seminarInvite');
-  function showInvite(){
-    if(r.phase==='best'&&!invite.open)invite.showModal();
-  }
-  $('dismissInvite').addEventListener('click',()=>{
+  const hiddenDayKey='pandong.seminar.hiddenDay';
+  let hiddenDay='';
+  function closeInvite(){
     invite.close();
     $('stageTitle')?.focus({preventScroll:true});
+  }
+  function showInvite(){
+    if(r.phase!=='best')return;
+    let savedDay;
+    try{savedDay=localStorage.getItem(hiddenDayKey);}catch{}
+    const today=new Date().toDateString();
+    if(savedDay===today||hiddenDay===today){
+      if(invite.open)closeInvite();
+      return;
+    }
+    if(!invite.open)invite.showModal();
+  }
+  $('dismissInvite').addEventListener('click',closeInvite);
+  $('hideInviteToday').addEventListener('click',()=>{
+    hiddenDay=new Date().toDateString();
+    try{localStorage.setItem(hiddenDayKey,hiddenDay);}catch{}
+    closeInvite();
+  });
+  window.addEventListener('storage',event=>{
+    if(event.key===hiddenDayKey&&invite.open)showInvite();
   });
   invite.addEventListener('cancel',event=>event.preventDefault());
   window.addEventListener('pageshow',event=>{if(event.persisted)showInvite();});
