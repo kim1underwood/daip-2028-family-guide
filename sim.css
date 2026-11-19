@@ -159,3 +159,43 @@
   .welcomeCopy h1 {font-size:clamp(2rem,9vw,3rem)}
   .welcomeCopy p {margin:.85rem 0 1.4rem}
 }
+
+.mast .entryHelp {display:grid;place-items:center;width:44px;height:44px;border:1px solid #a7bbaa;border-radius:50%;font-size:1.1rem;color:var(--green)}
+.entryChoices {display:flex;flex-wrap:wrap;gap:.65rem}
+.entryChoices .secondary {background:transparent;border:1px solid #bdd0b9;color:#fff9e7}
+.entryChoices .secondary:hover {background:#2d5347}
+#entryStep {max-width:640px;margin:clamp(1rem,5vh,3.5rem) auto;padding:clamp(1.2rem,4vw,3rem);background:var(--paper);border:1px solid var(--line);border-radius:8px}
+.entryNav {display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-variant-numeric:tabular-nums}
+.entryNav a {display:inline-flex;align-items:center;min-height:44px;text-decoration:none}
+#entryTitle {margin:.8rem 0 1.4rem;text-wrap:balance}
+.entryOptions {display:grid;gap:.65rem}
+.entryOptions button,.entryOption {display:block;padding:.9rem 1.1rem;width:100%;text-align:left;border:1px solid #becdbf;background:#f8f8ed;border-radius:6px;color:var(--ink);font-weight:700;text-decoration:none}
+.entryOptions a:hover,.entryOptions button:hover,.quizOptions [aria-pressed=true] {background:#e6eddf;border-color:var(--green);color:var(--green)}
+.entryOption small {display:block;font-weight:500;color:var(--muted)}
+.gradeInput {padding:0;border:0;margin:1.35rem 0}
+.gradeInput legend,.gradeInput legend small {margin-bottom:.4rem}
+.gradeInput legend small,#gradeTables caption small {font:500 .78rem/1.2 system-ui,sans-serif;color:var(--muted)}
+.gradeInput>div {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45rem .8rem}
+.gradeInput label {font-size:.9rem;font-weight:650}
+.gradeInput select {display:block;min-height:44px;width:100%;margin-top:.12rem;border:1px solid #9eafa2;border-radius:5px;background:#fff}
+#manualGrades>.primary {display:block;margin:1.1rem 0 0 auto}
+#gradeDialog {width:min(92vw,550px);padding:clamp(1rem,4vw,2rem);background:var(--paper) url(report-paper.webp) center/cover;color:var(--ink);border:1px solid #b8baa6;border-radius:8px}
+#gradeDialog::backdrop {background:rgb(16 38 31 / .55)}
+#gradeDialog header {display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:.65rem}
+#gradeDialog h2 {font:700 clamp(1.6rem,4vw,2.4rem)/1.2 Batang,serif}
+#gradeDialog header button {width:44px;height:44px;font-size:1.4rem;background:transparent;border:0}
+#gradeTables table {width:100%;min-width:0;table-layout:fixed;border-collapse:collapse;margin:1.2rem 0;font-variant-numeric:tabular-nums}
+#gradeTables caption {text-align:left;font-weight:750;margin-bottom:.4rem;color:var(--ink)}
+#gradeTables th,#gradeTables td {text-align:center;padding:.43rem 0;border:1px solid #c0c9ba;white-space:normal}
+#gradeTables th {font-size:clamp(.69rem,3vw,.9rem);color:var(--green);background:#e5ebdf}
+#gradeTables td {font-size:1.18rem;font-weight:700;background:#fffaf0}
+.gradeActions {text-align:right}
+.profileTools {display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.75rem 1rem}
+.profileTools button {min-height:44px;color:var(--green)}
+.profileTools .resetmap {color:#f5f1dd;background:transparent;border-color:#8aa798}
+.profileRoad {margin:0;padding:.3rem 1.2rem 1rem 2.8rem;color:#cedecc}
+.profileRoad li {padding:.25rem}
+.profileRoad [aria-current] {font-weight:800;color:#ffdf96}
+#dialogBody h3:not(:first-child){margin-top:1rem}
+@media(max-width:800px){.profileRoad {display:none}.profileTools {padding:.4rem .8rem}#entryStep{margin:1rem .75rem}#atlas:has(.profileTools){display:block}#atlas:has(.profileTools) .scene{display:none}}
+@media(max-width:420px){.entryChoices{display:grid}.entryChoices a{justify-content:center}.welcomeScene{max-height:20vh}.welcomeCopy h1{font-size:clamp(1.8rem,8vw,2.4rem)}}

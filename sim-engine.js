@@ -128,6 +128,41 @@ const EARLY_LIMIT = 5;
     scores.push(Math.round(bound(last.mock[5]+(noise(r.seed,'csat-history')-.5)*7)));
     return {scores,grades:scores.map(mockGrade)};
   }
+  // Internal scores sit inside the same grade bands used by the admission model.
+  function scoreInBand(grade, subject, school, seed) {
+    const gradeOf=school?schoolGrade:score=>mockGrade(score,subject);
+    const band=Array.from({length:101},(_,n)=>n).filter(score=>gradeOf(score)===grade);
+    if(!band.length)throw new RangeError('등급 범위를 확인하세요.');
+    const fraction=.25+.5*noise(seed,(school?'school':'exam')+'-band-'+subject);
+    return band[Math.floor(fraction*band.length)];
+  }
+  function makeProfile(mode, input, seed) {
+    const run=fresh(seed);
+    const draw=key=>noise(run.seed,key);
+    let grades,examGrades;
+    if(mode==='manual'){
+      grades=input.school.slice();examGrades=input.exam.slice();
+      if(grades.length!==5||examGrades.length!==6)throw new RangeError('과목별 등급을 입력하세요.');
+    }else{
+      const quiz=mode==='quiz'?input:null;
+      const base=quiz?[84,66,49][quiz[0]]+(draw('base')-.5)*12:38+draw('base')*60;
+      const skew=quiz?[5,-5,0][quiz[1]]:(draw('skew')-.5)*16;
+      const language=quiz?[6,-6,0][quiz[2]]:0, inquiry=quiz?[6,-6,0][quiz[4]]:0;
+      const traits=[language,quiz?[7,0,-7][quiz[3]]:0,-language,inquiry,-inquiry,0];
+      const strengths=traits.map((v,i)=>base+v+(draw('subject'+i)-.5)*16);
+      grades=strengths.slice(0,5).map((v,i)=>schoolGrade(bound(v+skew+(draw('class'+i)-.5)*8)));
+      const time=quiz?[-4,0,3][quiz[5]]:0;
+      examGrades=strengths.map((v,i)=>mockGrade(bound(v-skew+time+(draw('exam'+i)-.5)*10),i));
+    }
+    const school=grades.map((g,i)=>scoreInBand(g,i,true,run.seed));
+    const scores=examGrades.map((g,i)=>scoreInBand(g,i,false,run.seed));
+    const hidden={};
+    for(const key of ['record','speak','write']){
+      hidden[key]=Math.round(bound(.48*mean(school)+.22*mean(scores)+21+(draw(key)-.5)*32));
+    }
+    return {...run,version:4,profile:{grades,school,hidden},exam:{grades:examGrades,scores},
+      phase:'early',checkpoint:{referred:false},pendingReport:true};
+  }
   function minMet(c,g){
     const [k,e,m,s,p,h]=g, t=Math.min(s,p), v=[k,m,e,t].sort((a,b)=>a-b);
     switch(c.id){
@@ -186,8 +221,10 @@ const EARLY_LIMIT = 5;
   }
   function editApplications(r){
     if(r.phase!=='ending')return;
-    r.lastTerm=clone(r.history[5]);
-    r.history=clone(r.checkpoint.history);
+    if(!r.profile){
+      r.lastTerm=clone(r.history[5]);
+      r.history=clone(r.checkpoint.history);
+    }
     r.referred=r.checkpoint.referred;
     r.registered=null;
     r.replay=true;
@@ -195,6 +232,11 @@ const EARLY_LIMIT = 5;
   }
   function submitEarly(r){
     if(r.phase!=='early'||r.early.length>EARLY_LIMIT)return;
+    if(r.profile){
+      if(results(r).some(row=>row.accepted))r.late=[];
+      r.phase=r.early.length?'fill':'late';
+      return;
+    }
     if(r.replay){
       r.history.push(clone(r.lastTerm));
       r.exam??=finalExam(r);
@@ -207,7 +249,7 @@ const EARLY_LIMIT = 5;
     }else{r.plan=clone(r.history[4].plan);r.phase='plan';}
   }
   function outcome(r,c,late){
-    const hist=r.checkpoint.history, baseline=late?(c.lateTarget||c.target):c.target;
+    const hist=r.profile?[r.profile]:r.checkpoint.history, baseline=late?(c.lateTarget||c.target):c.target;
     const key=late?c.name:c.id;
     const calibration=(late?AdmissionCalibration.late:AdmissionCalibration.early)[key];
     const modern=r.balanceVersion===2;
@@ -253,5 +295,5 @@ function compareStrategies(r){
         route,top:offers.find(x=>x.route===route),tested:scenarios.filter(x=>x.route===route).length
       }))};
   }
-  return {subjects,mockSubjects,types,typesText,terms,tasks,events,blank,fresh,finishTerm,nextReport,submitEarly,saveEnding,compareStrategies,results,toggleLate,editApplications,category,quickStart,addEarly,removeEarly,EARLY_LIMIT,minMet,mean,bound};
+  return {makeProfile,subjects,mockSubjects,types,typesText,terms,tasks,events,blank,fresh,finishTerm,nextReport,submitEarly,saveEnding,compareStrategies,results,toggleLate,editApplications,category,quickStart,addEarly,removeEarly,EARLY_LIMIT,minMet,mean,bound};
 })();
