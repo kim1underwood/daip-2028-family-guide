@@ -135,3 +135,27 @@
   .registerActions {gap:.5rem}
   .termGrid .selectrow select,.termGrid .event label {scroll-margin-bottom:5rem}
 }
+
+#welcome[hidden],#gameScreen[hidden],#gameFooter[hidden]{display:none}
+#welcome {
+  max-width:1200px; margin:clamp(1rem,6vh,4rem) auto;
+  width:calc(100% - clamp(2rem,7vw,5rem)); display:grid;
+  grid-template-columns:1fr 1fr; overflow:hidden; border-radius:14px;
+  color:#fff9e7; background:#183f35;
+}
+.welcomeCopy {align-self:center; padding:clamp(2rem,5.5vw,5.5rem)}
+.welcomeCopy h1 {margin:0; font-size:clamp(2.5rem,4.8vw,4.6rem); line-height:1.13}
+.welcomeCopy p {margin:1.4rem 0 2.2rem; max-width:25ch; color:#e1e8d9; font-size:1.08rem}
+.enterGame {
+  display:inline-flex; gap:2rem; align-items:center; min-height:48px; padding:.65rem 1.25rem;
+  border-radius:6px; background:#f6dfa4; color:#203c32; font-weight:750; text-decoration:none;
+}
+.enterGame:hover {background:#fff0c6}
+.welcomeScene {--ax:0%;--ay:50%;min-height:clamp(23rem,54vh,35rem)}
+@media(max-width:700px){
+  #welcome {max-width:30rem; margin:1rem auto; grid-template-columns:1fr}
+  .welcomeScene {grid-row:1; min-height:0; aspect-ratio:2.15}
+  .welcomeCopy {padding:clamp(1.35rem,6vw,2rem)}
+  .welcomeCopy h1 {font-size:clamp(2rem,9vw,3rem)}
+  .welcomeCopy p {margin:.85rem 0 1.4rem}
+}

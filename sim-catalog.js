@@ -14,7 +14,9 @@ const Admissions = [
     "target": 96,
     "minimum": "해당 모집단위 수능최저 없음",
     "lateRule": "정시 일반전형은 1단계 수능, 2단계 수능 60점과 교과역량평가 40점입니다.",
-    "order": 1
+    "admissionPercentile": 96.5,
+    "rankSample": 67,
+    "adigaCode": "0000019"
   },
   {
     "name": "고려대",
@@ -31,7 +33,9 @@ const Admissions = [
     "target": 93,
     "minimum": "해당 모집단위 수능최저 없음",
     "lateRule": "경영학과 일반전형은 수능 100% 일괄합산입니다.",
-    "order": 4
+    "admissionPercentile": 94.52,
+    "rankSample": 62,
+    "adigaCode": "0000069"
   },
   {
     "name": "연세대",
@@ -48,7 +52,9 @@ const Admissions = [
     "target": 94,
     "minimum": "국·수·사·과 중 국어 또는 수학을 포함한 2합 4, 영어 3·한국사 4 이내",
     "lateRule": "유형Ⅰ은 수능 900점과 서류평가 100점을 합산합니다.",
-    "order": 2
+    "admissionPercentile": 92.5,
+    "rankSample": 61,
+    "adigaCode": "0000149"
   },
   {
     "name": "경희대",
@@ -64,7 +70,9 @@ const Admissions = [
     "latePages": "13",
     "target": 85,
     "minimum": "국·수·영·탐(상위 1) 중 2합 5, 한국사 5 이내",
-    "order": 7
+    "admissionPercentile": 89.0,
+    "rankSample": 85,
+    "adigaCode": "0000066"
   },
   {
     "name": "건국대",
@@ -81,7 +89,9 @@ const Admissions = [
     "target": 85,
     "minimum": "국·수·영·탐(상위 1)·한국사 중 3합 8",
     "lateRule": "나군 인문계 경영학과는 수능 100%로 선발합니다.",
-    "order": 15
+    "admissionPercentile": 88.5,
+    "rankSample": 50,
+    "adigaCode": "0000052"
   },
   {
     "name": "아주대",
@@ -98,7 +108,9 @@ const Admissions = [
     "target": 79,
     "minimum": "국·수·영·탐(상위 1) 중 2합 6",
     "lateRule": "경영학과는 다군 일반전형에서 수능 성적을 반영합니다.",
-    "order": 14
+    "admissionPercentile": 82.83,
+    "rankSample": 37,
+    "adigaCode": "0000146"
   },
   {
     "name": "인하대",
@@ -115,7 +127,9 @@ const Admissions = [
     "target": 80,
     "minimum": "해당 모집단위 수능최저 없음",
     "lateRule": "기계공학과는 수능 100%로 선발합니다.",
-    "order": 23
+    "admissionPercentile": 81.25,
+    "rankSample": 56,
+    "adigaCode": "0000169"
   },
   {
     "name": "가천대",
@@ -132,7 +146,9 @@ const Admissions = [
     "target": 75,
     "minimum": "해당 모집단위 수능최저 없음",
     "lateRule": "경영학과는 일반전형 1과 2 모두 다군입니다. 이 원서는 일반전형 1입니다.",
-    "order": 35
+    "admissionPercentile": 83.65,
+    "rankSample": 60,
+    "adigaCode": "0000063"
   },
   {
     "name": "인천대",
@@ -149,7 +165,9 @@ const Admissions = [
     "target": 72,
     "minimum": "해당 모집단위 수능최저 없음",
     "lateRule": "경영학부는 수능 100%로 선발합니다.",
-    "order": 49
+    "admissionPercentile": 76.0,
+    "rankSample": 55,
+    "adigaCode": "0002660"
   },
   {
     "name": "강원대",
@@ -166,7 +184,9 @@ const Admissions = [
     "target": 58,
     "minimum": "해당 모집단위 수능최저 없음",
     "lateRule": "강릉캠퍼스 관광경영학과는 다군 일반전형에서 수능 100%를 반영합니다.",
-    "order": 20
+    "admissionPercentile": 55.67,
+    "rankSample": 45,
+    "adigaCode": "0000001"
   },
   {
     "name": "충북대",
@@ -183,8 +203,10 @@ const Admissions = [
     "target": 69,
     "minimum": "해당 모집단위 수능최저 없음",
     "lateRule": "경영학부는 인문계 수능 100%로 선발합니다. 모집군은 별첨 모집단위별 모집인원표 기준입니다.",
-    "order": 27,
-    "quotaNote": true
+    "quotaNote": true,
+    "admissionPercentile": 69.92,
+    "rankSample": 79,
+    "adigaCode": "0000030"
   },
   {
     "name": "충남대",
@@ -201,7 +223,9 @@ const Admissions = [
     "target": 71,
     "minimum": "해당 모집단위 수능최저 없음",
     "lateRule": "국어국문학과는 수능·교과·출결을 반영합니다. 실질반영비율은 각 80%, 15%, 5%입니다.",
-    "order": 13
+    "admissionPercentile": 72.1,
+    "rankSample": 103,
+    "adigaCode": "0000029"
   },
   {
     "name": "전북대",
@@ -218,7 +242,9 @@ const Admissions = [
     "target": 69,
     "minimum": "해당 모집단위 수능최저 없음",
     "lateRule": "경상계열은 가군에서 수능 500점으로 일괄 선발합니다.",
-    "order": 28
+    "admissionPercentile": 67.83,
+    "rankSample": 96,
+    "adigaCode": "0000025"
   },
   {
     "name": "전남대",
@@ -235,8 +261,10 @@ const Admissions = [
     "target": 73,
     "minimum": "해당 모집단위 수능최저 없음",
     "lateRule": "경영학부는 가군에서, 경제학부는 나군에서 선발합니다. 이 원서는 경영학부입니다.",
-    "order": 21,
-    "quotaNote": true
+    "quotaNote": true,
+    "admissionPercentile": 71.75,
+    "rankSample": 98,
+    "adigaCode": "0000023"
   },
   {
     "name": "경북대",
@@ -253,7 +281,9 @@ const Admissions = [
     "target": 78,
     "minimum": "국·수·영·탐(상위 1) 중 2합 6, 한국사 응시",
     "lateRule": "경영학부는 수능 900점과 교과 100점을 합산합니다.",
-    "order": 12
+    "admissionPercentile": null,
+    "rankSample": 0,
+    "adigaCode": "0000005"
   },
   {
     "name": "부산대",
@@ -270,7 +300,9 @@ const Admissions = [
     "target": 79,
     "minimum": "국·수·영·탐(상위 1) 중 3합 7, 한국사 응시",
     "lateRule": "경영학과는 수능 80%와 학업충실도평가 20%를 반영합니다.",
-    "order": 10
+    "admissionPercentile": 80.0,
+    "rankSample": 93,
+    "adigaCode": "0000014"
   },
   {
     "name": "경상국립대",
@@ -287,7 +319,9 @@ const Admissions = [
     "target": 62,
     "minimum": "해당 모집단위 수능최저 없음",
     "lateRule": "도시공학과는 수능 100%로 선발합니다.",
-    "order": 22
+    "admissionPercentile": 61.59,
+    "rankSample": 104,
+    "adigaCode": "0000007"
   },
   {
     "name": "제주대",
@@ -304,7 +338,9 @@ const Admissions = [
     "target": 60,
     "minimum": "해당 모집단위 수능최저 없음",
     "lateRule": "경영학과는 다군 일반학생전형으로 선발합니다.",
-    "order": 41
+    "admissionPercentile": 56.67,
+    "rankSample": 69,
+    "adigaCode": "0000027"
   },
   {
     "name": "국립공주대",
@@ -321,7 +357,9 @@ const Admissions = [
     "target": 77,
     "minimum": "해당 모집단위 수능최저 없음",
     "lateRule": "국어교육과는 수능 100%로 선발합니다.",
-    "order": 55
+    "admissionPercentile": 74.65,
+    "rankSample": 79,
+    "adigaCode": "0000008"
   },
   {
     "name": "국립군산대",
@@ -338,7 +376,9 @@ const Admissions = [
     "target": 56,
     "minimum": "해당 모집단위 수능최저 없음",
     "lateRule": "전기공학과는 다군 일반전형에서 수능 성적을 반영합니다.",
-    "order": 65
+    "admissionPercentile": 38.92,
+    "rankSample": 46,
+    "adigaCode": "0000009"
   },
   {
     "name": "동아대",
@@ -355,7 +395,9 @@ const Admissions = [
     "target": 63,
     "minimum": "해당 모집단위 수능최저 없음",
     "lateRule": "경영학과는 가군 일반학생전형으로 선발합니다.",
-    "order": 52
+    "admissionPercentile": 61.17,
+    "rankSample": 53,
+    "adigaCode": "0000105"
   },
   {
     "name": "조선대",
@@ -375,7 +417,9 @@ const Admissions = [
     "lateField": "자연",
     "lateTarget": 95,
     "lateRule": "국어·수학·영어·통합과학 필수 반영, 한국사 응시. 수능 100%.",
-    "order": 44
+    "admissionPercentile": 60.17,
+    "rankSample": 48,
+    "adigaCode": "0000172"
   },
   {
     "name": "한남대",
@@ -392,7 +436,9 @@ const Admissions = [
     "target": 57,
     "minimum": "해당 모집단위 수능최저 없음",
     "lateRule": "경영학과는 가군 수능 100%로 선발합니다.",
-    "order": 88
+    "admissionPercentile": 75.67,
+    "rankSample": 55,
+    "adigaCode": "0000195"
   },
   {
     "name": "세명대",
@@ -409,9 +455,21 @@ const Admissions = [
     "target": 54,
     "minimum": "해당 모집단위 수능최저 없음",
     "lateRule": "AI컴퓨터학부는 수능 100%로 선발합니다.",
-    "order": 117
+    "admissionPercentile": null,
+    "rankSample": 0,
+    "adigaCode": "0000137"
   }
 ];
+
+// Rank only schools that published a comparable 70% percentile for 2024.
+const rankedSchools=Admissions.filter(c=>c.admissionPercentile!==null)
+  .sort((a,b)=>b.admissionPercentile-a.admissionPercentile);
+for(const c of Admissions){
+  c.order=c.admissionPercentile===null?null:1+rankedSchools.findIndex(x=>x.admissionPercentile===c.admissionPercentile);
+}
+function compareAdmissionOrder(a,b){
+  return (a.order??Admissions.length+1)-(b.order??Admissions.length+1);
+}
 
 // Keep the original school keys for portfolios saved by the first release.
 const EarlyCases = Admissions.map(c => ({...c,id:c.name}));

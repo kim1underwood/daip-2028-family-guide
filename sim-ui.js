@@ -106,18 +106,18 @@ const earlyCase=id=>EarlyCases.find(c=>c.id===id);
   }
   function schoolRows(search=''){
     const late=r.phase==='late', cases=availableCases(late);
-    const names=[...new Set(cases.slice().sort((a,b)=>a.order-b.order).map(c=>c.name))];
+    const names=[...new Set(cases.slice().sort(compareAdmissionOrder).map(c=>c.name))];
     return names.map(name=>{
       const tracks=cases.filter(c=>c.name===name), first=tracks[0], major=caseTitle(first,late);
       if(!(name+major+first.campus).includes(search.trim()))return '';
       const used=late?r.late.includes(name):tracks.every(c=>r.early.includes(c.id));
-      return '<button class="schoolRow" data-act="chooseSchool" data-v="'+esc(name)+'" '+(used?'disabled':'')+'><span><b>'+name+'</b><small>'+major+' · '+first.campus+'</small></span><span>'+(used?'담음':tracks.length>1?'세부전형 '+tracks.length+'개':'')+'</span></button>';
+      return '<button class="schoolRow" data-act="chooseSchool" data-v="'+esc(name)+'" '+(used?'disabled':'')+'><span><b>'+name+'</b><small>'+major+' · '+first.campus+(first.order===null?' · 입결 비교 제외':'')+'</small></span><span>'+(used?'담음':tracks.length>1?'세부전형 '+tracks.length+'개':'')+'</span></button>';
     }).join('')||'<p class="muted">검색 결과가 없습니다.</p>';
   }
   function openSchools(){
     if(!draftCategory)return;
     $('drawer').classList.add('schoolSheet');
-    dialog(draftCategory+(r.phase==='late'?'군':'')+' 대학 선택','<label class="sheetSearch">대학·학과·지역 검색<input type="search" id="schoolSearch" autocomplete="off" placeholder="예: 인천, 기계공학"></label><div class="schoolRows" id="schoolRows">'+schoolRows()+'</div>');
+    dialog(draftCategory+(r.phase==='late'?'군':'')+' 대학 선택','<label class="sheetSearch">대학·학과·지역 검색<input type="search" id="schoolSearch" autocomplete="off" placeholder="예: 인천, 기계공학"></label><p class="fine">2024 정시 입결순 · 같은 기준으로 비교하기 어려운 대학은 마지막에 표시합니다.</p><div class="schoolRows" id="schoolRows">'+schoolRows()+'</div>');
     if(!matchMedia('(max-width:800px)').matches)$('schoolSearch').focus();
   }
   function applications(late){
@@ -199,9 +199,10 @@ function ending(){
   }
   const offerTitle=x=>x.row.name+' '+x.row.major;
   const offerTrack=x=>(x.late?'정시':'수시')+' · '+x.row.kind;
+  const rankLabel=c=>c.order===null?'입결 비교 제외':'참여 대학 중 입결 '+c.order+'위 · '+c.admissionPercentile.toFixed(2);
   function offerCard(label,x,extra=''){
     return '<section class="offerCard"><small>'+label+'</small><h2>'+(x?offerTitle(x):'합격 사례 없음')+'</h2>'+
-      (x?'<p>'+offerTrack(x)+'</p><b>'+x.row.status+' · 국내 순위 '+x.c.order+'위</b>':'')+extra+'</section>';
+      (x?'<p>'+offerTrack(x)+'</p><b>'+x.row.status+' · '+rankLabel(x.c)+'</b>':'')+extra+'</section>';
   }
   function strategyReason(x){
     const hist=r.checkpoint.history,last=hist.at(-1),c=x.c;
@@ -244,18 +245,20 @@ function decisionDifference(x){
     const {best,actual,equivalent,routes}=Game.compareStrategies(r);
     const same=best&&actual&&actual.c.order===best.c.order;
     const comparison=!best?'이번 성적과 경쟁 조건에서는 지원 가능한 사례를 모두 확인해도 합격 결과가 없습니다.':
-      same?'이미 최선의 대학에 합격할 수 있는 원서를 선택했습니다.':
-      actual?'합격 가능 대학의 국내 순위가 '+actual.c.order+'위에서 '+best.c.order+'위로, '+(actual.c.order-best.c.order)+'계단 달라질 수 있었습니다.':
+      best.c.order===null?'합격 가능한 대학은 있습니다. 해당 대학은 같은 기준의 입결 비교가 어려워 사례로만 표시합니다.':
+      same?'입결 기준으로 가장 높은 대학에 합격하는 원서를 이미 선택했습니다.':
+      actual&&actual.c.order===null?'내 합격 대학에는 비교값이 없습니다. 같은 성적으로 가능한 다른 대학의 입결을 함께 확인하세요.':
+      actual?'합격 가능한 대학이 게임 내 입결 '+actual.c.order+'위에서 '+best.c.order+'위로, '+(actual.c.order-best.c.order)+'계단 달라질 수 있었습니다.':
       '내 원서에서는 합격이 없었지만, 같은 성적으로 합격할 수 있었던 전형이 있습니다.';
     const routeList=routes.map(({route,top,tested})=>'<li><strong>'+route+'</strong><div>'+(top?'<b>'+offerTitle(top)+'</b><small>'+top.row.kind+' · '+top.row.status+'</small>':'<span>합격 사례 없음</span>')+'</div><small>'+tested+'개 검토</small></li>').join('');
     const alternatives=equivalent.filter(x=>x!==best).map(x=>offerTitle(x)+' · '+offerTrack(x)+' ('+x.row.status+')');
     return head('2030학년도　/　지원 전략 비교','같은 성적, 최선의 선택',comparison)+
-      '<div class="strategyPair">'+offerCard('내가 낸 원서 중 최고 합격',actual,'<p class="registration">최종 등록 · '+esc(r.registered||'미등록')+'</p>')+
-      offerCard('전체 원서 중 최고 합격',best)+'</div>'+
+      '<div class="strategyPair">'+offerCard(actual?.c.order===null?'내가 낸 원서의 합격 사례':'내가 낸 원서 중 최고 합격',actual,'<p class="registration">최종 등록 · '+esc(r.registered||'미등록')+'</p>')+
+      offerCard(best?.c.order===null?'전체 원서에서 가능한 합격 사례':'전체 원서 중 최고 합격',best)+'</div>'+
       (best?'<section class="strategyReason"><h2>이 전형을 선택했다면</h2><p><b>내 선택과의 차이</b>　'+decisionDifference(best)+'</p>'+strategyReason(best)+
         (alternatives.length?'<p><b>같은 순위의 다른 선택</b>　'+alternatives.join(' / ')+'</p>':'')+'</section>':'')+
       '<h2 class="routeHeading">전형별로 어디까지 가능했을까요?</h2><ul class="routeResults">'+routeList+'</ul>'+
-      '<p class="fine basis">수시는 고3 1학기까지의 학생부와 저장된 추천 자격을, 정시는 수시 합격이 없는 경로를 적용했습니다. 성적·경쟁자·충원은 이번 회차와 같습니다. 합격 가능한 대학 중 목록의 국내 순위가 가장 높은 곳을 ‘최선’으로 정했습니다. 각 행은 따로 선택했을 때의 사후 결과입니다.</p>'+
+      '<p class="fine basis">수시는 고3 1학기까지의 학생부와 저장된 추천 자격을, 정시는 수시 합격이 없는 경로를 적용했습니다. 성적·경쟁자·충원은 이번 회차와 같습니다. 2024 정시 일반전형 모집단위별 70%컷 백분위의 중앙값으로 대학을 비교합니다. ‘최선’은 이 지표가 가장 높은 합격 사례입니다. 개별 학과의 합격선은 다를 수 있습니다. 각 행은 따로 선택했을 때의 사후 결과입니다.</p>'+
       btn('내 지원 결과로 돌아가기','ending','thin');
   }
   function render(focus=false,award=false){
@@ -278,7 +281,7 @@ function decisionDifference(x){
     dialog('학기별 성적표',tabs+'<h3 class="journalTerm">'+Game.terms[reportIndex]+'</h3>'+semesterPaper(r.history[reportIndex]));
   }
   function sources(){
-    dialog('공식 전형과 게임의 가정','<p>2026년 중3 학생이 2030학년도에 지원하는 가상 상황입니다. 대학 사례는 2028학년도 시행계획을 사용합니다. 2030학년도 실제 전형은 해당 연도 모집요강을 확인하세요.</p><p>학생은 국내 일반고 전 과정을 이수하고 수능 6개 과목에 응시합니다. 수시는 학생부교과·학생부종합·논술 사례에서 게임용 원서 5장을 고릅니다. 실제 일반대학 수시 지원 한도는 원칙적으로 6회입니다. 같은 대학의 복수지원 가능 여부는 해당 연도 모집요강을 확인하세요.</p><p>학기 점수·경쟁선·지원자·예비 이동은 게임에서 생성합니다. 공개 입시결과가 있는 사례는 원서 상세에 과거 연도와 지표를 적었습니다. 게임의 경쟁선과 합격 결과는 모의 수치입니다. 이전 회차를 이어 하면 처음 시작할 때의 계산식을 사용합니다. 학생부는 교과와 탐구 과정, 면접과 논술은 설명과 글쓰기 연습을 반영합니다. 새 회차에서는 실전 문제 풀이는 같은 시간 글쓰기 연습의 약 4분의 1만큼 논술 성장에 기여합니다.</p><p class="fine">자료 · 교육부 「2028 대학입시제도 개편 확정안」, 한국대학교육협의회 「2028학년도 대학입학전형기본사항」.</p><p class="fine">대학 목록 정렬 · 2026년 7월 Webometrics 국내 대학 순위.</p>'+Admissions.map(c=>'<p><b>'+c.name+'</b><br>'+EarlyCases.filter(track=>track.name===c.name).map(track=>track.early+' · '+src(track,false)).join('<br>')+'<br>정시 · '+src(c,true)+'</p>').join(''));
+    dialog('공식 전형과 게임의 가정','<p>2026년 중3 학생이 2030학년도에 지원하는 가상 상황입니다. 대학 사례는 2028학년도 시행계획을 사용합니다. 2030학년도 실제 전형은 해당 연도 모집요강을 확인하세요.</p><p>학생은 국내 일반고 전 과정을 이수하고 수능 6개 과목에 응시합니다. 수시는 학생부교과·학생부종합·논술 사례에서 게임용 원서 5장을 고릅니다. 실제 일반대학 수시 지원 한도는 원칙적으로 6회입니다. 같은 대학의 복수지원 가능 여부는 해당 연도 모집요강을 확인하세요.</p><p>학기 점수·경쟁선·지원자·예비 이동은 게임에서 생성합니다. 공개 입시결과가 있는 사례는 원서 상세에 과거 연도와 지표를 적었습니다. 게임의 경쟁선과 합격 결과는 모의 수치입니다. 이전 회차를 이어 하면 처음 시작할 때의 계산식을 사용합니다. 학생부는 교과와 탐구 과정, 면접과 논술은 설명과 글쓰기 연습을 반영합니다. 새 회차에서는 실전 문제 풀이는 같은 시간 글쓰기 연습의 약 4분의 1만큼 논술 성장에 기여합니다.</p><p class="fine">자료 · 교육부 「2028 대학입시제도 개편 확정안」, 한국대학교육협의회 「2028학년도 대학입학전형기본사항」.</p><details class="rankBasis"><summary>대학 정렬 기준과 입결 자료</summary><p>대입정보포털 어디가의 2024학년도 정시 일반전형 결과를 사용합니다. 각 대학이 공개한 모집단위별 최종등록자 70%컷 백분위를 한 줄당 한 값으로 집계한 중앙값입니다. 모집인원으로 가중하지 않으며 대학별 반영 과목과 방식은 다를 수 있습니다.</p><p>조선대는 세 영역 공개값의 평균을 사용했습니다. 강원대 사례는 통합 전 국립강릉원주대 자료입니다. 경북대는 백분위 합의 산출 기준을 동일하게 확인하기 어려웠고, 세명대는 80%컷 환산점수만 공개해 두 대학은 입결 비교에서 제외했습니다.</p>'+Admissions.slice().sort(compareAdmissionOrder).map(c=>'<p class="fine"><a href="https://www.adiga.kr/ucp/uvt/uni/univDetailSelection.do?menuId=PCUVTINF2000&amp;searchSyr=2025&amp;unvCd='+c.adigaCode+'" target="_blank" rel="noopener">'+c.name+' 공개표</a> · '+rankLabel(c)+(c.rankSample?' · 모집단위 '+c.rankSample+'건':'')+'</p>').join('')+'</details>'+Admissions.map(c=>'<p><b>'+c.name+'</b><br>'+EarlyCases.filter(track=>track.name===c.name).map(track=>track.early+' · '+src(track,false)).join('<br>')+'<br>정시 · '+src(c,true)+'</p>').join(''));
   }
   const invite=$('seminarInvite');
   const hiddenDayKey='pandong.seminar.hiddenDay';
@@ -288,7 +291,7 @@ function decisionDifference(x){
     $('stageTitle')?.focus({preventScroll:true});
   }
   function showInvite(){
-    if(r.phase!=='best')return;
+    if(location.hash!=='#play'||r.phase!=='best')return;
     let savedDay;
     try{savedDay=localStorage.getItem(hiddenDayKey);}catch{}
     const today=new Date().toDateString();
@@ -389,5 +392,19 @@ function decisionDifference(x){
       if(!draftSchool)$('schoolPicker')?.focus({preventScroll:true});
     }
   });
-  render();showInvite();
+  function displayEntry(focus){
+    const playing=location.hash==='#play';
+    $('welcome').hidden=playing;
+    $('gameScreen').hidden=!playing;
+    $('gameFooter').hidden=!playing;
+    if(playing){
+      render(focus);showInvite();
+    }else{
+      for(const dialog of document.querySelectorAll('dialog[open]'))dialog.close();
+      if(focus)$('welcomeTitle').focus({preventScroll:true});
+      window.scrollTo(0,0);
+    }
+  }
+  window.addEventListener('hashchange',()=>displayEntry(true));
+  displayEntry(false);
 })();

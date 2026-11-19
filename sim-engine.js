@@ -244,11 +244,11 @@ function compareStrategies(r){
     EarlyCases.filter(c=>c.name!=='경희대'||r.checkpoint.referred).forEach(c=>evaluate(c,false));
     Admissions.forEach(c=>evaluate(c,true));
     const offers=scenarios.filter(x=>x.row.accepted).sort((a,b)=>
-      a.c.order-b.c.order || Number(b.applied)-Number(a.applied) ||
+      compareAdmissionOrder(a.c,b.c) || Number(b.applied)-Number(a.applied) ||
       Number(b.row.status==='최초합격')-Number(a.row.status==='최초합격'));
     const best=offers[0];
     const actual=offers.find(x=>x.applied);
-    return {best,actual,equivalent:best?offers.filter(x=>x.c.order===best.c.order):[],
+    return {best,actual,equivalent:best?.c.order!=null?offers.filter(x=>x.c.order===best.c.order):[],
       routes:['학생부교과','학생부종합','논술','정시'].map(route=>({
         route,top:offers.find(x=>x.route===route),tested:scenarios.filter(x=>x.route===route).length
       }))};
