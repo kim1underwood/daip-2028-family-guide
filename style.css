@@ -40,3 +40,104 @@ main.zoom{display:block}.zoom .slide{width:max(1120px,110vw);margin:0 auto}.zoom
   main:not(.zoom) .hero .occasion{font-size:2.2cqw;margin:2cqw 0 0}
   main:not(.zoom) .hero .authors{font-size:1.4cqw;margin:4cqw 0 1cqw;line-height:normal}
 }
+
+/* Printed-table shading and text denote independent categories. */
+.slide[data-n="8"] .source-group-1{--group-paper:#fbe6d5}
+.slide[data-n="8"] .source-group-2{--group-paper:#fffefa}
+.slide[data-n="8"] .source-group-3{--group-paper:#d4eaf6}
+.slide[data-n="8"] .native tbody tr>:is(th,td){background:var(--group-paper)}
+.slide[data-n="12"] .terms tbody td{background:white}
+.slide[data-n="12"] .terms .term-cream td{background:#fff6dd}
+.slide[data-n="12"] .terms .term-peach td{background:#fde2cf}
+.slide[data-n="12"] .terms tbody th{background:#f1f1f1}
+.slide[data-n="12"] .terms tbody tr:nth-child(7) th{background:#e9f4f6}
+.slide[data-n="12"] .terms td:last-child .inkEm{color:inherit;font-weight:inherit}
+.slide .legend .med-key{background:#713c91}
+.native td.med-min{color:#713c91;font-weight:800}
+.slide .legend .science-key{background:#196136}
+.slide[data-n="20"] tbody td{background:#fffefa;color:var(--ink);font-weight:500}
+.slide[data-n="20"] tbody tr td:last-child{background:#fcf4df}
+.science-ink{color:#196136;font-weight:800}
+.subject-ink{color:#007080;font-weight:750}
+.slide[data-n="21"] .native tbody tr>td{background:#fffefa}
+.slide[data-n="21"] .native tbody tr>th,.slide[data-n="21"] .native tbody tr>td:last-child{background:#e8f2f5}
+.slide[data-n="21"] .native tbody tr.linked-cohort>:is(th,td){background:#e0edc6}
+.slide[data-n="21"] .columns>div:nth-child(2) .tablegroup:last-child h3{background:#f8e9ad;border-color:#ac821e}
+.aligned-scroll{width:100%;overflow:auto}
+.slide .aligned-admissions{table-layout:fixed;font-size:1.24cqw}
+.slide .aligned-admissions th,.slide .aligned-admissions td{padding:.37cqw .21cqw;overflow-wrap:anywhere}
+.slide .aligned-admissions thead tr:first-child th{background:#f4e8bc;color:var(--ink);border-top:2px solid #a48323}
+.slide .aligned-admissions thead tr:first-child th:last-child{background:#e2e9e4;border-color:#62766b}
+.slide .aligned-admissions thead tr:nth-child(2) th:nth-child(n+6){background:#dce4df}
+.slide .aligned-admissions .table-gap,.slide .aligned-admissions .table-missing{background:var(--paper);border:none;padding:0}
+.grade-figure{margin:0;font-variant-numeric:tabular-nums}
+.grade-figure figcaption{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:2.3cqw;font-size:1.6cqw;font-weight:750}
+.grade-figure figcaption span{font-size:1.15cqw;color:#47605c;font-weight:500}
+.grade-rows{display:grid;grid-template-columns:8.4cqw minmax(0,1fr);align-items:stretch}
+.grade-rows h3{display:flex;align-items:center;font-size:1.85cqw;letter-spacing:-.035em;margin:0}
+.grade-band{display:grid;min-height:7.9cqw}
+.grade-band>div{background:#e4eae4;color:#1d3431;display:flex;align-items:center;justify-content:center;flex-direction:column;border-right:1px solid var(--paper);min-width:0}
+.grade-band>div:nth-child(even){background:#d6e1da}
+.grade-band b{font-size:2.05cqw;line-height:1.2;letter-spacing:-.03em}
+.grade-band small{font-size:1.14cqw;margin-top:.3cqw}
+.grade-rows h3:nth-last-child(2)+.grade-band>div{background:#e7e4d2}
+.grade-rows h3:nth-last-child(2)+.grade-band>.widest{background:#204e49;color:white}
+.grade-band .widest b{font-size:3.05cqw}
+.grade-bridge{grid-column:2;position:relative;height:4.1cqw}
+.grade-bridge>div{position:absolute;left:34%;width:32%;inset-block:0;display:grid;grid-template-columns:6fr 20fr 6fr}
+.grade-bridge span{display:grid;place-items:center;font-size:1.2cqw;font-weight:700;color:#30413a;background:#e0eae2}
+.grade-bridge span:first-child{background:#d3e4ff;color:#184c83;border-block:2px solid #3978b7}
+.grade-bridge span:last-child{background:#f7dce2;color:#872c44;border-block:2px solid #b74c67}
+.grade-takeaway{margin:2cqw 0 1.3cqw 8.4cqw;font-size:1.5cqw;line-height:1.55;color:#39524d;word-break:keep-all}
+.grade-takeaway b{color:var(--ink);margin-right:.35em}
+.distribution .grades{display:grid;grid-template-columns:repeat(9,1fr)}
+.distribution thead tr:last-child th:last-child{padding-inline:0}
+.distribution .distribution-row{position:absolute;width:100%;height:100%;inset:0;display:block;background:#faf6e9;fill:none}
+.distribution-row .plot-grid{stroke:#a8aaa0;stroke-width:1;stroke-dasharray:4 3}
+.distribution-row .plot-circles{stroke:#087352;stroke-width:1.9}
+.distribution-row .plot-crosses{stroke:#9c372c;stroke-width:1.8;stroke-linecap:round}
+.slide[data-n="35"]{--zone-col:#378344;--zone-row:#b63864}
+.slide[data-n="35"] .zone>div>p{background:#e0efda;border-color:var(--zone-col)}
+.slide[data-n="35"] .zone>div>p:nth-child(2){background:#f6e3ea;border-color:var(--zone-row)}
+.zone-direction{display:block;font-size:1.07cqw;font-weight:700;line-height:1.35;margin-bottom:.28cqw}
+.slide[data-n="35"] .zones{table-layout:fixed}
+.slide[data-n="35"] .zones tr>:first-child{width:21%}
+.slide[data-n="35"] .zones [data-zone],.slide[data-n="35"] .zones th{position:relative}
+.slide[data-n="35"] .zones [data-zone="1"]{background:#eef1d0}
+.slide[data-n="35"] .zones [data-zone="2"]{background:#f9dc93}
+.slide[data-n="35"] .zones [data-zone="3"]{background:#e2dcf0}
+.slide[data-n="35"] .zones [data-zone="4"]{background:#d5ebee}
+.slide[data-n="35"] .zones [data-zone="5"]{background:#f8edcc}
+.slide[data-n="35"] .zones [data-zone="6"]{background:#f4d0d1}
+.slide[data-n="35"] .zones [data-zone="7"]{background:#e8e9df}
+.slide[data-n="35"] .zones [data-zone="8"]{background:#b6dce7}
+.slide[data-n="35"] .zones [data-zone="9"]{background:#c6c3d4}
+.zones .zone-col::before,.zones .zone-row::after{content:"";position:absolute;pointer-events:none;z-index:1}
+.zones .zone-col::before{background:var(--zone-col);width:max(3px,.34cqw);top:-1px;bottom:-1px;left:10%}
+.zones .zone-row::after{background:var(--zone-row);height:max(3px,.34cqw);left:-1px;right:-1px;top:17%}
+.zones thead .zone-col::before{top:16%;border-radius:3px 3px 0 0}
+.zones tbody tr:nth-child(2) .zone-col::before{bottom:15%;border-radius:0 0 3px 3px}
+.zones th.zone-row::after{left:14%;border-radius:3px 0 0 3px}
+.zones tr:first-child td.zone-row:nth-child(3)::after{right:10%;border-radius:0 3px 3px 0}
+@media(max-width:700px) and (orientation:portrait){
+ .slide .aligned-admissions{font-size:13px;min-width:780px}
+ .slide .aligned-admissions th,.slide .aligned-admissions td{padding:5px 4px}
+ .grade-figure figcaption{font-size:16px;gap:8px;margin-bottom:15px}
+ .grade-figure figcaption span{font-size:11px}
+ .grade-rows{grid-template-columns:100%}
+ .grade-rows h3{font-size:15px;margin:0 0 5px}
+ .grade-rows h3:nth-last-child(2){margin:3px 0 5px}
+ .grade-band{min-height:53px}
+ .grade-band b{font-size:15px}.grade-band small{font-size:9px}
+ .grade-band .widest b{font-size:22px}
+ .grade-bridge{grid-column:1;height:26px}
+ .grade-bridge span{font-size:11px}
+ .grade-takeaway{margin:12px 0;font-size:14px}
+ .zone-direction{font-size:12px}
+}
+
+.slide[data-n="35"] .zone [data-zone-key]{color:var(--ink)}
+.slide[data-n="35"] [data-zone-key="1"]{background:#eef1d0}
+.slide[data-n="35"] [data-zone-key="2"]{background:#f9dc93}
+.slide[data-n="35"] [data-zone-key="3"]{background:#e2dcf0}
+.slide[data-n="35"] [data-zone-key="4"]{background:#d5ebee}
