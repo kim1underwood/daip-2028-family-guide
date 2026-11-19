@@ -41,9 +41,9 @@ const EARLY_LIMIT = 5;
       r.plan=fastPlan(r,i);r.phase='plan';finishTerm(r);
     }
   }
-  function band(r,c){
-    const gap=estimate(r,c);
-    if(!minMet(c,r.checkpoint.history.at(-1).mockGrades)||gap < -4)return '상향';
+  function band(r,c,late=false){
+    const gap=late?lateScore(c,r.exam.scores,r.checkpoint.history)-(c.lateTarget||c.target):estimate(r,c);
+    if(gap < -4||(!late&&!minMet(c,r.checkpoint.history.at(-1).mockGrades)))return '상향';
     return gap>5?'하향':'적정';
   }
   function addEarly(r,id){
@@ -68,10 +68,21 @@ const EARLY_LIMIT = 5;
     if(i===5)return bound(1+Math.ceil((40-Math.round(v/2))/5),1,9);
     return relative(percentile(v),[96,89,77,60,40,23,11,4]);
   }
+// Roll once per school term, on the activity in which the student invested most.
+  function termEvent(run,plan,index){
+    const most=Math.max(...plan.tokens);
+    const leaders=plan.tokens.flatMap((n,j)=>n===most?[j]:[]);
+    const task=leaders[Math.floor(noise(run.seed,'event-task-'+index)*leaders.length)];
+    const roll=noise(run.seed,'effort-return-'+index);
+    const level=roll<.25?'low':roll<.75?'normal':'high';
+    const multiplier={low:.6,normal:1,high:1.5}[level];
+    return {task,level,multiplier,invested:most};
+  }
   function termReport(run,plan){
     const i=run.history.length, prev=run.history.at(-1);
     const a=prev?prev.learned:run.start, b=prev?prev.practice:run.start;
-    const [study,practice,research,expression]=plan.tokens;
+    const effortEvent=termEvent(run,plan,i);
+    const [study,practice,research,expression]=plan.tokens.map((n,j)=>j===effortEvent.task?n*effortEvent.multiplier:n);
     const rand=(tag,s)=>noise(run.seed,i+'-'+tag+'-'+s)*2-1;
     function improve(old,effort,focus,kind,index){
       const diminishing=.35+(100-old)/75;
@@ -97,9 +108,9 @@ const EARLY_LIMIT = 5;
     if(effect!=='mock')hidden[effect]=bound(hidden[effect]+gain);
     const record=[events[i][4+plan.event]];
     if(i===2&&research>0)record.push(run.history[1].plan.event===0?'지난 학기 통학 설문 자료를 다시 분석함':'지난 학기 온도 측정 자료와 비교함');
-    if(research>=2)record.push('추가 자료를 찾아 탐구 질문을 구체화함');
-    if(expression>=2)record.push('답변을 녹음하고 글의 근거를 다시 다듬음');
-    return {i,plan:clone(plan),learned,practice:practiceScores,school,mock,grades:school.map(schoolGrade),levels:school.map(achievement),mockGrades:mock.map(mockGrade),hidden,record};
+    if(plan.tokens[2]>=2)record.push('추가 자료를 찾아 탐구 질문을 구체화함');
+    if(plan.tokens[3]>=2)record.push('답변을 녹음하고 글의 근거를 다시 다듬음');
+    return {i,effortEvent,plan:clone(plan),learned,practice:practiceScores,school,mock,grades:school.map(schoolGrade),levels:school.map(achievement),mockGrades:mock.map(mockGrade),hidden,record};
   }
   function finishTerm(r){
     if(r.phase!=='plan'||r.history.length>=6||r.plan.tokens.reduce((a,b)=>a+b,0)!==6)return;
