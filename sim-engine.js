@@ -36,11 +36,14 @@ const EARLY_LIMIT = 5;
   }
   // Internal scores sit inside the same grade bands used by the admission model.
   const scoreBands=new Map();
-  function scoreInBand(grade, subject, school, seed) {
+  function gradeBand(grade, subject, school) {
     const gradeOf=school?schoolGrade:score=>mockGrade(score,subject);
     const key=[school,subject,grade].join('/');
     if(!scoreBands.has(key))scoreBands.set(key,Array.from({length:101},(_,n)=>n).filter(score=>gradeOf(score)===grade));
-    const band=scoreBands.get(key);
+    return scoreBands.get(key);
+  }
+  function scoreInBand(grade, subject, school, seed) {
+    const band=gradeBand(grade,subject,school);
     if(!band.length)throw new RangeError('등급 범위를 확인하세요.');
     const fraction=.25+.5*noise(seed,(school?'school':'exam')+'-band-'+subject);
     return band[Math.floor(fraction*band.length)];
@@ -129,6 +132,13 @@ const EARLY_LIMIT = 5;
     const share=({'아주대':.3,'동아대':.4,'서울대':.5,'연세대':.3,'가천대':.5,'인천대':.4,'충남대':1/3,'국립공주대':.3,'전북대':.2,'인하대':.3,'전남대':.3})[c.name]??.3;
     return (1-share)*document+share*speak;
   }
+  // Spread each integer band over its national relative-grade percentile interval.
+  const percentileEdges=[100,96,89,77,60,40,23,11,4,0];
+  function gradePercentile(score){
+    const grade=mockGrade(score,0),band=gradeBand(grade,0,false);
+    const fraction=(score-band[0]+.5)/band.length;
+    return percentileEdges[grade]+fraction*(percentileEdges[grade-1]-percentileEdges[grade]);
+  }
   function examComponent(c,scores){
     const [k,e,m,s,p]=scores,t=Math.max(s,p),natural=['자연','공학'].includes(c.lateField||c.field);
     switch(c.name){
@@ -143,8 +153,11 @@ const EARLY_LIMIT = 5;
       case '경희대':return .35*k+.35*m+.3*t;
       case '고려대':{
         const math=natural?240:200,inquiry=natural?200:160;
-        const deduction=[0,1,3,6,12,15,18,21,24][mockGrade(e,1)-1];
-        return (200*k+math*m+inquiry*(s+p)/2)/(200+math+inquiry)-deduction/10;
+        const english=[0,1,3,6,12,15,18,21,24][mockGrade(e,1)-1];
+        const history=[0,0,0,0,.2,.4,.6,.8,2][mockGrade(scores[5],5)-1];
+        const weighted=200*gradePercentile(k)+math*gradePercentile(m)+inquiry*(gradePercentile(s)+gradePercentile(p))/2;
+        // Percentile proxy on a 100-point scale; absolute-grade penalties come from the 1,000-point scale.
+        return weighted/(200+math+inquiry)-(english+history)/10;
       }
       case '강원대':return mean([k,e,m,s,p].sort((a,b)=>b-a).slice(0,3));
       case '가천대':{
@@ -230,13 +243,15 @@ const EARLY_LIMIT = 5;
     const selective=modern&&['서울대','연세대','고려대'].includes(c.name);
     const localPool=noise(r.seed,draw+'pool');
     const pool=selective ? .55*noise(r.seed,'selective-cohort')+.45*localPool : localPool;
-    const cutoff=target+(pool-.5)*10;
+    const cuts=late&&koreaRegularCuts[key];
+    const cutoff=cuts?Math.min(...cuts)+pool*Math.abs(cuts[0]-cuts[1]):target+(pool-.5)*10;
     const margin=score-cutoff;
     const passes=late||minMet(c,r.exam.grades);
-    const waiting=passes&&margin<0&&margin>=-6;
-    const moved=1+Math.floor(noise(r.seed,draw+'moves')*(selective?2:5)),position=Math.max(1,Math.ceil(-margin));
+    const step=cuts ? 0.35 : 1;
+    const waiting=passes&&margin<0&&margin>=-6*step;
+    const moved=1+Math.floor(noise(r.seed,draw+'moves')*(selective?2:5)),position=Math.max(1,Math.ceil(-margin/step));
     const status=!passes?'최저 미충족':margin>=0?'최초합격':waiting&&position<=moved?'충원합격':waiting?'예비 종료':'불합격';
-    const reason=!late&&c.kind==='논술'&&!['최초합격','충원합격'].includes(status)?(!passes?'수능최저 미충족':(c.minimum.includes('없음')?'수능최저 없음':'수능최저 충족')+' · 논술전형 총점 부족'):'';
+    const reason=cuts?'모의 환산점수 '+score.toFixed(2)+' · 이번 회차 모의 기준선 '+cutoff.toFixed(2):!late&&c.kind==='논술'&&!['최초합격','충원합격'].includes(status)?(!passes?'수능최저 미충족':(c.minimum.includes('없음')?'수능최저 없음':'수능최저 충족')+' · 논술전형 총점 부족'):'';
     return {reason,name:c.name,major:late?(c.lateMajor||c.major):c.major,kind:late?c.group+'군 '+c.late:c.early,status,wait:waiting,position,moved,accepted:['최초합격','충원합격'].includes(status)};
   }
   const results=(r,late=false)=>(late?r.late:r.early).map(id=>outcome(r,late?regularById.get(id):earlyById.get(id),late));

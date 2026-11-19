@@ -240,9 +240,10 @@ const earlyCase=id=>earlyById.get(id);
     const statistic=late?c.examCut:c.schoolCut;
     const measure=late?'정시 최종등록자 70%컷 백분위':(c.name==='세명대'?'교과 환산등급 80%컷':'최종등록자 교과등급 70%컷');
     const sourceUrl='https://www.adiga.kr/ucp/uvt/uni/univDetailSelection.do?menuId=PCUVTINF2000&amp;searchSyr=2025&amp;unvCd='+c.adigaCode;
-    const basis=c.baseId?(statistic?'2024학년도 해당 모집단위 '+measure+' '+statistic+' · 과거 전형 참고':'이 모집단위는 공개 비교값이 부족해 대학의 시뮬레이션 기준선을 적용합니다.'):(calibration?.basis||'시뮬레이션 추정 경쟁선');
+    const cuts=late&&koreaRegularCuts[id];
+    const basis=cuts?'정시 일반전형 최종등록자 70% 지점 평균 백분위는 2024학년도 '+cuts[0].toFixed(2)+', 2025학년도 '+cuts[1].toFixed(2)+'입니다. 시뮬레이션은 이 범위에서 회차 기준선을 정합니다. 실제 전형은 국어·수학·탐구 표준점수를 사용하며, 여기서는 입력한 등급으로 백분위를 추정합니다.':c.baseId?(statistic?'2024학년도 해당 모집단위 '+measure+' '+statistic+' · 과거 전형 참고':'이 모집단위는 공개 비교값이 부족해 대학의 시뮬레이션 기준선을 적용합니다.'):(calibration?.basis||'시뮬레이션 추정 경쟁선');
     const description=late?c.lateRule||'대학별 수능 반영 영역과 환산 방법은 시행계획을 확인하세요.':c.rule;
-    dialog(c.name+' '+caseTitle(c,late),'<h3>'+caseTrack(c,late)+'</h3><p>'+description+'</p><p>'+(late?'고교 졸업예정 및 해당 수능 응시':c.minimum)+'</p><p>'+src(c,late)+'</p><p class="fine">'+basis+' <a href="'+sourceUrl+'" target="_blank" rel="noopener">어디가 공개표</a></p><p><a href="'+PlanSources[c.name]+'" target="_blank" rel="noopener">2028 시행계획 자료</a></p>');
+    dialog(c.name+' '+caseTitle(c,late),'<h3>'+caseTrack(c,late)+'</h3><p>'+description+'</p><p>'+(late?'고교 졸업예정 및 해당 수능 응시':c.minimum)+'</p><p>'+src(c,late)+'</p><p class="fine">'+basis+' <a href="'+sourceUrl+'" target="_blank" rel="noopener">'+(cuts?'2024 공개표':'어디가 공개표')+'</a>'+(cuts?' · <a href="'+sourceUrl.replace('searchSyr=2025','searchSyr=2026')+'" target="_blank" rel="noopener">2025 공개표</a>':'')+'</p><p><a href="'+PlanSources[c.name]+'" target="_blank" rel="noopener">2028 시행계획 자료</a></p>');
   }
   function notices(rows){
     return rows.length?rows.map(x=>'<div class="notice"><div><b>'+x.name+' '+x.major+'</b><small>'+x.kind+'</small>'+(x.reason?'<small class="decisionReason">'+x.reason+'</small>':'')+'</div><strong class="'+(x.accepted?'success':'')+'">'+x.status+'</strong>'+(x.wait?'<p>예비 '+x.position+'번 · '+x.moved+'번까지 충원</p>':'')+'</div>').join(''):'<p class="muted">제출한 원서가 없습니다.</p>';

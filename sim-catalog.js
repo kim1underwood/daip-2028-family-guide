@@ -547,7 +547,6 @@ const AdmissionCalibration = {
     '건국대': {target:88, basis:'2025 정시 등록자 환산 50%·70% 지점 · 경영학과 663.11·662.1/1,000점 (어디가).'},
     '충남대': {target:72, basis:'2025 정시 등록자 환산 50%·70% 지점 · 국어국문학과 174.00·173.30/300점 (어디가).'},
     '서울대': {target:100, basis:'2025 정시 일반 정치외교학부 등록자 환산 50%·70% 지점 396.6·394.0점 (어디가).'},
-    '고려대': {target:100, basis:'2025 정시 일반 경영대학 등록자 70% 지점 평균 백분위 92.72 (어디가).'},
     '연세대': {target:100, basis:'2025 정시 일반 경영학과 등록자 환산 50%·70% 지점 701.9538·698.3454/1,000점 (어디가).'},
     '아주대': {target:84, basis:'2025 정시 경영학과 등록자 환산 50%·70% 지점 883.34·880.13/1,000점 (어디가).'},
     '경희대': {target:88, basis:'2025 정시 행정학과 등록자 환산 50%·70% 지점 548.07·546.93/800점 (어디가).'}
@@ -583,7 +582,7 @@ const PlanSources = {
 
 const MajorOptions = [
   {"school": "서울대", "major": "기계공학부", "field": "공학", "group": "나", "quotaPage": "4", "schoolCut": 2.21, "earlyShift": -1.6, "examCut": 96.25, "lateShift": -1.0},
-  {"school": "고려대", "major": "기계공학부", "field": "공학", "group": "가", "quotaPage": "5, 7", "schoolCut": 3.17, "earlyShift": 0, "examCut": 95.33, "lateShift": 0.6},
+  {"school": "고려대", "major": "기계공학부", "field": "공학", "group": "가", "quotaPage": "5, 7", "schoolCut": 3.17, "earlyShift": 0, "examCut": 95.33},
   {"school": "연세대", "major": "국어국문학과", "field": "인문", "group": "가", "quotaPage": "10, 12", "schoolCut": 2.83, "earlyShift": -3.6, "examCut": 91.0, "lateShift": -0.8},
   {"school": "경희대", "major": "경제학과", "field": "사회", "group": "가", "quotaPage": "13", "schoolCut": 1.82, "earlyShift": 0.6, "examCut": 89.83, "lateShift": 0.5},
   {"school": "건국대", "major": "기술경영학과", "field": "사회", "group": "가", "quotaPage": "15", "examCut": 87.25, "lateShift": -3.4},
@@ -609,6 +608,12 @@ const MajorOptions = [
   {"school": "세명대", "major": "호텔경영학과", "field": "사회", "group": "다", "quotaPage": "11", "schoolCut": 6.1, "earlyShift": 0},
   {"school": "조선대", "major": "간호학과", "field": "자연", "group": "가", "quotaPage": "모집인원표 간호학과", "regularOnly": true, "examCut": 75.67, "lateShift": 12.4}
 ];
+
+// 어디가, 가군 일반전형 최종등록자 70% 지점 평균 백분위 (2024, 2025학년도 순).
+const koreaRegularCuts={
+  '고려대':[95,92.72],
+  '고려대/기계공학부':[95.33,94.30]
+};
 
 const RegularCases=Admissions.map(c=>({...c,id:c.name}));
 for(const option of MajorOptions){
