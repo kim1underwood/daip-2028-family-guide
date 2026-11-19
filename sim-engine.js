@@ -3,7 +3,6 @@
 const Game = (() => {
   const subjects = ['국어','영어','수학','통합사회','통합과학'];
   const mockSubjects = [...subjects,'한국사'];
-  const names = ['서윤','민재','지우'];
   const types = ['꾸준히 쌓는 형','실전 집중형','탐구 몰입형'];
   const typesText = ['수업 복습의 효과가 조금 큽니다.','시간을 재고 푸는 연습에 강합니다.','질문을 탐구 기록으로 발전시키기 쉽습니다.'];
   const terms = ['고1 1학기','고1 2학기','고2 1학기','고2 2학기','고3 1학기','고3 2학기'];
@@ -56,7 +55,7 @@ const EARLY_LIMIT = 5;
     if(r.phase==='early')r.early=r.early.filter(item=>item!==id);
   }
   function fresh(seed=crypto.getRandomValues(new Uint32Array(1))[0]) {
-    return {version:3,seed,phase:'setup',type:0,avatar:0,start:[72,72,72,72,72],history:[],plan:blank(),early:[],late:[],interest:'모두',risk:'균형',referred:false,replay:false,first:null,checkpoint:null};
+    return {version:3,seed,phase:'setup',type:0,start:[72,72,72,72,72],history:[],plan:blank(),early:[],late:[],interest:'모두',risk:'균형',referred:false,replay:false,first:null,checkpoint:null};
   }
   function blank(){return {tokens:[2,2,1,1],focus:0,mockFocus:2,event:0};}
   const relative=(p,cuts)=>1+cuts.filter(c=>p<c).length;
@@ -74,7 +73,7 @@ const EARLY_LIMIT = 5;
     const leaders=plan.tokens.flatMap((n,j)=>n===most?[j]:[]);
     const task=leaders[Math.floor(noise(run.seed,'event-task-'+index)*leaders.length)];
     const roll=noise(run.seed,'effort-return-'+index);
-    const level=roll<.25?'low':roll<.75?'normal':'high';
+    const level=roll<.2?'low':roll<.8?'normal':'high';
     const multiplier={low:.6,normal:1,high:1.5}[level];
     return {task,level,multiplier,invested:most};
   }
@@ -226,5 +225,5 @@ const EARLY_LIMIT = 5;
     r.history=clone(r.checkpoint.history);r.early=[];r.late=[];r.registered=null;
     r.exam=null;r.replay=true;r.phase='early';r.referred=r.checkpoint.referred;
   }
-  return {subjects,mockSubjects,names,types,typesText,terms,tasks,events,blank,fresh,finishTerm,nextReport,submitEarly,saveEnding,replay,results,advice,toggleLate,band,category,quickStart,addEarly,removeEarly,EARLY_LIMIT,minMet,mean,bound};
+  return {subjects,mockSubjects,types,typesText,terms,tasks,events,blank,fresh,finishTerm,nextReport,submitEarly,saveEnding,replay,results,advice,toggleLate,band,category,quickStart,addEarly,removeEarly,EARLY_LIMIT,minMet,mean,bound};
 })();

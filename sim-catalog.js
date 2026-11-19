@@ -13,9 +13,8 @@ const Admissions = [
     "latePages": "3, 17~19",
     "target": 96,
     "minimum": "해당 모집단위 수능최저 없음",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876415&q_fileId=ad9fbb81-9e10-4b16-8368-432585e8c5df",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260507094445537",
-    "lateRule": "정시 일반전형은 1단계 수능, 2단계 수능 60점과 교과역량평가 40점입니다."
+    "lateRule": "정시 일반전형은 1단계 수능, 2단계 수능 60점과 교과역량평가 40점입니다.",
+    "order": 1
   },
   {
     "name": "고려대",
@@ -31,9 +30,8 @@ const Admissions = [
     "latePages": "7, 24~25",
     "target": 93,
     "minimum": "해당 모집단위 수능최저 없음",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876413&q_fileId=e825ff89-f4e0-443d-8fd6-9f08f4a04c60",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260507094237023",
-    "lateRule": "경영학과 일반전형은 수능 100% 일괄합산입니다."
+    "lateRule": "경영학과 일반전형은 수능 100% 일괄합산입니다.",
+    "order": 4
   },
   {
     "name": "연세대",
@@ -49,9 +47,8 @@ const Admissions = [
     "latePages": "12, 24~25",
     "target": 94,
     "minimum": "국·수·사·과 중 국어 또는 수학을 포함한 2합 4, 영어 3·한국사 4 이내",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876417&q_fileId=0d866d94-33bd-4c92-b939-8471ac631ed9",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260507094557229",
-    "lateRule": "유형Ⅰ은 수능 900점과 서류평가 100점을 합산합니다."
+    "lateRule": "유형Ⅰ은 수능 900점과 서류평가 100점을 합산합니다.",
+    "order": 2
   },
   {
     "name": "경희대",
@@ -67,8 +64,7 @@ const Admissions = [
     "latePages": "13",
     "target": 85,
     "minimum": "국·수·영·탐(상위 1) 중 2합 5, 한국사 5 이내",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876413&q_fileId=fcb2377d-fe5c-4f7d-8e13-1c7b9d81b889",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260507094237023"
+    "order": 7
   },
   {
     "name": "건국대",
@@ -84,9 +80,8 @@ const Admissions = [
     "latePages": "15, 36",
     "target": 85,
     "minimum": "국·수·영·탐(상위 1)·한국사 중 3합 8",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876413&q_fileId=25bbd553-d794-4d6d-b2de-56420229a26f",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260507094237023",
-    "lateRule": "나군 인문계 경영학과는 수능 100%로 선발합니다."
+    "lateRule": "나군 인문계 경영학과는 수능 100%로 선발합니다.",
+    "order": 15
   },
   {
     "name": "아주대",
@@ -102,9 +97,8 @@ const Admissions = [
     "latePages": "3~4, 9",
     "target": 79,
     "minimum": "해당 모집단위 수능최저 없음",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876520&q_fileId=96db60f4-1f29-485d-a221-50637408e6c1",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260507112426799",
-    "lateRule": "경영학과는 다군 일반전형에서 수능 성적을 반영합니다."
+    "lateRule": "경영학과는 다군 일반전형에서 수능 성적을 반영합니다.",
+    "order": 14
   },
   {
     "name": "인하대",
@@ -120,9 +114,8 @@ const Admissions = [
     "latePages": "6, 24",
     "target": 80,
     "minimum": "해당 모집단위 수능최저 없음",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876433&q_fileId=5b884140-e638-4389-bb96-f6aa543c8171",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260507100329600",
-    "lateRule": "기계공학과는 수능 100%로 선발합니다."
+    "lateRule": "기계공학과는 수능 100%로 선발합니다.",
+    "order": 23
   },
   {
     "name": "가천대",
@@ -138,9 +131,8 @@ const Admissions = [
     "latePages": "23, 26~27",
     "target": 75,
     "minimum": "해당 모집단위 수능최저 없음",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876518&q_fileId=15d02c5e-4d6d-4a7c-a84f-d6eec936763d",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260507112323922",
-    "lateRule": "경영학과는 일반전형 1과 2 모두 다군입니다. 이 원서는 일반전형 1입니다."
+    "lateRule": "경영학과는 일반전형 1과 2 모두 다군입니다. 이 원서는 일반전형 1입니다.",
+    "order": 35
   },
   {
     "name": "인천대",
@@ -156,9 +148,8 @@ const Admissions = [
     "latePages": "8, 25",
     "target": 72,
     "minimum": "해당 모집단위 수능최저 없음",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876433&q_fileId=f2c597f3-ec47-496f-8278-7341c4a6e163",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260507100329600",
-    "lateRule": "경영학부는 수능 100%로 선발합니다."
+    "lateRule": "경영학부는 수능 100%로 선발합니다.",
+    "order": 49
   },
   {
     "name": "강원대",
@@ -174,9 +165,8 @@ const Admissions = [
     "latePages": "23, 35",
     "target": 58,
     "minimum": "해당 모집단위 수능최저 없음",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876547&q_fileId=23320efa-9333-4acc-8608-f273778d3b1f",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260507113609667",
-    "lateRule": "강릉캠퍼스 관광경영학과는 다군 일반전형에서 수능 100%를 반영합니다."
+    "lateRule": "강릉캠퍼스 관광경영학과는 다군 일반전형에서 수능 100%를 반영합니다.",
+    "order": 20
   },
   {
     "name": "충북대",
@@ -192,10 +182,9 @@ const Admissions = [
     "latePages": "17~19",
     "target": 69,
     "minimum": "해당 모집단위 수능최저 없음",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876941&q_fileId=8485712f-10c9-49e7-876f-7faa83dcbb6a",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508104929947",
     "lateRule": "경영학부는 인문계 수능 100%로 선발합니다. 모집군은 별첨 모집단위별 모집인원표 기준입니다.",
-    "quotaUrl": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876941&q_fileId=633092d2-223f-411d-844b-e994f543e15d"
+    "order": 27,
+    "quotaNote": true
   },
   {
     "name": "충남대",
@@ -211,9 +200,8 @@ const Admissions = [
     "latePages": "1, 32, 38",
     "target": 71,
     "minimum": "해당 모집단위 수능최저 없음",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876941&q_fileId=ce8827ae-c3d1-4d92-ae25-435ed6e4c252",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508104929947",
-    "lateRule": "국어국문학과는 수능·교과·출결을 반영합니다. 실질반영비율은 각 80%, 15%, 5%입니다."
+    "lateRule": "국어국문학과는 수능·교과·출결을 반영합니다. 실질반영비율은 각 80%, 15%, 5%입니다.",
+    "order": 13
   },
   {
     "name": "전북대",
@@ -229,9 +217,8 @@ const Admissions = [
     "latePages": "6, 43",
     "target": 69,
     "minimum": "해당 모집단위 수능최저 없음",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876929&q_fileId=740ae2d8-a30d-4180-857b-22402636dc6e",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508104238757",
-    "lateRule": "경상계열은 가군에서 수능 500점으로 일괄 선발합니다."
+    "lateRule": "경상계열은 가군에서 수능 500점으로 일괄 선발합니다.",
+    "order": 28
   },
   {
     "name": "전남대",
@@ -247,10 +234,9 @@ const Admissions = [
     "latePages": "24, 28",
     "target": 73,
     "minimum": "해당 모집단위 수능최저 없음",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876929&q_fileId=3b7129ac-f3f8-419c-af74-964c9be82f1c",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508104238757",
     "lateRule": "경영학부는 가군에서, 경제학부는 나군에서 선발합니다. 이 원서는 경영학부입니다.",
-    "quotaUrl": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876929&q_fileId=5efa6e8e-475f-41af-b871-8b9de4b4d771"
+    "order": 21,
+    "quotaNote": true
   },
   {
     "name": "경북대",
@@ -266,9 +252,8 @@ const Admissions = [
     "latePages": "9, 43~44",
     "target": 78,
     "minimum": "국·수·영·탐(상위 1) 중 2합 6, 한국사 응시",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876949&q_fileId=886fdeac-5af2-4951-87ce-a3ee47687f34",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508105709979",
-    "lateRule": "경영학부는 수능 900점과 교과 100점을 합산합니다."
+    "lateRule": "경영학부는 수능 900점과 교과 100점을 합산합니다.",
+    "order": 12
   },
   {
     "name": "부산대",
@@ -284,9 +269,8 @@ const Admissions = [
     "latePages": "8, 29~32",
     "target": 79,
     "minimum": "국·수·영·탐(상위 1) 중 3합 7, 한국사 응시",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876954&q_fileId=d5294d68-a91a-487e-8caa-8925ddb87bd6",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508110241350",
-    "lateRule": "경영학과는 수능 80%와 학업충실도평가 20%를 반영합니다."
+    "lateRule": "경영학과는 수능 80%와 학업충실도평가 20%를 반영합니다.",
+    "order": 10
   },
   {
     "name": "경상국립대",
@@ -302,9 +286,8 @@ const Admissions = [
     "latePages": "16~17, 19",
     "target": 62,
     "minimum": "해당 모집단위 수능최저 없음",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876952&q_fileId=37bf35d9-e284-43e9-9910-ca52aa4702c3",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508110131587",
-    "lateRule": "도시공학과는 수능 100%로 선발합니다."
+    "lateRule": "도시공학과는 수능 100%로 선발합니다.",
+    "order": 22
   },
   {
     "name": "제주대",
@@ -320,9 +303,8 @@ const Admissions = [
     "latePages": "5, 38~40, 49",
     "target": 60,
     "minimum": "해당 모집단위 수능최저 없음",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876548&q_fileId=96f9bf87-3780-4bb8-b4f6-d94f623d3a15",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260507113720669",
-    "lateRule": "경영학과는 다군 일반학생전형으로 선발합니다."
+    "lateRule": "경영학과는 다군 일반학생전형으로 선발합니다.",
+    "order": 41
   },
   {
     "name": "국립공주대",
@@ -338,9 +320,8 @@ const Admissions = [
     "latePages": "14, 23",
     "target": 77,
     "minimum": "해당 모집단위 수능최저 없음",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876932&q_fileId=07199948-ea5f-42ec-8d9f-62fa7da99175",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508104534585",
-    "lateRule": "국어교육과는 수능 100%로 선발합니다."
+    "lateRule": "국어교육과는 수능 100%로 선발합니다.",
+    "order": 55
   },
   {
     "name": "국립군산대",
@@ -356,9 +337,8 @@ const Admissions = [
     "latePages": "7, 12~13",
     "target": 56,
     "minimum": "해당 모집단위 수능최저 없음",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876920&q_fileId=f2c6db9a-869b-47a8-bd19-51b7c95e5b2c",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508103923898",
-    "lateRule": "전기공학과는 다군 일반전형에서 수능 성적을 반영합니다."
+    "lateRule": "전기공학과는 다군 일반전형에서 수능 성적을 반영합니다.",
+    "order": 65
   },
   {
     "name": "동아대",
@@ -374,9 +354,8 @@ const Admissions = [
     "latePages": "6~7",
     "target": 63,
     "minimum": "해당 모집단위 수능최저 없음",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876954&q_fileId=41c49372-18ac-4ba9-8514-c96d0a6c5d4f",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508110241350",
-    "lateRule": "경영학과는 가군 일반학생전형으로 선발합니다."
+    "lateRule": "경영학과는 가군 일반학생전형으로 선발합니다.",
+    "order": 52
   },
   {
     "name": "조선대",
@@ -392,12 +371,11 @@ const Admissions = [
     "latePages": "20~21, 부록",
     "target": 61,
     "minimum": "해당 모집단위 수능최저 없음",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876929&q_fileId=1d2e6f4f-55a2-46f0-ac06-2f5c4bc408ad",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508104238757",
     "lateMajor": "약학과",
     "lateField": "자연",
     "lateTarget": 95,
-    "lateRule": "국어·수학·영어·통합과학 필수 반영, 한국사 응시. 수능 100%."
+    "lateRule": "국어·수학·영어·통합과학 필수 반영, 한국사 응시. 수능 100%.",
+    "order": 44
   },
   {
     "name": "한남대",
@@ -413,9 +391,8 @@ const Admissions = [
     "latePages": "6, 9, 13",
     "target": 57,
     "minimum": "해당 모집단위 수능최저 없음",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876941&q_fileId=e2cb5847-5a4a-4ded-b6a6-8f9bf1f85397",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508104929947",
-    "lateRule": "경영학과는 가군 수능 100%로 선발합니다."
+    "lateRule": "경영학과는 가군 수능 100%로 선발합니다.",
+    "order": 88
   },
   {
     "name": "세명대",
@@ -431,9 +408,8 @@ const Admissions = [
     "latePages": "11, 22~24",
     "target": 54,
     "minimum": "해당 모집단위 수능최저 없음",
-    "url": "https://use.go.kr/component/file/ND_fileDownload.do?q_fileSn=876938&q_fileId=b97c5e1f-a3ff-4c2a-8b90-271b739ffce4",
-    "board": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508104810688",
-    "lateRule": "AI컴퓨터학부는 수능 100%로 선발합니다."
+    "lateRule": "AI컴퓨터학부는 수능 100%로 선발합니다.",
+    "order": 117
   }
 ];
 
