@@ -4,7 +4,7 @@ const Game = (() => {
   const subjects = ['국어','영어','수학','통합사회','통합과학'];
   const mockSubjects = [...subjects,'한국사'];
   const types = ['꾸준히 쌓는 형','실전 집중형','탐구 몰입형'];
-  const typesText = ['수업 복습의 효과가 조금 큽니다.','시간을 재고 푸는 연습에 강합니다.','질문을 탐구 기록으로 발전시키기 쉽습니다.'];
+  const typesText = ['수업 복습의 효과가 큽니다.','시간을 재고 푸는 연습에 강합니다.','질문을 탐구 기록으로 발전시키기 쉽습니다.'];
   const terms = ['고1 1학기','고1 2학기','고2 1학기','고2 2학기','고3 1학기','고3 2학기'];
   const tasks = ['교과 공부','모의고사 연습','교과 탐구','글쓰기·면접'];
   const events = [
@@ -55,7 +55,7 @@ const EARLY_LIMIT = 5;
     if(r.phase==='early')r.early=r.early.filter(item=>item!==id);
   }
   function fresh(seed=crypto.getRandomValues(new Uint32Array(1))[0]) {
-    return {version:3,seed,phase:'setup',type:0,start:[72,72,72,72,72],history:[],plan:blank(),early:[],late:[],interest:'모두',risk:'균형',referred:false,replay:false,first:null,checkpoint:null};
+    return {version:3,seed,phase:'setup',type:0,start:[72,72,72,72,72],history:[],plan:blank(),early:[],late:[],referred:false,replay:false,checkpoint:null};
   }
   function blank(){return {tokens:[2,2,1,1],focus:0,mockFocus:2,event:0};}
   const relative=(p,cuts)=>1+cuts.filter(c=>p<c).length;
@@ -118,7 +118,7 @@ const EARLY_LIMIT = 5;
   function nextReport(r){
     if(r.phase!=='report')return;
     if(r.history.length===5){
-      r.checkpoint={history:clone(r.history),interest:r.interest,risk:r.risk,referred:r.referred};
+      r.checkpoint={history:clone(r.history),referred:r.referred};
       r.phase='early';
     }else if(r.history.length===6){
       r.exam=finalExam(r);r.phase='exam';
@@ -168,26 +168,6 @@ const EARLY_LIMIT = 5;
     const value=late?lateScore(c,last.mock,hist):earlyScore(c,hist);
     return value-(late?(c.lateTarget||c.target):c.target);
   }
-  function advice(r,late=false){
-    if(!r.replay||!r.first)return [];
-    const delta={도전:-4,균형:2,안정:7}[r.risk];
-    return (late?Admissions:EarlyCases).filter(c=>late||c.name!=='경희대'||r.referred).map(c=>{
-      const gap=estimate(r,c,late);
-      const aligned=r.interest==='모두'||r.interest===(late?(c.lateField||c.field):c.field);
-      const gate=late||minMet(c,r.checkpoint.history.at(-1).mockGrades);
-      // Explore illustrative examination and competitor variation without reading the real draw.
-      let offers=0;
-      const hist=r.checkpoint.history,last=hist.at(-1);
-      for(let sample=0;sample<100;sample++){
-        const trial=last.mock.map((v,i)=>Math.round(bound(v+(noise(42,'trial'+sample+'s'+i)-.5)*12)));
-        const score=late?lateScore(c,trial,hist):earlyScore(c,hist);
-        const line=(late?(c.lateTarget||c.target):c.target)+(noise(42,'trial'+sample+'pool')-.5)*10;
-        const movement=1+Math.floor(noise(42,'trial'+sample+'wait')*5);
-        if((late||minMet(c,trial.map(mockGrade)))&&score>=line-movement)offers++;
-      }
-      return {c,gap,gate,offers,rank:-Math.abs(gap-delta)+(aligned?5:0)+(gate?2:-8)};
-    }).sort((a,b)=>b.rank-a.rank).slice(0,3);
-  }
   function toggleLate(r,id){
     const c=Admissions.find(u=>u.name===id),list=r.late;
     if(!c||r.phase!=='late')return;
@@ -217,13 +197,27 @@ const EARLY_LIMIT = 5;
   const results=(r,late=false)=>(late?r.late:r.early).map(id=>outcome(r,late?Admissions.find(c=>c.name===id):EarlyCases.find(c=>c.id===id),late));
   function saveEnding(r,name){
     r.registered=name;r.phase='ending';
-    const snapshot={early:results(r),late:results(r,true),registered:name};
-    if(!r.first)r.first=clone(snapshot);
   }
-  function replay(r){
-    if(!r.first||!r.checkpoint||!r.lastTerm)return;
-    r.history=clone(r.checkpoint.history);r.early=[];r.late=[];r.registered=null;
-    r.exam=null;r.replay=true;r.phase='early';r.referred=r.checkpoint.referred;
+function compareStrategies(r){
+    // Each case draws its own competitors. A single early application, or skipping
+    // early admissions and filing one regular application, makes each offer reachable.
+    const scenarios=[];
+    function evaluate(c,late){
+      const row=outcome(r,c,late);
+      const applied=late?r.late.includes(c.name):r.early.includes(c.id);
+      scenarios.push({c,row,late,applied,route:late?'정시':category(c)});
+    }
+    EarlyCases.filter(c=>c.name!=='경희대'||r.checkpoint.referred).forEach(c=>evaluate(c,false));
+    Admissions.forEach(c=>evaluate(c,true));
+    const offers=scenarios.filter(x=>x.row.accepted).sort((a,b)=>
+      a.c.order-b.c.order || Number(b.applied)-Number(a.applied) ||
+      Number(b.row.status==='최초합격')-Number(a.row.status==='최초합격'));
+    const best=offers[0];
+    const actual=offers.find(x=>x.applied);
+    return {best,actual,equivalent:best?offers.filter(x=>x.c.order===best.c.order):[],
+      routes:['학생부교과','학생부종합','논술','정시'].map(route=>({
+        route,top:offers.find(x=>x.route===route),tested:scenarios.filter(x=>x.route===route).length
+      }))};
   }
-  return {subjects,mockSubjects,types,typesText,terms,tasks,events,blank,fresh,finishTerm,nextReport,submitEarly,saveEnding,replay,results,advice,toggleLate,band,category,quickStart,addEarly,removeEarly,EARLY_LIMIT,minMet,mean,bound};
+  return {subjects,mockSubjects,types,typesText,terms,tasks,events,blank,fresh,finishTerm,nextReport,submitEarly,saveEnding,compareStrategies,results,toggleLate,band,category,quickStart,addEarly,removeEarly,EARLY_LIMIT,minMet,mean,bound};
 })();
