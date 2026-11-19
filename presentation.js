@@ -97,39 +97,48 @@ const assets=JSON.parse(document.getElementById('assets').textContent);
 const main=document.querySelector('main'), dialog=document.getElementById('panel');
 const byId=id=>document.getElementById(id);
 let page=0,step=0,opener=null;
-const chapterStarts=[1,3,9,37,42,56,75,79];
+const total=slides.length;
+const firstMap=slides.findIndex(slide=>slide.classList.contains('mapSlide'))+1;
+const guidePage=slides.findIndex(slide=>slide.classList.contains('family-guide'))+1;
+const guidePanels=[...slides[guidePage-1].querySelectorAll('.family-panel')];
+const chapterStarts=[1,4,10,38,43,57,76,firstMap];
 const chapterLabels=['표지와 목차','2028 인원 분석','5등급제 실시에 따른 변화','논서술형 평가 역량 변화','통합형 수능에 따른 변화','지역의사제','마무리','학부모 대입 지도'];
 function route(){
  const m=location.hash.match(/^#(\d+)(?:\.(\d+))?$/);
- const n=Math.max(1,Math.min(84,m?Number(m[1]):1));
- const s=n<79?0:Math.max(0,Math.min(journey[n-79].steps.length-1,m?Number(m[2]||1)-1:0));
+ const n=Math.max(1,Math.min(total,m?Number(m[1]):1));
+ const steps=n===guidePage?guidePanels.length:n>=firstMap?journey[n-firstMap].steps.length:1;
+ const s=Math.max(0,Math.min(steps-1,m?Number(m[2]||1)-1:0));
  show(n,s);
 }
 function go(n,s=0){
- if(n<1||n>84)return;
+ if(n<1||n>total)return;
  const hash='#'+n+(s?'.'+(s+1):'');
  if(location.hash===hash)route();else location.hash=hash;
 }
 function show(n,s){
  const previousStep=step;
- const prevPage=page,oldCenter=prevPage>=79?slides[prevPage-1].querySelector('.station.selected circle'):null;
+ const prevPage=page,oldCenter=prevPage>=firstMap?slides[prevPage-1].querySelector('.station.selected circle'):null;
  const xy=oldCenter&&[Number(oldCenter.getAttribute('cx')),Number(oldCenter.getAttribute('cy'))];
  if(page&&page!==n)slides[page-1].hidden=true;
  page=n;step=s;const slide=slides[n-1];slide.hidden=false;
- if(n>=79){
-  slide.innerHTML=sceneHTML(n-79,s);
-  drawRoute(slide.querySelector("svg"),n-79,s,prevPage===n?previousStep:null);
+ if(n===guidePage){
+  guidePanels.forEach((panel,i)=>{panel.hidden=i!==s});
+  slide.querySelectorAll('[data-step]').forEach((button,i)=>button.setAttribute('aria-pressed',String(i===s)));
+ }
+ if(n>=firstMap){
+  slide.innerHTML=sceneHTML(n-firstMap,s);
+  drawRoute(slide.querySelector("svg"),n-firstMap,s,prevPage===n?previousStep:null);
   if(xy&&!matchMedia('(prefers-reduced-motion:reduce)').matches){
    const marker=slide.querySelector('.station.selected circle'),cx=Number(marker.getAttribute('cx')),cy=Number(marker.getAttribute('cy'));
    marker.animate([{transform:'translate('+(xy[0]-cx)+'px,'+(xy[1]-cy)+'px)'},{transform:'translate(0,0)'}],{duration:540,easing:'cubic-bezier(.2,.8,.2,1)'});
   }
  }
  slide.querySelectorAll('[data-asset]').forEach(im=>{im.src=assets[im.dataset.asset]});
- byId('count').textContent=n+' / 84';byId('progress').style.width=(n/84*100)+'%';
- byId('part').textContent=n<=78?'1부　대교협 설명회':'2부　학부모 대입 지도';
- byId('source').hidden=n>78;byId('prev').disabled=n===1;byId('next').disabled=n===84;
- byId('zoom').hidden=n>=79;byId('zoom').setAttribute('aria-pressed',main.classList.contains('zoom')&&n<79?'true':'false');
- if(n>=79)main.classList.remove('zoom');
+ byId('count').textContent=n+' / '+total;byId('progress').style.width=(n/total*100)+'%';
+ byId('part').textContent=n<firstMap?'1부　대교협 설명회':'2부　학부모 대입 지도';
+ byId('source').hidden=n>=firstMap||n===guidePage||n===1;byId('prev').disabled=n===1;byId('next').disabled=n===total;
+ byId('zoom').hidden=n>=firstMap;byId('zoom').setAttribute('aria-pressed',main.classList.contains('zoom')&&n<firstMap?'true':'false');
+ if(n>=firstMap)main.classList.remove('zoom');
  byId('zoom').textContent=main.classList.contains('zoom')?'축소':'확대';
  byId('announce').textContent=n+'장. '+labels[n-1];
  document.title=labels[n-1]+' · 2028 대입 설명회';
@@ -137,19 +146,20 @@ function show(n,s){
  if(dialog.open)dialog.close();
 }
 function toggleZoom(){
- if(page>=79)return;
+ if(page>=firstMap)return;
  const on=main.classList.toggle('zoom');byId('zoom').setAttribute('aria-pressed',String(on));byId('zoom').textContent=on?'축소':'확대';
 }
 function showPanel(kind){
  opener=document.activeElement;dialog.className=kind;
- const name=kind==='original'?'원본 '+page+'장 · 자료집 '+(27+Math.floor((page-1)/2))+'쪽 '+(page%2?'위':'아래'):kind==='toc'?'발표 목차':'검증 메모와 출처';
+ const original=Number(slides[page-1].dataset.n);
+ const name=kind==='original'?'원본 '+original+'장 · 자료집 '+(27+Math.floor((original-1)/2))+'쪽 '+(original%2?'위':'아래'):kind==='toc'?'발표 목차':'검증 메모와 출처';
  byId('paneltitle').textContent=name;
  const inside=byId('panelbody');inside.replaceChildren();
  if(kind==='original'){
-  const im=new Image();im.src=assets.originals[page-1];im.alt=labels[page-1]+' 원본';inside.append(im);
+  const im=new Image();im.src=assets.originals[original-1];im.alt=labels[page-1]+' 원본';inside.append(im);
  }else if(kind==='toc'){
   const jumps=document.createElement('div');jumps.className='jumpParts';
-  [[1,'1부 처음'],[79,'2부 대입 지도']].forEach(([num,label])=>{let a=document.createElement('a');a.href='#'+num;a.textContent=label;jumps.append(a)});inside.append(jumps);
+  [[1,'1부 처음'],[firstMap,'2부 대입 지도']].forEach(([num,label])=>{let a=document.createElement('a');a.href='#'+num;a.textContent=label;jumps.append(a)});inside.append(jumps);
   const chapters=document.createElement('select');chapters.setAttribute('aria-label','장별 바로 이동');
   chapterLabels.forEach((label,i)=>chapters.add(new Option(label,chapterStarts[i])));
   chapters.value=chapterStarts.filter(k=>k<=page).at(-1);
@@ -163,7 +173,12 @@ function showPanel(kind){
  }
  dialog.showModal();dialog.scrollTop=0;
 }
-byId('prev').onclick=()=>go(page-1);byId('next').onclick=()=>go(page+1);
+function advance(direction){
+ if(page===guidePage&&step+direction>=0&&step+direction<guidePanels.length){go(page,step+direction);return}
+ if(page===guidePage+1&&direction<0){go(guidePage,guidePanels.length-1);return}
+ go(page+direction);
+}
+byId('prev').onclick=()=>advance(-1);byId('next').onclick=()=>advance(1);
 byId('zoom').onclick=toggleZoom;byId('toc').onclick=()=>showPanel('toc');
 byId('source').onclick=()=>showPanel('original');byId('proof').onclick=()=>showPanel('proof');
 byId('closepanel').onclick=()=>dialog.close();dialog.addEventListener('close',()=>opener?.focus());
@@ -173,10 +188,10 @@ window.addEventListener('hashchange',route);
 window.addEventListener('keydown',e=>{
  if(dialog.open||e.altKey||e.metaKey||e.ctrlKey||e.target.matches('input,select,textarea'))return;
  const next=e.key==='ArrowRight'||e.key==='PageDown'||(e.key===' '&&!e.target.closest('button,a'));
- if(next){e.preventDefault();go(page+1)}
- else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(page-1)}
- else if(page>=79&&['ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();go(page,Math.max(0,Math.min(journey[page-79].steps.length-1,step+(e.key==='ArrowDown'?1:-1))))}
- else if(e.key==='Home'||e.key==='End'){e.preventDefault();go(e.key==='Home'?1:84)}
+ if(next){e.preventDefault();advance(1)}
+ else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();advance(-1)}
+ else if(page>=firstMap&&['ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();go(page,Math.max(0,Math.min(journey[page-firstMap].steps.length-1,step+(e.key==='ArrowDown'?1:-1))))}
+ else if(e.key==='Home'||e.key==='End'){e.preventDefault();go(e.key==='Home'?1:total)}
  else if(e.key.toLowerCase()==='m'){showPanel('toc')}
 });
 let touch=null;
@@ -184,6 +199,6 @@ main.addEventListener('touchstart',e=>{
  const t=e.touches[0],p=e.target.closest('.content');
  touch=e.touches.length===1&&!main.classList.contains('zoom')&&!(p&&p.scrollWidth>p.clientWidth+3)?[t.clientX,t.clientY]:null;
 },{passive:true});
-main.addEventListener('touchend',e=>{if(!touch||e.changedTouches.length!==1)return;const t=e.changedTouches[0],dx=t.clientX-touch[0],dy=t.clientY-touch[1];touch=null;if(Math.abs(dx)>75&&Math.abs(dx)>Math.abs(dy)*1.8)go(page+(dx<0?1:-1))},{passive:true});
+main.addEventListener('touchend',e=>{if(!touch||e.changedTouches.length!==1)return;const t=e.changedTouches[0],dx=t.clientX-touch[0],dy=t.clientY-touch[1];touch=null;if(Math.abs(dx)>75&&Math.abs(dx)>Math.abs(dy)*1.8)advance(dx<0?1:-1)},{passive:true});
 route();
 
