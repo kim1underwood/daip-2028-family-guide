@@ -127,7 +127,19 @@ const EARLY_LIMIT = 5;
   }
   function minMet(c,g){
     const [k,e,m,s,p,h]=g, t=Math.min(s,p), v=[k,m,e,t].sort((a,b)=>a-b);
-    if(c.id==='inha-essay')return v[0]+v[1]<=6;
+    switch(c.id){
+      case 'inha-essay':
+      case '아주대':return v[0]+v[1]<=6;
+      case 'knu-grades':
+      case 'knu-essay':return v[0]+v[1]<=5;
+      case 'gachon-grades':{
+        const best=[k,e,m,s,p].sort((a,b)=>a-b);
+        return best[0]+best[1]<=6;
+      }
+      case 'donga-grades':return v[0]<=4;
+      case 'yonsei-essay':return k+m+t<=6&&e<=3&&h<=4;
+      case 'korea-essay':return k+m+e+t<=8&&h<=4;
+    }
     switch(c.name){
       case '경희대':return v[0]+v[1]<=5&&h<=5;
       case '경북대':return v[0]+v[1]<=6;
@@ -139,10 +151,14 @@ const EARLY_LIMIT = 5;
   }
   function earlyScore(c,hist){
     const academic=mean(hist.map(t=>mean(t.school))), {record,speak,write}=hist.at(-1).hidden;
-    if(c.name==='부산대')return .80*academic+.20*(.65*academic+.35*record);
+    if(c.name==='부산대'||c.id==='knu-grades')return .80*academic+.20*(.65*academic+.35*record);
     if(c.name==='경희대')return .70*academic+.30*(.65*academic+.35*record);
     if(c.kind==='교과')return academic;
-    if(c.kind==='논술')return .42*academic+.58*write;
+    if(c.kind==='논술'){
+      const exam=.42*academic+.58*write;
+      const weight=c.essayWeight??1;
+      return weight*exam+(1-weight)*academic;
+    }
     const document=.70*academic+.30*record;
     if(c.kind!=='면접')return document;
     const share=({'아주대':.3,'동아대':.4,'서울대':.5,'연세대':.3,'가천대':.5,'인천대':.4,'충남대':1/3,'국립공주대':.3,'전북대':.2,'인하대':.3,'전남대':.3})[c.name]??.3;

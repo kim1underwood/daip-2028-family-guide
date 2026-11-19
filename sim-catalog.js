@@ -91,12 +91,12 @@ const Admissions = [
     "early": "학종 ACE전형 서류형",
     "kind": "서류",
     "rule": "학교생활기록부를 종합 평가합니다.",
-    "pages": "3~4",
+    "pages": "3~4, 7",
     "group": "다",
     "late": "일반전형",
     "latePages": "3~4, 9",
     "target": 79,
-    "minimum": "해당 모집단위 수능최저 없음",
+    "minimum": "국·수·영·탐(상위 1) 중 2합 6",
     "lateRule": "경영학과는 다군 일반전형에서 수능 성적을 반영합니다.",
     "order": 14
   },
@@ -418,8 +418,24 @@ const EarlyCases = Admissions.map(c => ({...c,id:c.name}));
 for (const extra of [
   {name:'인하대',id:'inha-document',early:'학종 인하미래인재(서류형)',kind:'서류',pages:'6, 12',rule:'기계공학과는 서류종합평가 100%로 일괄 선발합니다.'},
   {name:'인하대',id:'inha-essay',early:'논술우수자',kind:'논술',pages:'6, 18',rule:'논술 90%와 학생부교과 10%를 합산합니다.',minimum:'국·수·영·탐(상위 1) 중 2합 6'},
-  {name:'아주대',id:'ajou-interview',early:'학종 ACE전형 면접형',kind:'면접',pages:'3~4, 7',rule:'경영학과는 서류로 4배수를 선발한 뒤 1단계 성적 70%와 면접 30%를 반영합니다.'},
-  {name:'동아대',id:'donga-interview',early:'학종 잠재능력우수자',kind:'면접',pages:'6~7',rule:'경영학과는 서류로 5배수를 선발한 뒤 1단계 성적 60%와 면접 40%를 반영합니다.'}
+  {name:'아주대',id:'ajou-interview',minimum:'해당 모집단위 수능최저 없음',early:'학종 ACE전형 면접형',kind:'면접',pages:'3~4, 7',rule:'경영학과는 서류로 4배수를 선발한 뒤 1단계 성적 70%와 면접 30%를 반영합니다.'},
+  {name:'동아대',id:'donga-interview',early:'학종 잠재능력우수자',kind:'면접',pages:'6~7',rule:'경영학과는 서류로 5배수를 선발한 뒤 1단계 성적 60%와 면접 40%를 반영합니다.'},
+  {name:'경북대',id:'knu-grades',early:'교과우수자전형',kind:'교과',pages:'5, 13, 49',
+    rule:'교과 성적 80%와 서류로 평가한 교과이수 충실도 20%를 합산합니다.',minimum:'국·수·영·탐(상위 1) 중 2합 5, 한국사 응시'},
+  {name:'가천대',id:'gachon-grades',early:'학생부우수자 전형',kind:'교과',pages:'4, 9',
+    rule:'경영학과는 학생부 교과 성적 100%로 선발합니다.',minimum:'국·수·영·통합사회·통합과학 중 2합 6'},
+  {name:'동아대',id:'donga-grades',early:'교과성적우수자전형',kind:'교과',pages:'7, 18',
+    rule:'경영학과는 학생부 교과 성적 100%로 선발합니다.',minimum:'국·수·영·탐(상위 1) 중 1개 영역 4등급 이내'},
+  {name:'경상국립대',id:'gnu-grades',early:'학생부교과 일반전형',kind:'교과',pages:'8~10, 19',
+    rule:'도시공학과는 학생부 교과 성적 100%로 선발합니다.',minimum:'해당 모집단위 수능최저 없음'},
+  {name:'연세대',id:'yonsei-essay',early:'논술전형',kind:'논술',pages:'10, 20',essayWeight:1,
+    rule:'인문·사회 교과를 통합한 논술시험 성적 100%로 선발합니다.',minimum:'국어·수학·탐(상위 1) 3합 6, 영어 3·한국사 4 이내'},
+  {name:'고려대',id:'korea-essay',early:'논술전형',kind:'논술',pages:'5, 20',essayWeight:1,
+    rule:'경영학과는 논술 성적 100%로 선발합니다.',minimum:'국·수·영·탐(상위 1) 4합 8, 한국사 4 이내'},
+  {name:'경북대',id:'knu-essay',early:'논술(AAT)전형',kind:'논술',pages:'5, 31, 49',essayWeight:.7,
+    rule:'논술(AAT) 70%와 학생부 교과 성적 30%를 합산합니다.',minimum:'국·수·영·탐(상위 1) 중 2합 5, 한국사 응시'},
+  {name:'아주대',id:'ajou-essay',early:'논술우수자전형',kind:'논술',pages:'3~4, 7',essayWeight:.9,
+    rule:'경영학과는 언어·사회 통합논술 90%와 학생부 교과 성적 10%를 합산합니다.',minimum:'해당 모집단위 수능최저 없음'}
 ]){
   EarlyCases.push({...Admissions.find(c=>c.name===extra.name),...extra});
 }
