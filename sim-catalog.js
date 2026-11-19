@@ -471,7 +471,7 @@ function compareAdmissionOrder(a,b){
   return (a.order??Admissions.length+1)-(b.order??Admissions.length+1);
 }
 
-// Keep the original school keys for portfolios saved by the first release.
+// Existing application IDs continue to identify their original department.
 const EarlyCases = Admissions.map(c => ({...c,id:c.name}));
 for (const extra of [
   {name:'인하대',id:'inha-document',early:'학종 인하미래인재(서류형)',kind:'서류',pages:'6, 12',rule:'기계공학과는 서류종합평가 100%로 일괄 선발합니다.'},
@@ -553,3 +553,80 @@ const AdmissionCalibration = {
     '경희대': {target:88, basis:'2025 정시 행정학과 등록자 환산 50%·70% 지점 548.07·546.93/800점 (어디가).'}
   }
 };
+
+const PlanSources = {
+  "서울대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260507094445537",
+  "고려대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260507094237023",
+  "연세대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260507094557229",
+  "경희대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260507094237023",
+  "건국대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260507094237023",
+  "아주대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260507112426799",
+  "인하대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260507100329600",
+  "가천대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260507112323922",
+  "인천대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260507100329600",
+  "강원대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260507113609667",
+  "충북대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508104929947",
+  "충남대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508104929947",
+  "전북대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508104238757",
+  "전남대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508104238757",
+  "경북대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508105709979",
+  "부산대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508110241350",
+  "경상국립대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508110131587",
+  "제주대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260507113720669",
+  "국립공주대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508104534585",
+  "국립군산대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508103923898",
+  "동아대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508110241350",
+  "조선대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508104238757",
+  "한남대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508104929947",
+  "세명대": "https://use.go.kr/jinhak/user/bbs/BD_selectBbs.do?q_bbsSn=1095&q_bbsDocNo=20260508104810688"
+};
+
+const MajorOptions = [
+  {"school": "서울대", "major": "기계공학부", "field": "공학", "group": "나", "quotaPage": "4", "schoolCut": 2.21, "earlyShift": -1.6, "examCut": 96.25, "lateShift": -1.0},
+  {"school": "고려대", "major": "기계공학부", "field": "공학", "group": "가", "quotaPage": "5, 7", "schoolCut": 3.17, "earlyShift": 0, "examCut": 95.33, "lateShift": 0.6},
+  {"school": "연세대", "major": "국어국문학과", "field": "인문", "group": "가", "quotaPage": "10, 12", "schoolCut": 2.83, "earlyShift": -3.6, "examCut": 91.0, "lateShift": -0.8},
+  {"school": "경희대", "major": "경제학과", "field": "사회", "group": "가", "quotaPage": "13", "schoolCut": 1.82, "earlyShift": 0.6, "examCut": 89.83, "lateShift": 0.5},
+  {"school": "건국대", "major": "기술경영학과", "field": "사회", "group": "가", "quotaPage": "15", "examCut": 87.25, "lateShift": -3.4},
+  {"school": "아주대", "major": "기계공학과", "field": "공학", "group": "다", "quotaPage": "4", "schoolCut": 2.83, "earlyShift": 7, "examCut": 84.0, "lateShift": -1.2},
+  {"school": "인하대", "major": "경영학부(경영학과)", "field": "사회", "group": "나", "quotaPage": "6", "schoolCut": 2.93, "earlyShift": 0.4, "examCut": 80.83, "lateShift": -1.6},
+  {"school": "가천대", "major": "기계공학부", "field": "공학", "group": "다", "quotaPage": "4, 23"},
+  {"school": "인천대", "major": "기계공학과", "field": "공학", "group": "가", "quotaPage": "8", "examCut": 75.0, "lateShift": 0.0},
+  {"school": "강원대", "major": "국어국문학과", "field": "인문", "group": "다", "quotaPage": "33, 35", "schoolCut": 5.4, "earlyShift": 0.6, "examCut": 57.33, "lateShift": -3.2},
+  {"school": "충북대", "major": "기계공학부", "field": "공학", "group": "가", "quotaPage": "별첨 모집단위별 모집인원 1", "schoolCut": 3.61, "earlyShift": -1.0, "examCut": 70.58, "lateShift": 0.0},
+  {"school": "충남대", "major": "영어영문학과", "field": "인문", "group": "가", "quotaPage": "1", "schoolCut": 3.66, "earlyShift": -0.5, "examCut": 70.75, "lateShift": 1.2},
+  {"school": "전북대", "major": "공학계열1", "field": "공학", "group": "나", "quotaPage": "6"},
+  {"school": "전남대", "major": "경제학부", "field": "사회", "group": "나", "quotaPage": "별첨 모집인원표 경영대학", "schoolCut": 3.52, "earlyShift": -1.1, "examCut": 71.5, "lateShift": -3.6},
+  {"school": "경북대", "major": "영어영문학과", "field": "인문", "group": "나", "quotaPage": "4, 9", "schoolCut": 4.5, "earlyShift": -2.0},
+  {"school": "부산대", "major": "기계공학부", "field": "공학", "group": "나", "quotaPage": "7", "schoolCut": 3.11, "earlyShift": -1.7, "examCut": 84.17, "lateShift": -0.1},
+  {"school": "경상국립대", "major": "경영학부", "field": "사회", "group": "나", "quotaPage": "19", "schoolCut": 3.74, "earlyShift": 5.0, "examCut": 67.83, "lateShift": 5.5},
+  {"school": "제주대", "major": "기계시스템공학과", "field": "공학", "group": "나", "quotaPage": "7", "schoolCut": 5.32, "earlyShift": -6.6, "examCut": 52.33, "lateShift": -8.1},
+  {"school": "국립공주대", "major": "수학교육과", "field": "교육", "group": "가", "quotaPage": "23", "schoolCut": 3.2, "earlyShift": -0.6, "examCut": 89.22, "lateShift": -1.3},
+  {"school": "국립군산대", "major": "경영학부", "field": "사회", "group": "다", "quotaPage": "7", "schoolCut": 5.69, "earlyShift": -4.0, "examCut": 42.33, "lateShift": -12.0},
+  {"school": "동아대", "major": "기계공학과", "field": "공학", "group": "나", "quotaPage": "7", "schoolCut": 5.46, "earlyShift": -4.1, "examCut": 58.0, "lateShift": -6.9},
+  {"school": "조선대", "major": "기계공학과", "field": "공학", "group": "-", "quotaPage": "모집인원표 공과대학", "schoolCut": 6.0, "earlyShift": -3.6},
+  {"school": "한남대", "major": "기계공학과", "field": "공학", "group": "다", "quotaPage": "6", "schoolCut": 6.02, "earlyShift": -3.5, "examCut": 78.0, "lateShift": 3.2},
+  {"school": "세명대", "major": "경영학과", "field": "사회", "group": "나", "quotaPage": "11", "schoolCut": 6.0, "earlyShift": 0},
+  {"school": "세명대", "major": "호텔경영학과", "field": "사회", "group": "다", "quotaPage": "11", "schoolCut": 6.1, "earlyShift": 0},
+  {"school": "조선대", "major": "간호학과", "field": "자연", "group": "가", "quotaPage": "모집인원표 간호학과", "regularOnly": true, "examCut": 75.67, "lateShift": 12.4}
+];
+
+const RegularCases=Admissions.map(c=>({...c,id:c.name}));
+for(const option of MajorOptions){
+  const school=Admissions.find(c=>c.name===option.school);
+  const id=school.name+'/'+option.major;
+  const base={...school,...option,id,lateMajor:option.major,lateField:option.field,baseId:school.name};
+  if(!option.regularOnly){
+    const early={...base,pages:option.quotaPage+' · '+school.pages,rule:school.rule.replaceAll(school.major,option.major)};
+    if(option.school==='아주대')early.minimum='국·수·영·탐(상위 1) 중 2합 5';
+    if(option.school==='경북대')early.minimum='국·수·영·탐(상위 1) 중 2합 7, 한국사 응시';
+    if(option.school==='부산대')early.minimum='수학 포함 국·수·영·탐(상위 1) 중 2합 5, 한국사 응시';
+    EarlyCases.push(early);
+  }
+  if(option.group!=='-'){
+    const lateRule=option.school==='조선대'?'수능 100%. 국어 25%, 수학 30%, 영어 25%, 탐구 상위 한 과목 20%를 반영합니다.':
+      option.group+'군 '+school.late+' 모집단위입니다.';
+    RegularCases.push({...base,lateRule,latePages:option.quotaPage+' · '+school.latePages});
+  }
+}
+const earlyById=new Map(EarlyCases.map(c=>[c.id,c]));
+const regularById=new Map(RegularCases.map(c=>[c.id,c]));

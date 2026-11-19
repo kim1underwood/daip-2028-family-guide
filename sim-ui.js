@@ -1,57 +1,85 @@
 (() => {
   const $=id=>document.getElementById(id);
-  const legacyKey='pandong.semesters.v3', profileKey='pandong.admissions.v4';
-  const tutorialKey='pandong.admissions.introSeen';
-  function readRun(key){
-    try{
-      const saved=JSON.parse(localStorage.getItem(key));
-      if(key===legacyKey)return saved?.version===3&&Array.isArray(saved.history)?saved:null;
-      return saved?.version===4&&saved.profile&&saved.exam?saved:null;
-    }catch{return null;}
-  }
-  let currentProfile=readRun(profileKey),legacy=readRun(legacyKey);
-  let r=currentProfile||legacy||Game.fresh(),storeOK=true,expanded=false,reportIndex=null;
-  let draftCategory='',draftSchool='',draftId='';
-  if(legacy?.phase==='initial')legacy.phase='fill';
-  if(legacy?.phase==='setup'&&!legacy.history.length)legacy.balanceVersion=2;
-  const save=()=>{try{localStorage.setItem(r.profile?profileKey:legacyKey,JSON.stringify(r));}catch{storeOK=false;}};
+  const profileKey='pandong.admissions.v4',tutorialKey='pandong.admissions.introSeen';
+  let currentProfile=null,storeOK=true;
+  try{
+    const saved=JSON.parse(localStorage.getItem(profileKey));
+    if(saved?.version===4&&saved.profile&&saved.exam)currentProfile=saved;
+  }catch{}
+  let r=currentProfile,draftCategory='',draftSchool='',draftId='';
+  const save=()=>{try{localStorage.setItem(profileKey,JSON.stringify(r));}catch{storeOK=false;}};
   let seenHint=false;
   try{seenHint=localStorage.getItem(tutorialKey)==='1';}catch{}
   function dismissHint(){
     seenHint=true;
     try{localStorage.setItem(tutorialKey,'1');}catch{}
   }
-  const blankEntry=()=>({school:Array(5).fill(null),exam:Array(6).fill(null),answers:[]});
+  const blankEntry=()=>({school:Array(5).fill(2),exam:Array(6).fill(2),answers:[]});
   let entry=blankEntry();
   try{
-    const draft=JSON.parse(sessionStorage.getItem('pandong.entryDraft'));
+    const draft=JSON.parse(sessionStorage.getItem('pandong.entryDraft12'));
     if(draft?.school?.length===5&&draft.exam?.length===6&&Array.isArray(draft.answers))entry=draft;
   }catch{}
-  function saveDraft(){try{sessionStorage.setItem('pandong.entryDraft',JSON.stringify(entry));}catch{}}
+  function saveDraft(){try{sessionStorage.setItem('pandong.entryDraft12',JSON.stringify(entry));}catch{}}
   const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const btn=(label,act,cls='',value='',disabled=false)=>'<button type="button" class="'+cls+'" data-act="'+act+'" data-v="'+esc(value)+'" '+(disabled?'disabled':'')+'>'+label+'</button>';
   const next=(label,act,disabled=false)=>'<div class="actionbar">'+btn(label+'　→',act,'primary','',disabled)+'</div>';
   const head=(k,title,desc='')=>'<div class="eyebrow">'+k+'</div><h1 id="stageTitle" tabindex="-1">'+title+'</h1>'+(desc?'<p class="lead">'+desc+'</p>':'');
-  const select=(name,label,vs,current)=>'<label class="select">'+label+'<select data-select="'+name+'">'+vs.map(([id,text])=>'<option value="'+esc(id)+'" '+(String(current)===String(id)?'selected':'')+'>'+esc(text)+'</option>').join('')+'</select></label>';
-  const pairs=a=>a.map((x,i)=>[i,x]);
   const schoolNames=['국어','영어','수학','사회','과학'];
   const schoolOrder=[0,1,2,3,4], examOrder=[0,2,1,5,3,4];
   const questions=[
-    ['평소 시험 성적은?','상위권','중위권','하위권'],
-    ['더 자신 있는 시험은?','학교 시험','모의고사','비슷해요'],
-    ['더 편한 과목은?','국어','수학','비슷해요'],
-    ['영어 지문은 잘 읽혀요?','잘 읽혀요','보통이에요','어려워요'],
-    ['더 자신 있는 탐구는?','사회','과학','비슷해요'],
-    ['시험 시간이 부족한가요?','자주','가끔','거의 없어요']
+    ["평소 시험 성적은?", "상위권", "중상위권", "중위권", "하위권"],
+    ["어느 시험이 더 편해요?", "학교 시험", "모의고사", "비슷해요"],
+    ["국어와 수학 중 더 편한 건?", "국어", "수학", "비슷해요"],
+    ["긴 영어 지문을 읽으면?", "잘 읽혀요", "시간이 걸려요", "자주 막혀요"],
+    ["더 자신 있는 탐구는?", "사회", "과학", "비슷해요"],
+    ["시험 종료 5분 전에는?", "검토 중", "마지막 문제 푸는 중", "여러 문제 남음"],
+    ["낯선 수학 문제를 보면?", "풀이가 떠올라요", "조금 풀어봐야 해요", "시작이 막막해요"],
+    ["국어 지문의 핵심은?", "바로 보여요", "다시 읽으면 보여요", "자주 놓쳐요"],
+    ["한국사 사건의 순서는?", "잘 떠올라요", "가끔 헷갈려요", "많이 헷갈려요"],
+    ["수업 중 궁금한 게 생기면?", "직접 찾아봐요", "선생님께 물어요", "일단 넘어가요"],
+    ["내 풀이를 말로 설명하면?", "바로 설명해요", "준비하면 잘해요", "말로는 어려워요"],
+    ["내 생각을 글로 쓰면?", "근거까지 잘 써요", "생각은 정리돼요", "쓰는 게 어려워요"]
   ];
+  let editingGrade;
+  const rowHeight=48;
   function gradeGroup(exam){
     const title=exam?'수능':'내신',key=exam?'exam':'school',max=exam?9:5;
     const fields=(exam?examOrder:schoolOrder).map(i=>{
       const name=(exam?Game.mockSubjects:schoolNames)[i];
-      const options=Array.from({length:max},(_,j)=>'<option value="'+(j+1)+'" '+(entry[key][i]===j+1?'selected':'')+'>'+(j+1)+'</option>').join('');
-      return '<label>'+name+'<select required aria-label="'+title+' '+name+' 등급" data-grade="'+key+'" data-index="'+i+'"><option value="">선택</option>'+options+'</select></label>';
+      return '<button type="button" class="gradeTile" aria-haspopup="dialog" aria-label="'+title+' '+name+' '+entry[key][i]+'등급 변경" data-grade="'+key+'" data-index="'+i+'"><small>'+name+'</small><strong>'+entry[key][i]+'<em>등급</em></strong></button>';
     });
     return '<fieldset class="gradeInput"><legend>'+title+' <small>'+max+'등급제</small></legend><div>'+fields.join('')+'</div></fieldset>';
+  }
+  function openWheel(tile){
+    const key=tile.dataset.grade,index=Number(tile.dataset.index),max=key==='exam'?9:5;
+    editingGrade={key,index,max,tile};
+    $('wheelTitle').textContent=(key==='exam'?'수능 '+Game.mockSubjects[index]:'내신 '+schoolNames[index])+' 등급';
+    const wheel=$('wheel');
+    wheel.innerHTML=Array.from({length:max},(_,i)=>'<button tabindex="-1" type="button" aria-label="'+(i+1)+'등급" data-wheel="'+(i+1)+'">'+(i+1)+'</button>').join('');
+    wheel.setAttribute('aria-valuemax',max);
+    $('wheelDialog').showModal();
+    wheel.scrollTop=(entry[key][index]-1)*rowHeight;syncWheel();wheel.focus();
+  }
+  function wheelValue(){return Math.max(1,Math.min(editingGrade.max,1+Math.round($('wheel').scrollTop/rowHeight)));}
+  function syncWheel(){
+    if(!$('wheelDialog').open)return;
+    const value=wheelValue(),wheel=$('wheel');
+    wheel.setAttribute('aria-valuenow',value);wheel.setAttribute('aria-valuetext',value+'등급');
+    for(const el of wheel.children)el.classList.toggle('current',Number(el.dataset.wheel)===value);
+  }
+  $('wheel').addEventListener('scroll',syncWheel,{passive:true});
+  $('wheel').addEventListener('keydown',event=>{
+    const v=wheelValue(),values={ArrowUp:v-1,ArrowDown:v+1,Home:1,End:editingGrade.max};
+    if(event.key==='Enter'){event.preventDefault();applyWheel();return;}
+    if(!(event.key in values))return;
+    event.preventDefault();$('wheel').scrollTop=(values[event.key]-1)*rowHeight;syncWheel();
+  });
+  function applyWheel(){
+    const {key,index}=editingGrade;
+    entry[key][index]=wheelValue();saveDraft();$('wheelDialog').close();
+    renderEntry('manual',false);
+    document.querySelector('[data-grade="'+key+'"][data-index="'+index+'"]').focus();
   }
   function renderEntry(route,focus){
     let title,content,back='#',counter='';
@@ -61,10 +89,10 @@
     }else if(route==='generate'){
       title='성적을 어떻게 만들까요?';
       content='<div class="entryOptions">'+btn('전부 랜덤 생성','randomGrades','entryOption')+
-        '<a class="entryOption" href="#quiz1">성향으로 성적 추론하기<small>6문항 · 게임용 예상 성적</small></a></div>';
+        '<a class="entryOption" href="#quiz1">성향으로 성적 만들기<small>12문항 · 시뮬레이션용 예상 성적</small></a></div>';
     }else{
       const i=Number(route.slice(4))-1,q=questions[i];
-      title=q[0];back=i?'#quiz'+i:'#generate';counter='<span>'+(i+1)+' / 6</span>';
+      title=q[0];back=i?'#quiz'+i:'#generate';counter='<span>'+(i+1)+' / '+questions.length+'</span>';
       content='<div class="entryOptions quizOptions">'+q.slice(1).map((label,j)=>
         '<button data-act="quizAnswer" data-v="'+j+'" aria-pressed="'+(entry.answers[i]===j)+'">'+label+'</button>').join('')+'</div>';
     }
@@ -74,7 +102,7 @@
   }
   function beginProfile(mode,input){
     currentProfile=Game.makeProfile(mode,input);
-    r=currentProfile;expanded=false;draftCategory='';draftSchool='';draftId='';reportIndex=null;
+    r=currentProfile;draftCategory='';draftSchool='';draftId='';
     save();entry=blankEntry();saveDraft();location.replace('#play');
   }
   function gradesTable(exam){
@@ -95,134 +123,64 @@
   });
   function help(){
     const resume=location.hash!=='#play'&&currentProfile?'<p><a href="#play">현재 회차 이어보기 →</a></p>':'';
-    const previous=legacy&&location.hash!=='#legacy'?'<p><a href="#legacy">이전 회차 이어보기 →</a></p>':'';
-    dialog('이용 도움말','<h3>어떻게 지원하나요?</h3><p>성적표를 닫고 전형과 대학을 고르세요. 수시 원서는 최대 다섯 장, 정시는 가·나·다군에 한 장씩 담을 수 있습니다.</p><h3>왜 수능 성적을 먼저 보나요?</h3><p>같은 성적으로 원서 전략의 차이를 비교하는 게임입니다. 실제 수시는 수능 성적 발표 전에 지원합니다.</p><p>성향 문답은 가상 성적을 만드는 게임입니다. 학생부·면접·논술 역량과 경쟁 조건은 한 회차 동안 고정됩니다.</p>'+resume+previous);
+    dialog('이용 도움말','<h3>어떻게 지원하나요?</h3><p>성적표를 닫고 전형과 대학을 고르세요. 수시 원서는 최대 다섯 장, 정시는 가·나·다군에 한 장씩 담을 수 있습니다.</p><h3>왜 수능 성적을 먼저 보나요?</h3><p>같은 성적으로 원서 전략의 차이를 비교하는 시뮬레이션입니다. 실제 수시는 수능 성적 발표 전에 지원합니다.</p><p>성향 문답은 가상 성적을 만드는 문답입니다. 학생부·면접·논술 역량과 경쟁 조건은 한 회차 동안 고정됩니다.</p>'+resume);
   }
   document.addEventListener('submit',e=>{
     if(e.target.id!=='manualGrades')return;
     e.preventDefault();beginProfile('manual',entry);
   });
-  const sceneId=()=>['ending','best','register'].includes(r.phase)?8:r.phase==='setup'?3:Math.min(7,3+Math.max(0,r.history.length-(r.phase==='report'?1:0)));
   function art(id,cl=''){return '<div aria-hidden="true" class="art '+cl+'" style="--ax:'+(id%3*50)+'%;--ay:'+Math.floor(id/3)*50+'%"></div>';}
   function map(){
-    if(r.profile){
-      const phases=[['early','수시 원서'],['fill','수시 결과'],['late','정시 원서'],['lateResults','정시 결과'],['register','등록'],['ending','지원 결과']];
+    const phases=[['early','수시 원서'],['fill','수시 결과'],['late','정시 원서'],['lateResults','정시 결과'],['register','등록'],['ending','지원 결과']];
       const pos=r.phase==='best'?5:phases.findIndex(([phase])=>phase===r.phase);
       $('atlas').innerHTML='<div class="scene">'+art(pos>=4?8:6,'landscape')+'</div><div class="profileTools">'+btn('내 성적표','grades','gradeLink')+btn('처음부터','restart','resetmap')+'</div><ol class="profileRoad">'+phases.map(([phase,label],i)=>'<li '+(i===pos?'aria-current="step"':'')+'>'+label+'</li>').join('')+'</ol>';
-      return;
-    }
-
-    const where=['ending','best'].includes(r.phase)?r.registered||'미등록':r.phase==='early'?'수시 원서 작성':r.phase==='late'?'정시 원서 작성':'';
-    const current=r.history.at(-1);
-    const lastAverage=r.history.length>1?Game.mean(r.history.at(-2).grades).toFixed(1)+' → ':'';
-    const stamp=current?'<div class="mapstats"><b>'+Game.terms[current.i]+'</b> 내신 평균 '+lastAverage+Game.mean(current.grades).toFixed(1)+' · 모의 평균 '+Game.mean(current.mockGrades).toFixed(1)+'</div>':'';
-    const rows=['중3 겨울',...Game.terms.slice(0,5),'수시 지원',Game.terms[5],'수능·합격 발표','대학 등록'];
-    let pos=r.phase==='setup'?0:r.phase==='early'?6:r.phase==='exam'||['fill','late','lateResults'].includes(r.phase)?8:['register','ending','best'].includes(r.phase)?9:r.phase==='report'?(r.history.length===6?7:r.history.length):(r.history.length===5?7:r.history.length+1);
-    $('atlas').innerHTML='<div class="scene">'+art(sceneId(),'landscape')+'<span class="scene-stamp">'+(pos===0?'2026 · 겨울':pos<7?(2027+Math.floor(Math.min(pos-1,4)/2))+' · 학교생활':pos===7?'2029 · 가을':'2030학년도 · 대입')+'</span></div><div class="maphead"><div><strong>나의 진학 지도</strong></div><div class="mapActions">'+btn(expanded?'접기 ▴':'펼치기 ▾','map','maptoggle')+btn('처음부터','restart','resetmap')+'</div></div><div class="road '+(expanded?'expanded':'')+'"><ol>'+rows.map((t,i)=>'<li class="'+(i===pos?'here':i<pos?'done':'')+'"><i></i><span>'+t+'</span>'+(i===pos?'<b>현재</b>':'')+'</li>').join('')+'</ol>'+stamp+(where?'<div class="destination">'+esc(where)+'</div>':'')+(r.history.length?btn('학기별 성적표 열기','journal','thin'):'')+'</div>';
-    const b=$('atlas').querySelector('.maptoggle');b.setAttribute('aria-expanded',String(expanded));b.setAttribute('aria-controls','journeyRoad');$('atlas').querySelector('.road').id='journeyRoad';
-  }
-  const habitDescription=i=>Game.types[i]+' : '+Game.typesText[i];
-  function setup(){
-    return head('중3 겨울　/　출발 준비','어떤 성적으로 시작할까요?','중3 다섯 과목의 점수와 학습 습관을 정하세요.')+
-    '<fieldset><legend>학습 습관</legend><div class="radios">'+Game.types.map((_,i)=>'<label><input type="radio" name="type" value="'+i+'" '+(r.type===i?'checked':'')+' aria-describedby="typehint"><span>'+['A','B','C'][i]+' 타입</span></label>').join('')+'</div><p id="typehint" aria-live="polite" class="muted">'+habitDescription(r.type)+'</p></fieldset>'+
-    '<fieldset><legend>출발 성적 <small>중3 가상 진단 · 100점 만점</small></legend><div class="sliders">'+Game.subjects.map((s,i)=>'<div><label for="s'+i+'">'+['국어','영어','수학','사회','과학'][i]+'</label><input id="s'+i+'" type="range" min="0" max="100" value="'+r.start[i]+'" data-score="'+i+'"><input aria-label="'+s+' 점수 직접 입력" type="number" inputmode="numeric" min="0" max="100" value="'+r.start[i]+'" data-num="'+i+'"></div>').join('')+'</div></fieldset>'+'<div class="actionbar startChoices">'+btn('입시 선택으로 바로가기','quick','quickStart')+btn('고1 첫 학기 시작','start','primary')+'</div><p class="fine startNote">바로가기는 설정한 성적으로 다섯 학기를 자동 진행합니다.</p>';
-  }
-  function plan(){
-    const i=r.history.length,p=r.plan,remaining=6-p.tokens.reduce((s,v)=>s+v,0),event=Game.events[i];
-    return '<div class="termHeading"><h1 id="stageTitle" tabindex="-1">'+Game.terms[i]+'</h1><span id="balance" role="status">남은 시간 <b>'+remaining+'</b>칸</span></div>'+
-    '<div class="termGrid"><section class="termBudget"><h2>자습 6칸 배분</h2><div class="alloc">'+Game.tasks.map((t,j)=>'<div><div><strong>'+t+'</strong><div class="pips" aria-hidden="true">'+Array.from({length:6},(_,k)=>'<i class="'+(k<p.tokens[j]?'on':'')+'"></i>').join('')+'</div></div><div class="stepper">'+btn('−','minus','step',j,p.tokens[j]===0)+'<output>'+p.tokens[j]+'</output>'+btn('+','plus','step',j,remaining===0)+'</div></div>').join('')+'</div>'+
-    '<div class="selectrow">'+select('focus','교과 집중 과목',pairs(Game.subjects),p.focus)+select('mockFocus','모의고사 집중 과목',pairs(Game.subjects),p.mockFocus)+'</div></section>'+
-    '<fieldset class="event"><legend>학기 중 갈림길</legend><h2>'+event[0]+'</h2><p>'+event[1]+'</p><div class="radios">'+[0,1].map(j=>'<label><input type="radio" name="event" value="'+j+'" '+(p.event===j?'checked':'')+'>'+event[2+j]+'</label>').join('')+'</div></fieldset></div>'+next(Game.terms[i]+' 성적표 받기','finishTerm',remaining!==0);
-  }
-const eventCopy={
-    high:['복습한 개념이 여러 단원에서 이어졌습니다.','연습한 풀이 순서가 실전에서도 잘 맞았습니다.','다시 살펴본 자료에서 질문을 풀 단서를 찾았습니다.','여러 번 고친 설명이 짧고 분명해졌습니다.'],
-    normal:['정한 분량을 꾸준히 복습했습니다.','연습한 시간 배분을 시험에서도 지켰습니다.','계획한 자료를 모아 질문과 연결했습니다.','계획한 만큼 답안을 쓰고 발표를 연습했습니다.'],
-    low:['어려운 단원을 다시 익히는 데 시간이 들었습니다.','낯선 문제에서 연습한 풀이 순서를 조정해야 했습니다.','자료의 조건이 달라 일부를 다시 모아야 했습니다.','질문을 새로 해석하느라 답변을 다시 구성했습니다.']
-  };
-  function effortSummary(h){
-    const ev=h.effortEvent;
-    if(!ev)return '';
-    const label={high:'기대 이상',normal:'보통',low:'기대 이하'}[ev.level];
-    const subject=ev.task===0?Game.subjects[h.plan.focus]+' · ':ev.task===1?Game.subjects[h.plan.mockFocus]+' · ':'';
-    return {label, summary:subject+Game.tasks[ev.task]+' '+ev.invested+'칸', note:eventCopy[ev.level][ev.task]};
-  }
-  let effortTimer;
-  function showEffort(h){
-    const info=effortSummary(h);
-    if(!info)return;
-    const notice=$('effortNotice');
-    notice.className=h.effortEvent.level;
-    notice.textContent=info.label+' · '+info.summary;
-    effortTimer=setTimeout(()=>{notice.textContent='';},1000);
-  }
-  function paper(title,period,contents,{high=false}={}){
-    const seal='<span class="paperSeal" aria-hidden="true">학업<br>기록</span>';
-    return '<details class="folio'+(high?' distinction':'')+'" open><summary>'+
-      '<span class="paperMast"><span>28학년도 입시 시뮬레이터</span><span>모의 성적표</span></span>'+
-      '<span class="paperTitle">'+title+'</span><span class="paperPeriod">'+period+'</span>'+seal+
-      '<span class="paperAction"><span class="unfoldHint">성적표 펼치기　⌄</span><span class="foldHint">성적표 접기　⌃</span></span></summary>'+
-      '<div class="paperLeaf"><div class="paperInk">'+contents+'</div></div></details>';
-  }
-  function semesterPaper(h){
-    return paper('학업성적통지표',(2027+Math.floor(h.i/2))+'학년도　'+Game.terms[h.i],report(h),{high:h.effortEvent?.level==='high'});
-  }
-  function report(h){
-    const prev=r.history[h.i-1];
-    const delta=(a,b)=>b===undefined?'':a===b?' <small>유지</small>':' <small class="'+(a<b?'better':'')+'">'+(a<b?'↑':'↓')+Math.abs(b-a)+'</small>';
-    const strongest=h.school.indexOf(Math.max(...h.school));
-    const changeIndex=prev?h.grades.reduce((best,grade,i)=>
-      Math.abs(grade-prev.grades[i])>Math.abs(h.grades[best]-prev.grades[best])?i:best,0):strongest;
-    const change=prev?(prev.grades[changeIndex]===h.grades[changeIndex]?'전 과목 유지':Game.subjects[changeIndex]+' '+prev.grades[changeIndex]+' → '+h.grades[changeIndex]+'등급'):Game.subjects[strongest]+' '+h.grades[strongest]+'등급';
-    const effort=effortSummary(h);
-    const evidence=[
-      ['면접',h.hidden.speak>=74?'후속 질문에도 구체적인 사례를 들어 답합니다.':h.hidden.speak>=58?'탐구 과정을 순서대로 설명합니다.':'답변에 자신의 사례를 붙이는 연습이 필요합니다.'],
-      ['논술',h.hidden.write>=74?'반론을 검토하고 결론을 고쳐 씁니다.':h.hidden.write>=58?'주장과 근거가 이어지는 글을 씁니다.':'주장의 근거를 문장으로 정리하는 단계입니다.'],
-      ['탐구 기록',h.hidden.record>=74?'여러 학기에 걸쳐 질문을 발전시킨 흔적이 있습니다.':h.hidden.record>=55?'수업에서 생긴 질문을 자료로 확인했습니다.':'질문과 관찰을 처음 기록하고 있습니다.']
-    ];
-    const trail=r.history.slice(0,h.i+1);
-    const growth=trail.length>1?'<div class="trend"><b>교과 평균등급 추이</b><div>'+trail.map(t=>{const avg=Game.mean(t.grades);return '<span><i style="height:'+Math.round(8+(5-avg)*9)+'px"></i><strong>'+avg.toFixed(1)+'</strong><small>'+['1–1','1–2','2–1','2–2','3–1','3–2'][t.i]+'</small></span>';}).join('')+'</div></div>':'';
-    const comments=growth+'<details class="feedback"><summary>담임 상담 기록 · 면접, 논술, 탐구</summary>'+evidence.map(([label,comment])=>'<p><b>'+label+'</b>　'+comment+'</p>').join('')+'</details>';
-    return '<div class="reportSummary"><div><small>교과 평균등급</small><strong>'+Game.mean(h.grades).toFixed(1)+'</strong></div><div><small>모의고사 평균등급</small><strong>'+Game.mean(h.mockGrades).toFixed(1)+'</strong></div><div class="termChange"><small>'+(prev?'가장 큰 내신 변화':'첫 학기 강점')+'</small><strong>'+change+'</strong></div></div><table><caption>학기 성적표 · 화살표는 직전 학기 대비 등급 변화</caption><thead><tr><th>과목</th><th>성취도</th><th>내신<br><small>5등급</small></th><th>모의고사<br><small>9등급</small></th></tr></thead><tbody>'+Game.mockSubjects.map((s,i)=>'<tr><th scope="row">'+s+'</th><td>'+(h.levels[i]||'—')+'</td><td>'+(i<5?h.grades[i]+delta(h.grades[i],prev?.grades[i]):'—')+'</td><td>'+h.mockGrades[i]+delta(h.mockGrades[i],prev?.mockGrades[i])+'</td></tr>').join('')+'</tbody></table><p class="fine">국어·수학·탐구는 가상 응시집단의 상대등급입니다. 영어·한국사 모의고사는 절대평가입니다. 사회·과학 행은 교과군의 대표 과목입니다. 사회·과학 융합선택 과목은 석차등급을 산출하지 않아 평균에서 제외합니다.</p>'+
-    '<details class="termNotes"><summary>학기 기록과 투자 성과</summary><div class="journal"><b>이번 학기에 남긴 기록</b>'+(effort?'<p><b>'+effort.label+' · '+effort.summary+'</b><br>'+effort.note+'</p>':'')+'<p>'+h.record.join(' · ')+'</p><p>'+Game.subjects[h.plan.focus]+' 교과 공부 '+h.plan.tokens[0]+'칸, '+Game.subjects[h.plan.mockFocus]+' 실전 연습 '+h.plan.tokens[1]+'칸. 탐구 '+h.plan.tokens[2]+'칸과 표현 연습 '+h.plan.tokens[3]+'칸을 배분했습니다. 이번 교과 성적이 가장 높았던 과목은 '+Game.subjects[strongest]+'입니다.</p></div></details>'+comments;
-  }
-  function reportPage(){
-    const h=r.history.at(-1);
-    return head((2027+Math.floor(h.i/2))+'년　/　학기 결산',Game.terms[h.i]+' 성적표',r.quick&&h.i===4?'다섯 학기를 자동으로 진행했습니다. 이 성적표로 수시 원서를 고르세요.':'')+semesterPaper(h)+next(h.i===4?'고3 1학기 저장하고 수시 지원':h.i===5?'수능 성적 확인':'다음 학기 계획 세우기','nextReport');
   }
   function src(c,late){
     const pages=late?c.latePages:c.pages;
     return '<span class="fine">'+c.name+' 2028학년도 대학입학전형 시행계획 · '+(c.name==='조선대'?(late?'20~21쪽':'15쪽')+', 모집인원표':pages+'쪽')+(c.quotaNote?' · 모집단위별 인원표':'')+'</span>';
   }
-const earlyCase=id=>EarlyCases.find(c=>c.id===id);
+const earlyCase=id=>earlyById.get(id);
   const caseTitle=(c,late)=>late?(c.lateMajor||c.major):c.major;
   const caseTrack=(c,late)=>late?c.group+'군 · '+c.late:c.early;
   function availableCases(late){
-    return late?Admissions.filter(c=>c.group===draftCategory):EarlyCases.filter(c=>Game.category(c)===draftCategory);
+    return late?RegularCases.filter(c=>c.group===draftCategory):EarlyCases.filter(c=>Game.category(c)===draftCategory);
+  }
+  function blocked(c,late){
+    return late?r.late.some(id=>regularById.get(id).group===c.group):Game.earlyConflict(r,c);
   }
   function schoolRows(search=''){
-    const late=r.phase==='late', cases=availableCases(late);
-    const names=[...new Set(cases.slice().sort(compareAdmissionOrder).map(c=>c.name))];
+    const late=r.phase==='late',cases=availableCases(late).slice().sort(compareAdmissionOrder);
+    const names=[...new Set(cases.map(c=>c.name))];
     return names.map(name=>{
-      const tracks=cases.filter(c=>c.name===name), first=tracks[0], major=caseTitle(first,late);
-      if(!(name+major+first.campus).includes(search.trim()))return '';
-      const used=late?r.late.includes(name):tracks.every(c=>r.early.includes(c.id));
-      return '<button class="schoolRow" data-act="chooseSchool" data-v="'+esc(name)+'" '+(used?'disabled':'')+'><span><b>'+name+'</b><small>'+major+' · '+first.campus+(first.order===null?' · 입결 비교 제외':'')+'</small></span><span>'+(used?'담음':tracks.length>1?'세부전형 '+tracks.length+'개':'')+'</span></button>';
+      const tracks=cases.filter(c=>c.name===name),first=tracks[0];
+      const majors=[...new Set(tracks.map(c=>caseTitle(c,late)))].join(' · ');
+      if(!(name+majors+first.campus).includes(search.trim()))return '';
+      const used=tracks.every(c=>blocked(c,late));
+      return '<button class="schoolRow" data-act="chooseSchool" data-v="'+esc(name)+'" '+(used?'disabled':'')+'><span><b>'+name+'</b><small>'+majors+'</small></span><span>'+(used?'선택 완료':tracks.length>1?'선택 ›':'')+'</span></button>';
     }).join('')||'<p class="muted">검색 결과가 없습니다.</p>';
+  }
+  function selectSchool(name){
+    const late=r.phase==='late',rows=availableCases(late).filter(c=>c.name===name);
+    const remaining=rows.filter(c=>!blocked(c,late));
+    if(!remaining.length)return;
+    draftSchool=name;
+    if(remaining.length===1){chooseCase(remaining[0],late);return;}
+    const buttons=rows.map(c=>'<button class="schoolRow" data-act="track" data-v="'+esc(c.id)+'" '+(blocked(c,late)?'disabled':'')+'><span><b>'+caseTitle(c,late)+'</b><small>'+caseTrack(c,late)+'</small></span></button>').join('');
+    dialog(name+' 모집단위 선택',btn('← 대학 목록','schools','quiet')+'<div class="schoolRows">'+buttons+'</div>');
+    $('drawer').querySelector('[data-act=track]:not(:disabled)')?.focus();
   }
   function openSchools(){
     if(!draftCategory)return;
     $('drawer').classList.add('schoolSheet');
-    dialog(draftCategory+(r.phase==='late'?'군':'')+' 대학 선택','<label class="sheetSearch">대학·학과·지역 검색<input type="search" id="schoolSearch" autocomplete="off" placeholder="예: 인천, 기계공학"></label><p class="fine">2024 정시 입결순 · 같은 기준으로 비교하기 어려운 대학은 마지막에 표시합니다.</p><div class="schoolRows" id="schoolRows">'+schoolRows()+'</div>');
+    dialog(draftCategory+(r.phase==='late'?'군':'')+' 대학 선택','<label class="sheetSearch">대학·학과·지역 검색<input type="search" id="schoolSearch" autocomplete="off" placeholder="예: 인천, 기계공학"></label><div class="schoolRows" id="schoolRows">'+schoolRows()+'</div>');
     if(!matchMedia('(max-width:800px)').matches)$('schoolSearch').focus();
   }
   function applications(late){
     const limit=late?3:Game.EARLY_LIMIT;
-    const picked=late?r.late.map(n=>Admissions.find(c=>c.name===n)):r.early.map(earlyCase);
+    const picked=late?r.late.map(n=>regularById.get(n)):r.early.map(earlyCase);
     const categories=late?['가','나','다']:['학생부교과','학생부종합','논술'];
-    const choices=availableCases(late).filter(c=>c.name===draftSchool);
-    const multi=choices.length>1;
-    const c=choices.find(c=>c.id===draftId);
-    const summary=r.profile?head('2030학년도　/　대입 지원',late?'정시 원서함':'수시 원서함',!late&&!seenHint?'전형을 고른 뒤 대학을 선택하세요.':''):late?head('2030학년도　/　정시 지원','정시 원서함','모집군과 대학을 고르세요. 가·나·다군에 한 장씩 담고, 제출 전까지 바꿀 수 있습니다.'):head('고3 1학기 이후　/　수시 지원','수시 원서함','전형과 대학을 골라 최대 다섯 장을 담으세요. 제출 전까지 원서를 바꿀 수 있습니다.');
+    const c=earlyCase(draftId);
+    const summary=head('2030학년도　/　대입 지원',late?'정시 원서함':'수시 원서함',!late&&!seenHint?'전형을 고른 뒤 대학을 선택하세요.':'');
     let picker='';
     if(picked.length<limit){
       picker='<div class="wizard"><h2>'+(late?'모집군 선택':'전형 선택')+'</h2><div class="routes">'+categories.map(t=>{
@@ -230,24 +188,24 @@ const earlyCase=id=>EarlyCases.find(c=>c.id===id);
         return '<button data-act="category" data-v="'+t+'" aria-pressed="'+(t===draftCategory)+'" '+(used?'disabled':'')+'>'+t+(late?'군':'')+(used?' · 담음':'')+'</button>';
       }).join('')+'</div>';
       if(draftCategory)picker+='<button id="schoolPicker" class="schoolTrigger" aria-haspopup="dialog" data-act="schools"><span>학교 선택</span><b>'+esc(draftSchool||'대학을 선택하세요')+'　⌄</b></button>';
-      if(multi)picker+='<fieldset><legend>세부전형 선택</legend><div class="trackButtons">'+choices.map(track=>'<button data-act="track" data-v="'+esc(track.id)+'" aria-pressed="'+(draftId===track.id)+'" '+(r.early.includes(track.id)?'disabled':'')+'>'+track.early+'</button>').join('')+'</div></fieldset>';
       if(c?.name==='경희대'&&!r.referred){
         picker+=r.replay?'<p class="fine">이 학생은 학교장 추천을 받지 않아 이 원서를 담을 수 없습니다.</p>':btn('학교장 추천을 받은 학생으로 원서 담기','allowReferral','primary');
       }
       picker+='</div>';
     }
     const basket='<section class="basket"><div class="sectionhead"><h2>내 원서</h2><b>'+picked.length+' / '+limit+'장</b></div>'+
-      (picked.length?picked.map(c=>'<div class="basketline"><div><strong>'+c.name+' '+caseTitle(c,late)+'</strong><small>'+caseTrack(c,late)+'</small></div><div>'+btn('상세','caseDetails','quiet',late?c.name:c.id)+btn('삭제','removeCase','quiet',late?c.name:c.id)+'</div></div>').join(''):'<p class="muted">담은 원서가 없습니다.</p>')+'</section>';
+      (picked.length?picked.map(c=>'<div class="basketline"><div><strong>'+c.name+' '+caseTitle(c,late)+'</strong><small>'+caseTrack(c,late)+'</small></div><div>'+btn('상세','caseDetails','quiet',c.id)+btn('삭제','removeCase','quiet',c.id)+'</div></div>').join(''):'<p class="muted">담은 원서가 없습니다.</p>')+'</section>';
     return summary+picker+basket+(picked.length>limit?'<p>이전 버전에서 담은 원서를 다섯 장 이하로 정리하면 제출할 수 있습니다.</p>':'')+(picked.length?next((late?'정시':'수시')+' 원서 '+picked.length+'장 제출',late?'submitLate':'submitEarly',picked.length>limit):'<div class="actionbar skipAction">'+btn(late?'정시 지원 건너뛰기':'수시 없이 정시 준비하기',late?'submitLate':'submitEarly','thin')+'</div>');
   }
   let toastTimer;
   function chooseCase(c,late){
-    if(!c)return;
+    if(!c||blocked(c,late))return;
+    if($('drawer').open)$('drawer').close();
     if(!late&&c.name==='경희대'&&!r.referred){
       draftId=c.id;render();$('desk').querySelector('[data-act="allowReferral"]')?.focus({preventScroll:true});return;
     }
     if(late){
-      if(!r.late.includes(c.name))Game.toggleLate(r,c.name);
+      Game.toggleLate(r,c.id);
       draftCategory='';
     }else Game.addEarly(r,c.id);
     draftSchool='';draftId='';render();
@@ -255,22 +213,22 @@ const earlyCase=id=>EarlyCases.find(c=>c.id===id);
     const toast=$('addedNotice');
     toast.textContent=c.name+' '+caseTitle(c,late)+' · 원서함에 담았습니다.';
     toastTimer=setTimeout(()=>{toast.textContent='';},2300);
-    const id=late?c.name:c.id;
+    const id=c.id;
     $('desk').querySelector('[data-act="caseDetails"][data-v="'+CSS.escape(id)+'"]')?.focus({preventScroll:true});
   }
   function caseDetails(id){
-    const late=r.phase==='late',c=late?Admissions.find(c=>c.name===id):earlyCase(id);
+    const late=r.phase==='late',c=late?regularById.get(id):earlyCase(id);
     if(!c)return;
-    const calibration=(late?AdmissionCalibration.late:AdmissionCalibration.early)[late?c.name:c.id];
-    const basis=r.balanceVersion===2&&calibration?.basis?'게임 추정 경쟁선 · 과거 입결 참고 · '+calibration.basis:'게임 추정 경쟁선';
+    const calibration=(late?AdmissionCalibration.late:AdmissionCalibration.early)[c.id];
+    const statistic=late?c.examCut:c.schoolCut;
+    const measure=late?'정시 최종등록자 70%컷 백분위':(c.name==='세명대'?'교과 환산등급 80%컷':'최종등록자 교과등급 70%컷');
+    const sourceUrl='https://www.adiga.kr/ucp/uvt/uni/univDetailSelection.do?menuId=PCUVTINF2000&amp;searchSyr=2025&amp;unvCd='+c.adigaCode;
+    const basis=c.baseId?(statistic?'2024학년도 해당 모집단위 '+measure+' '+statistic+' · 과거 전형 참고':'이 모집단위는 공개 비교값이 부족해 대학의 시뮬레이션 기준선을 적용합니다.'):(calibration?.basis||'시뮬레이션 추정 경쟁선');
     const description=late?c.lateRule||'대학별 수능 반영 영역과 환산 방법은 시행계획을 확인하세요.':c.rule;
-    dialog(c.name+' '+caseTitle(c,late),'<h3>'+caseTrack(c,late)+'</h3><p>'+description+'</p><p>'+(late?'고교 졸업예정 및 해당 수능 응시':c.minimum)+'</p><p>'+src(c,late)+'</p><p class="fine">'+basis+'</p>');
+    dialog(c.name+' '+caseTitle(c,late),'<h3>'+caseTrack(c,late)+'</h3><p>'+description+'</p><p>'+(late?'고교 졸업예정 및 해당 수능 응시':c.minimum)+'</p><p>'+src(c,late)+'</p><p class="fine">'+basis+' <a href="'+sourceUrl+'" target="_blank" rel="noopener">어디가 공개표</a></p><p><a href="'+PlanSources[c.name]+'" target="_blank" rel="noopener">2028 시행계획 자료</a></p>');
   }
   function notices(rows){
     return rows.length?rows.map(x=>'<div class="notice"><div><b>'+x.name+' '+x.major+'</b><small>'+x.kind+'</small>'+(x.reason?'<small class="decisionReason">'+x.reason+'</small>':'')+'</div><strong class="'+(x.accepted?'success':'')+'">'+x.status+'</strong>'+(x.wait?'<p>예비 '+x.position+'번 · '+x.moved+'번까지 충원</p>':'')+'</div>').join(''):'<p class="muted">제출한 원서가 없습니다.</p>';
-  }
-  function exam(){
-    return head('2029년 11월　/　대학수학능력시험','수능 성적이 도착했습니다.',r.replay?'첫 지원과 같은 고3 2학기·수능 결과입니다.':'여섯 학기가 끝났습니다. 이제 수능최저 충족 여부와 원서 결과를 확인하세요.')+paper('수능 성적통지표','2030학년도　대학수학능력시험','<div class="exam">'+Game.mockSubjects.map((s,i)=>'<div><small>'+s+'</small><strong>'+r.exam.grades[i]+'<em>등급</em></strong></div>').join('')+'</div>')+next('수시 결과 확인','fill');
   }
   function outcomePage(){
     const late=r.phase==='lateResults',rows=Game.results(r,late),accepted=rows.some(x=>x.accepted);
@@ -300,40 +258,30 @@ function ending(){
       (x?'<p>'+offerTrack(x)+'</p><b>'+x.row.status+' · '+rankLabel(x.c)+'</b>':'')+extra+'</section>';
   }
   function strategyReason(x){
-    const hist=r.profile?[r.profile]:r.checkpoint.history,last=hist.at(-1),c=x.c;
-    const school=Game.mean(hist.map(h=>Game.mean(h.grades))).toFixed(1);
+    const c=x.c;
+    const school=Game.mean(r.profile.grades).toFixed(1);
     if(x.late){
       const exam=r.exam.grades.map((v,i)=>Game.mockSubjects[i]+' '+v+'등급').join(' · ');
-      return '<p><b>성적 반영</b>　'+exam+'. 이 성적을 '+c.group+'군 '+c.name+' '+x.row.major+'에 반영하면 '+x.row.status+'입니다.</p>'+
+      return '<p><b>성적 반영</b>　'+exam+'. 이 성적을 '+c.group+'군 '+c.name+' '+x.row.major+'에 반영하면 '+x.row.status+'입니다. '+Game.subjectReason(c,r)+'</p>'+
         '<p><b>원서 전략</b>　'+(Game.results(r).some(y=>y.accepted)?
         '이번에는 수시 합격으로 정시 원서함이 닫혔습니다. 이 결과를 얻는 한 가지 경로는 수시를 건너뛰고 해당 군에 지원하는 것입니다.':
         '수시를 건너뛰거나 수시 합격이 없는 경우에 열리는 경로입니다. '+c.group+'군의 한 장을 이 모집단위에 배정합니다.')+'</p>';
     }
-    if(r.profile){
-      const factor={교과:'교과 성적 중심',서류:'교과 성적과 학생부 탐구 기록',면접:'교과 성적·학생부 기록·면접',논술:'모의 논술 점수와 해당 대학의 반영 비율'}[c.kind];
+    const factor={교과:'교과 성적 중심',서류:'교과 성적과 학생부 탐구 기록',면접:'교과 성적·학생부 기록·면접',논술:'모의 논술 점수와 해당 대학의 반영 비율'}[c.kind];
       const minimum=c.minimum.includes('없음')?'수능최저가 없는 전형입니다.':'이번 수능 등급으로 '+c.minimum+' 조건을 충족했습니다.';
       return '<p><b>성적 반영</b>　내신 평균 '+school+'등급입니다. '+c.name+' '+c.early+'의 평가 요소는 '+factor+'입니다. 이번 결과는 '+x.row.status+'입니다.</p><p><b>지원 조건</b>　'+minimum+'</p>';
-    }
-    const investments=hist.reduce((s,h)=>s+h.plan.tokens[c.kind==='서류'?2:3],0);
-    const reason={교과:'고3 1학기까지 교과 평균 '+school+'등급을 바탕으로 교과 중심 평가를 받습니다.',
-      서류:'교과 평균 '+school+'등급과 다섯 학기 동안 탐구에 배분한 '+investments+'칸이 학생부 서류 평가에 반영됩니다.',
-      면접:'교과 평균 '+school+'등급과 탐구 기록에 더해, 글쓰기·면접 연습에 배분한 '+investments+'칸이 면접 평가에 반영됩니다.',
-      논술:'교과 학습과 글쓰기·면접 연습 '+investments+'칸으로 쌓은 논증 역량이 논술 점수에 반영됩니다.'+(r.balanceVersion===2?' 모의고사 연습도 답안 작성에 일부 기여했습니다.':'')}[c.kind];
-    const minimum=c.minimum.includes('없음')?'이 모집단위는 수능최저가 없습니다.':
-      '수능최저는 '+c.minimum+'입니다. 고3 1학기 모의고사에서는 '+(Game.minMet(c,last.mockGrades)?'충족했고':'미달했지만')+', 실제 게임 수능에서는 충족했습니다.';
-    return '<p><b>성적 반영</b>　'+reason+'</p><p><b>원서 전략</b>　수시 원서 한 장을 '+c.name+' '+c.early+'에 배정합니다. '+minimum+(c.name==='경희대'?' 이 학생에게 저장된 학교장 추천 자격도 충족합니다.':'')+'</p>';
   }
 function decisionDifference(x){
     if(x.applied)return '내가 제출한 원서에 이 전형이 포함되어 있습니다.';
     if(x.late){
       const earlyOffer=Game.results(r).find(o=>o.accepted);
       if(earlyOffer)return '내 원서에서는 '+earlyOffer.name+' '+earlyOffer.kind+'에 '+earlyOffer.status+'해 정시 지원이 마감됐습니다.';
-      const occupied=r.late.map(n=>Admissions.find(c=>c.name===n)).find(c=>c.group===x.c.group);
+      const occupied=r.late.map(n=>regularById.get(n)).find(c=>c.group===x.c.group);
       return occupied?'내가 제출한 '+x.c.group+'군 원서는 '+occupied.name+' '+(occupied.lateMajor||occupied.major)+'였습니다. 같은 군의 한 장을 바꾸면 비교 결과에 도달합니다.':
         '내가 비워 둔 '+x.c.group+'군에 지원할 기회가 있었습니다.';
     }
     const sameSchool=Game.results(r).find(o=>o.name===x.c.name);
-    if(sameSchool)return '나는 같은 대학의 '+sameSchool.kind+'을 선택해 '+sameSchool.status+' 결과를 받았습니다. 같은 대학 안에서도 전형에 따라 평가 방식이 달라집니다.';
+    if(sameSchool)return '나는 같은 대학의 '+sameSchool.major+' '+sameSchool.kind+'을 선택해 '+sameSchool.status+' 결과를 받았습니다. 비교 원서는 '+x.row.major+' '+x.row.kind+'입니다.';
     const missed=Game.results(r).filter(o=>o.status==='최저 미충족').length;
     if(missed)return '내 수시 원서 중 '+missed+'장은 수능최저를 충족하지 못했습니다. 아래 전형에서는 이 학생이 지원 조건을 충족했습니다.';
     return r.early.length===Game.EARLY_LIMIT?'수시 다섯 장을 모두 사용했습니다. 한 장을 이 전형으로 바꾸면 같은 학생부로 다른 결과를 얻을 수 있었습니다.':
@@ -342,13 +290,13 @@ function decisionDifference(x){
 
 
   function bestPage(){
-    const {best,actual,equivalent,routes}=Game.compareStrategies(r);
+    const {best,actual,otherMajors,equivalent,routes}=Game.compareStrategies(r);
     const same=best&&actual&&actual.c.order===best.c.order;
     const comparison=!best?'이번 성적과 경쟁 조건에서는 지원 가능한 사례를 모두 확인해도 합격 결과가 없습니다.':
       best.c.order===null?'합격 가능한 대학은 있습니다. 해당 대학은 같은 기준의 입결 비교가 어려워 사례로만 표시합니다.':
       same?'입결 기준으로 가장 높은 대학에 합격하는 원서를 이미 선택했습니다.':
       actual&&actual.c.order===null?'내 합격 대학에는 비교값이 없습니다. 같은 성적으로 가능한 다른 대학의 입결을 함께 확인하세요.':
-      actual?'합격 가능한 대학이 게임 내 입결 '+actual.c.order+'위에서 '+best.c.order+'위로, '+(actual.c.order-best.c.order)+'계단 달라질 수 있었습니다.':
+      actual?'합격 가능한 대학이 시뮬레이션 내 입결 '+actual.c.order+'위에서 '+best.c.order+'위로, '+(actual.c.order-best.c.order)+'계단 달라질 수 있었습니다.':
       '내 원서에서는 합격이 없었지만, 같은 성적으로 합격할 수 있었던 전형이 있습니다.';
     const routeList=routes.map(({route,top,tested})=>'<li><strong>'+route+'</strong><div>'+(top?'<b>'+offerTitle(top)+'</b><small>'+top.row.kind+' · '+top.row.status+'</small>':'<span>합격 사례 없음</span>')+'</div><small>'+tested+'개 검토</small></li>').join('');
     const alternatives=equivalent.filter(x=>x!==best).map(x=>offerTitle(x)+' · '+offerTrack(x)+' ('+x.row.status+')');
@@ -357,31 +305,21 @@ function decisionDifference(x){
       offerCard(best?.c.order===null?'전체 원서에서 가능한 합격 사례':'전체 원서 중 최고 합격',best)+'</div>'+
       (best?'<section class="strategyReason"><h2>이 전형을 선택했다면</h2><p><b>내 선택과의 차이</b>　'+decisionDifference(best)+'</p>'+strategyReason(best)+
         (alternatives.length?'<p><b>같은 순위의 다른 선택</b>　'+alternatives.join(' / ')+'</p>':'')+'</section>':'')+
+      (otherMajors.length?'<details class="majorAlternatives"><summary>내가 지원한 대학의 다른 합격 가능 학과</summary><ul>'+otherMajors.map(x=>'<li><b>'+offerTitle(x)+'</b> · '+offerTrack(x)+' · '+x.row.status+'</li>').join('')+'</ul></details>':'')+
       '<h2 class="routeHeading">전형별로 어디까지 가능했을까요?</h2><ul class="routeResults">'+routeList+'</ul>'+
       '<p class="fine basis">수시는 고3 1학기까지의 학생부와 저장된 추천 자격을, 정시는 수시 합격이 없는 경로를 적용했습니다. 성적·경쟁자·충원은 이번 회차와 같습니다. 2024 정시 일반전형 모집단위별 70%컷 백분위의 중앙값으로 대학을 비교합니다. ‘최선’은 이 지표가 가장 높은 합격 사례입니다. 개별 학과의 합격선은 다를 수 있습니다. 각 행은 따로 선택했을 때의 사후 결과입니다.</p>'+
       btn('내 지원 결과로 돌아가기','ending','thin');
   }
-  function render(focus=false,award=false){
-    clearTimeout(effortTimer);
-    $('effortNotice').textContent='';
-    $('desk').dataset.phase=r.phase;
-    map();const fn={setup,plan,report:reportPage,early:()=>applications(false),exam,fill:outcomePage,late:()=>applications(true),lateResults:outcomePage,register,ending,best:bestPage};
-    $('desk').classList.toggle('reportArrival',award&&r.phase==='report');
+  function render(focus=false){
+    $('desk').dataset.phase=r?.phase;
+    map();const fn={early:()=>applications(false),fill:outcomePage,late:()=>applications(true),lateResults:outcomePage,register,ending,best:bestPage};
     $('desk').innerHTML=fn[r.phase]();save();
-    if(award&&r.phase==='report')showEffort(r.history.at(-1));
     $('persist').textContent=storeOK?'이 기기에 자동 저장':'이 브라우저는 자동 저장을 지원하지 않습니다.';
-    document.querySelectorAll('.stepper').forEach((el,j)=>{el.firstElementChild.setAttribute('aria-label',Game.tasks[j]+' 한 칸 줄이기');el.lastElementChild.setAttribute('aria-label',Game.tasks[j]+' 한 칸 늘리기');});
     if(focus){window.scrollTo(0,0);$('stageTitle')?.focus({preventScroll:true});}
   }
   function dialog(title,html){$('dialogTitle').textContent=title;$('dialogBody').innerHTML=html;if(!$('drawer').open)$('drawer').showModal();}
-  function journal(){
-    if(!r.history.length)return;
-    reportIndex=reportIndex===null?r.history.length-1:Math.min(reportIndex,r.history.length-1);
-    const tabs='<div class="termTabs" role="group" aria-label="학기 선택">'+r.history.map((h,i)=>'<button data-act="term" data-v="'+i+'" aria-pressed="'+(i===reportIndex)+'">'+Game.terms[i]+'</button>').join('')+'</div>';
-    dialog('학기별 성적표',tabs+'<h3 class="journalTerm">'+Game.terms[reportIndex]+'</h3>'+semesterPaper(r.history[reportIndex]));
-  }
   function sources(){
-    dialog('공식 전형과 게임의 가정','<p>2026년 중3 학생이 2030학년도에 지원하는 가상 상황입니다. 대학 사례는 2028학년도 시행계획을 사용합니다. 2030학년도 실제 전형은 해당 연도 모집요강을 확인하세요.</p><p>학생은 국내 일반고 전 과정을 이수하고 수능 6개 과목에 응시합니다. 수시는 학생부교과·학생부종합·논술 사례에서 게임용 원서 5장을 고릅니다. 실제 일반대학 수시 지원 한도는 원칙적으로 6회입니다. 같은 대학의 복수지원 가능 여부는 해당 연도 모집요강을 확인하세요.</p><p>등급에 대응하는 내부 점수와 경쟁선·지원자·예비 이동은 게임에서 생성합니다. 공개 입시결과가 있는 사례는 원서 상세에 과거 연도와 지표를 적었습니다. 게임의 경쟁선과 합격 결과는 모의 수치입니다. 이전 회차를 이어 하면 처음 시작할 때의 계산식을 사용합니다. 새 회차의 학생부·면접·논술 역량은 성적표를 만들 때 함께 정해지며, 다시 지원할 때도 같습니다.</p><p class="fine">자료 · 교육부 「2028 대학입시제도 개편 확정안」, 한국대학교육협의회 「2028학년도 대학입학전형기본사항」.</p><details class="rankBasis"><summary>대학 정렬 기준과 입결 자료</summary><p>대입정보포털 어디가의 2024학년도 정시 일반전형 결과를 사용합니다. 각 대학이 공개한 모집단위별 최종등록자 70%컷 백분위를 한 줄당 한 값으로 집계한 중앙값입니다. 모집인원으로 가중하지 않으며 대학별 반영 과목과 방식은 다를 수 있습니다.</p><p>조선대는 세 영역 공개값의 평균을 사용했습니다. 강원대 사례는 통합 전 국립강릉원주대 자료입니다. 경북대는 백분위 합의 산출 기준을 동일하게 확인하기 어려웠고, 세명대는 80%컷 환산점수만 공개해 두 대학은 입결 비교에서 제외했습니다.</p>'+Admissions.slice().sort(compareAdmissionOrder).map(c=>'<p class="fine"><a href="https://www.adiga.kr/ucp/uvt/uni/univDetailSelection.do?menuId=PCUVTINF2000&amp;searchSyr=2025&amp;unvCd='+c.adigaCode+'" target="_blank" rel="noopener">'+c.name+' 공개표</a> · '+rankLabel(c)+(c.rankSample?' · 모집단위 '+c.rankSample+'건':'')+'</p>').join('')+'</details>'+Admissions.map(c=>'<p><b>'+c.name+'</b><br>'+EarlyCases.filter(track=>track.name===c.name).map(track=>track.early+' · '+src(track,false)).join('<br>')+'<br>정시 · '+src(c,true)+'</p>').join(''));
+    dialog('공식 전형과 시뮬레이션의 가정','<p>2026년 중3 학생이 2030학년도에 지원하는 가상 상황입니다. 대학 사례는 2028학년도 시행계획을 사용합니다. 2030학년도 실제 전형은 해당 연도 모집요강을 확인하세요.</p><p>학생은 국내 일반고 전 과정을 이수하고 수능 6개 과목에 응시합니다. 수시는 학생부교과·학생부종합·논술 사례에서 게임용 원서 5장을 고릅니다. 실제 일반대학 수시 지원 한도는 원칙적으로 6회입니다. 같은 대학의 복수지원 가능 여부는 해당 연도 모집요강을 확인하세요.</p><p>대학별 반영 구조를 등급 기반 내부 점수로 근사합니다. 실제 표준점수·가감점과 다른 모의 점수입니다. 자동 생성 학생은 같은 과목의 내신과 수능을 연동하고 두 대학 이상에 합격 가능한 경로를 확인합니다. 내부 점수와 경쟁선·지원자·예비 이동은 시뮬레이션에서 생성합니다. 공개 입시결과가 있는 사례는 원서 상세에 과거 연도와 지표를 적었습니다. 게임의 경쟁선과 합격 결과는 모의 수치입니다. 이전 회차를 이어 하면 처음 시작할 때의 계산식을 사용합니다. 새 회차의 학생부·면접·논술 역량은 성적표를 만들 때 함께 정해지며, 다시 지원할 때도 같습니다.</p><p class="fine">자료 · 교육부 「2028 대학입시제도 개편 확정안」, 한국대학교육협의회 「2028학년도 대학입학전형기본사항」.</p><details class="rankBasis"><summary>대학 정렬 기준과 입결 자료</summary><p>대입정보포털 어디가의 2024학년도 정시 일반전형 결과를 사용합니다. 각 대학이 공개한 모집단위별 최종등록자 70%컷 백분위를 한 줄당 한 값으로 집계한 중앙값입니다. 모집인원으로 가중하지 않으며 대학별 반영 과목과 방식은 다를 수 있습니다.</p><p>조선대는 세 영역 공개값의 평균을 사용했습니다. 강원대 사례는 통합 전 국립강릉원주대 자료입니다. 경북대는 백분위 합의 산출 기준을 동일하게 확인하기 어려웠고, 세명대는 80%컷 환산점수만 공개해 두 대학은 입결 비교에서 제외했습니다.</p>'+Admissions.slice().sort(compareAdmissionOrder).map(c=>'<p class="fine"><a href="https://www.adiga.kr/ucp/uvt/uni/univDetailSelection.do?menuId=PCUVTINF2000&amp;searchSyr=2025&amp;unvCd='+c.adigaCode+'" target="_blank" rel="noopener">'+c.name+' 공개표</a> · '+rankLabel(c)+(c.rankSample?' · 모집단위 '+c.rankSample+'건':'')+'</p>').join('')+'</details>'+Admissions.map(c=>'<p><b>'+c.name+'</b><br>'+EarlyCases.filter(track=>track.name===c.name).map(track=>track.major+' · '+track.early+' · '+src(track,false)).join('<br>')+'<br>'+RegularCases.filter(track=>track.name===c.name).map(track=>track.group+'군 '+caseTitle(track,true)+' · '+src(track,true)).join('<br>')+'</p>').join(''));
   }
   const invite=$('seminarInvite');
   const hiddenDayKey='pandong.seminar.hiddenDay';
@@ -391,7 +329,7 @@ function decisionDifference(x){
     $('stageTitle')?.focus({preventScroll:true});
   }
   function showInvite(){
-    if(!['#play','#legacy'].includes(location.hash)||r.phase!=='best')return;
+    if(location.hash!=='#play'||r.phase!=='best')return;
     let savedDay;
     try{savedDay=localStorage.getItem(hiddenDayKey);}catch{}
     const today=new Date().toDateString();
@@ -412,13 +350,17 @@ function decisionDifference(x){
   });
   invite.addEventListener('cancel',event=>event.preventDefault());
   window.addEventListener('pageshow',event=>{if(event.persisted)showInvite();});
-  function navigate(phase,award=false){
-    draftCategory='';draftSchool='';draftId='';reportIndex=null;r.phase=phase;
-    render(true,award);showInvite();
+  function navigate(phase){
+    draftCategory='';draftSchool='';draftId='';r.phase=phase;
+    render(true);showInvite();
   }
   document.addEventListener('click',e=>{
+    const tile=e.target.closest('[data-grade]');if(tile){openWheel(tile);return;}
+    const number=e.target.closest('[data-wheel]');if(number){$('wheel').scrollTop=(Number(number.dataset.wheel)-1)*rowHeight;syncWheel();return;}
     const el=e.target.closest('[data-act]');if(!el)return;
-    const act=el.dataset.act,v=el.dataset.v,phase=r.phase;
+    const act=el.dataset.act,v=el.dataset.v,phase=r?.phase;
+    if(act==='applyWheel'){applyWheel();return;}
+    if(act==='cancelWheel'){$('wheelDialog').close();return;}
     if(act==='help'){help();return;}
     if(act==='randomGrades'){beginProfile('random');return;}
     if(act==='quizAnswer'){
@@ -431,21 +373,13 @@ function decisionDifference(x){
     }
     if(act==='grades'){showGrades();return;}
     if(act==='closeGrades'){$('gradeDialog').close();return;}
-    if(act==='map'){expanded=!expanded;map();return;}
     if(act==='category'){
       if(r.profile&&r.phase==='early')dismissHint();
       draftCategory=v;draftSchool='';draftId='';render();openSchools();return;
     }
     if(act==='schools'){openSchools();return;}
-    if(act==='chooseSchool'){
-      draftSchool=v;draftId='';$('drawer').close();
-      const late=phase==='late',remaining=availableCases(late).filter(c=>c.name===v&&(late?!r.late.includes(v):!r.early.includes(c.id)));
-      if(remaining.length===1)chooseCase(remaining[0],late);
-      else{render();$('desk').querySelector('[data-act="track"]:not(:disabled)')?.focus({preventScroll:true});}
-      return;
-    }
-    if(act==='track'){chooseCase(earlyCase(v),false);return;}
-    if(act==='term'){reportIndex=Number(v);journal();$('drawer').querySelector('[aria-pressed="true"]').focus({preventScroll:true});return;}
+    if(act==='chooseSchool'){selectSchool(v);return;}
+    if(act==='track'){chooseCase((phase==='late'?regularById:earlyById).get(v),phase==='late');return;}
     if(act==='allowReferral'&&!r.replay&&earlyCase(draftId)?.name==='경희대'){
       r.referred=true;r.checkpoint.referred=true;chooseCase(earlyCase(draftId),false);return;
     }
@@ -455,22 +389,10 @@ function decisionDifference(x){
       else if(phase==='early')Game.removeEarly(r,v);
       draftSchool='';draftId='';render();return;
     }
-    if(act==='journal'){journal();return;} if(act==='sources'){sources();return;} if(act==='close'){$('drawer').close();return;}
+    if(act==='sources'){sources();return;} if(act==='close'){$('drawer').close();return;}
     if(act==='restart'){dialog('새 학생으로 시작할까요?','<p>이 기기의 현재 성적표와 지원 비교 기록을 새 학생의 기록으로 교체합니다.</p>'+btn('현재 학생 유지','close','thin')+' '+btn('새 학생 만들기','confirmRestart','primary'));return;}
     if(act==='confirmRestart'){$('drawer').close();entry=blankEntry();saveDraft();location.hash='';return;}
-    if(act==='plus'||act==='minus'){
-      const j=Number(v),t=r.plan.tokens;
-      if((act==='plus'&&t.reduce((a,b)=>a+b,0)<6)||(act==='minus'&&t[j]>0))t[j]+=act==='plus'?1:-1;
-      render();
-      const controls=$('desk').querySelectorAll('.stepper')[j];
-      (controls.querySelector('[data-act="'+act+'"]:not(:disabled)')||controls.querySelector('button:not(:disabled)'))?.focus({preventScroll:true});
-      return;
-    }
     switch(act){
-      case 'quick':Game.quickStart(r);break;
-      case 'start':navigate('plan');return;
-      case 'finishTerm':Game.finishTerm(r);break;
-      case 'nextReport':Game.nextReport(r);break;
       case 'submitEarly':Game.submitEarly(r);break;
       case 'submitLate':navigate('lateResults');return;
       case 'enroll':Game.saveEnding(r,v);break;
@@ -480,25 +402,11 @@ function decisionDifference(x){
       case 'fill':case 'register':case 'late':navigate(act);return;
       default:return;
     }
-    navigate(r.phase,act==='finishTerm'||act==='quick');
+    navigate(r.phase);
   });
   document.addEventListener('input',e=>{
     const t=e.target;
     if(t.id==='schoolSearch'){$('schoolRows').innerHTML=schoolRows(t.value);return;}
-    if(t.dataset.score!==undefined||t.dataset.num!==undefined){
-      if(t.value==='')return;
-      const i=Number(t.dataset.score??t.dataset.num),v=Game.bound(Math.round(Number(t.value))||0);
-      r.start[i]=v;document.querySelector('[data-score="'+i+'"]').value=v;document.querySelector('[data-num="'+i+'"]').value=v;save();
-    }
-  });
-  document.addEventListener('change',e=>{
-    const t=e.target,s=t.dataset.select;
-    if(t.dataset.grade){entry[t.dataset.grade][Number(t.dataset.index)]=t.value?Number(t.value):null;saveDraft();return;}
-    if(t.dataset.num!==undefined){t.value=r.start[Number(t.dataset.num)];return;}
-    if(t.name==='type'){r.type=+t.value;$('typehint').textContent=habitDescription(r.type);}
-    else if(t.name==='event')r.plan.event=+t.value;
-    else if(s==='focus'||s==='mockFocus')r.plan[s]=+t.value;
-    save();
   });
   $('drawer').addEventListener('close',()=>{
     if($('drawer').classList.contains('schoolSheet')){
@@ -508,21 +416,19 @@ function decisionDifference(x){
   });
   function displayEntry(focus){
     let route=location.hash.slice(1);
-    if(route==='play'&&!currentProfile&&legacy){location.replace('#legacy');return;}
-    if(/^quiz[1-6]$/.test(route)&&Number(route.slice(4))>entry.answers.length+1){
+    const quizRoute=/^quiz(?:[1-9]|1[0-2])$/.test(route);
+    if(quizRoute&&Number(route.slice(4))>entry.answers.length+1){
       location.replace('#quiz'+(entry.answers.length+1));return;
     }
-    const playing=(route==='play'&&!!currentProfile)||(route==='legacy'&&!!legacy);
-    const step=route==='generate'||route==='manual'||/^quiz[1-6]$/.test(route);
+    const playing=route==='play'&&!!currentProfile;
+    const step=route==='generate'||route==='manual'||quizRoute;
     for(const modal of document.querySelectorAll('dialog[open]'))modal.close();
     $('welcome').hidden=playing||step;
     $('entryStep').hidden=!step;
     $('gameScreen').hidden=!playing;
     $('gameFooter').hidden=!playing;
     if(playing){
-      const selected=route==='legacy'?legacy:currentProfile;
-      if(selected!==r){draftCategory='';draftSchool='';draftId='';expanded=false;reportIndex=null;}
-      r=selected;render(focus);
+      r=currentProfile;render(focus);
       if(r.pendingReport)showGrades();else showInvite();
     }else if(step){renderEntry(route,focus);}
     else if(focus)$('welcomeTitle').focus({preventScroll:true});

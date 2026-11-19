@@ -1,24 +1,8 @@
-/* A fictional cohort. Every random draw has a stable key so moving an application
-   or opening a report cannot change a semester, another applicant, or the exam. */
 const Game = (() => {
   const subjects = ['국어','영어','수학','통합사회','통합과학'];
   const mockSubjects = [...subjects,'한국사'];
-  const types = ['꾸준히 쌓는 형','실전 집중형','탐구 몰입형'];
-  const typesText = ['수업 복습의 효과가 큽니다.','시간을 재고 푸는 연습에 강합니다.','질문을 탐구 기록으로 발전시키기 쉽습니다.'];
-  const terms = ['고1 1학기','고1 2학기','고2 1학기','고2 2학기','고3 1학기','고3 2학기'];
-  const tasks = ['교과 공부','모의고사 연습','교과 탐구','글쓰기·면접'];
-  const events = [
-    ['첫 수행평가를 준비하는 날','자료의 출처가 서로 다릅니다. 무엇부터 할까요?','두 자료의 차이 설명하기','친구 앞에서 근거 말하기','출처를 비교한 첫 탐구 노트','친구 질문에 근거를 들어 답한 발표'],
-    ['선택과목 신청 주간','희망 과목에서 어떤 질문을 이어갈까요?','통학 시간 차이 조사하기','교실 온도 변화 측정하기','사회와 문화 수업으로 이어갈 통학 설문','물리학 수업으로 이어갈 온도 관찰'],
-    ['탐구 결과가 예상과 다릅니다','발표일까지 일주일이 남았습니다.','조건을 바꿔 다시 측정하기','반론을 담아 보고서 고치기','두 조건을 비교한 후속 실험','반론을 검토한 수정 보고서'],
-    ['학교 발표회에 초대받았습니다','지난 학기 탐구를 누구에게 어떻게 설명할까요?','질의응답 발표 맡기','근거를 묶어 글로 내기','청중 질문을 받아 설명한 경험','여러 근거를 연결한 논증문'],
-    ['마지막 수시 학생부를 정리하는 날','선생님이 활동의 변화를 물어봅니다.','처음 질문과 결론 연결하기','모의 면접으로 과정 설명하기','세 학기의 질문과 결론을 연결한 기록','탐구의 한계를 설명한 모의 면접'],
-    ['수능 전 마지막 자습 시간','연습 시험이 끝났습니다. 남은 시간을 어디에 쓸까요?','오답 원인을 다시 쓰기','제한 시간에 한 세트 더 풀기','틀린 이유와 수정 과정을 쓴 오답장','시간 배분을 조절한 마지막 실전 연습']
-  ];
-  const effects = [[['record',4],['speak',5]],[['record',4],['record',4]],[['record',5],['write',5]],[['speak',6],['write',6]],[['record',5],['speak',5]],[['write',3],['mock',2]]];
   const bound=(v,lo=0,hi=100)=>Math.max(lo,Math.min(hi,v));
   const mean=a=>a.reduce((s,v)=>s+v,0)/a.length;
-  const clone=v=>JSON.parse(JSON.stringify(v));
   function noise(seed,key) {
     let h=2166136261;
     for (const c of seed+'|'+key) h=Math.imul(h^c.charCodeAt(0),16777619);
@@ -27,34 +11,22 @@ const Game = (() => {
   }
 const EARLY_LIMIT = 5;
   const category = c => ({교과:'학생부교과',서류:'학생부종합',면접:'학생부종합',논술:'논술'})[c.kind];
-  function fastPlan(r,i){
-    const draw=(key,count)=>Math.floor(noise(r.seed,'quick-'+i+'-'+key)*count);
-    const tokens=[0,0,0,0];
-    for(let j=0;j<6;j++)tokens[draw('time'+j,4)]++;
-    return {tokens,focus:draw('school',5),mockFocus:draw('mock',5),event:draw('event',2)};
-  }
-  function quickStart(r){
-    if(r.phase!=='setup')return;
-    r.quick=true;
-    for(let i=0;i<5;i++){
-      r.plan=fastPlan(r,i);r.phase='plan';finishTerm(r);
-    }
+  function earlyConflict(r,c){
+    return r.early.some(id=>{
+      const other=earlyById.get(id);
+      return other?.name===c.name&&other.early===c.early;
+    });
   }
   function addEarly(r,id){
     if(r.phase!=='early'||r.early.length>=EARLY_LIMIT||r.early.includes(id))return;
-    const c=EarlyCases.find(c=>c.id===id);
-    if(!c||(c.name==='경희대'&&!r.referred))return;
+    const c=earlyById.get(id);
+    if(!c||earlyConflict(r,c)||(c.name==='경희대'&&!r.referred))return;
     r.early.push(id);
   }
   function removeEarly(r,id){
     if(r.phase==='early')r.early=r.early.filter(item=>item!==id);
   }
-  function fresh(seed=crypto.getRandomValues(new Uint32Array(1))[0]) {
-    return {version:3,balanceVersion:2,seed,phase:'setup',type:0,start:[72,72,72,72,72],history:[],plan:blank(),early:[],late:[],referred:false,replay:false,checkpoint:null};
-  }
-  function blank(){return {tokens:[2,2,1,1],focus:0,mockFocus:2,event:0};}
   const relative=(p,cuts)=>1+cuts.filter(c=>p<c).length;
-  const achievement=v=>'ABCDE'[v>=90?0:v>=80?1:v>=70?2:v>=60?3:4];
   const percentile=score=>bound(100/(1+Math.exp(-(score-64)/10.5)),0,100);
   const schoolGrade=v=>relative(percentile(v),[90,66,34,10]);
   function mockGrade(v,i){
@@ -62,109 +34,64 @@ const EARLY_LIMIT = 5;
     if(i===5)return bound(1+Math.ceil((40-Math.round(v/2))/5),1,9);
     return relative(percentile(v),[96,89,77,60,40,23,11,4]);
   }
-// Roll once per school term, on the activity in which the student invested most.
-  function termEvent(run,plan,index){
-    const most=Math.max(...plan.tokens);
-    const leaders=plan.tokens.flatMap((n,j)=>n===most?[j]:[]);
-    const task=leaders[Math.floor(noise(run.seed,'event-task-'+index)*leaders.length)];
-    const roll=noise(run.seed,'effort-return-'+index);
-    const level=roll<.2?'low':roll<.8?'normal':'high';
-    const multiplier={low:.6,normal:1,high:1.5}[level];
-    return {task,level,multiplier,invested:most};
-  }
-  function termReport(run,plan){
-    const i=run.history.length, prev=run.history.at(-1);
-    const a=prev?prev.learned:run.start, b=prev?prev.practice:run.start;
-    const effortEvent=termEvent(run,plan,i);
-    const [study,practice,research,expression]=plan.tokens.map((n,j)=>j===effortEvent.task?n*effortEvent.multiplier:n);
-    const rand=(tag,s)=>noise(run.seed,i+'-'+tag+'-'+s)*2-1;
-    function improve(old,effort,focus,kind,index){
-      const diminishing=.35+(100-old)/75;
-      const rate=1.15*effort+(focus===index?.85*effort:0)+(kind===run.type?.65:0);
-      return bound(old+(rate-1.9)*diminishing+rand(kind?'practice':'school',index)*1.6);
-    }
-    const learned=a.map((v,j)=>improve(v,study,plan.focus,0,j));
-    const practiceScores=b.map((v,j)=>improve(v,practice,plan.mockFocus,1,j));
-    const [effect,gain]=effects[i][plan.event];
-    // A course choice in year one establishes a thread that can continue into year two.
-    if(i===1)learned[plan.event===0?3:4]=bound(learned[plan.event===0?3:4]+2);
-    if(i===2&&research>0){
-      const chosen=run.history[1].plan.event===0?3:4;
-      learned[chosen]=bound(learned[chosen]+Math.min(2,research));
-    }
-    const school=learned.map((v,j)=>Math.round(bound(v+rand('class-test',j)*2.6)));
-    const mock=practiceScores.map((v,j)=>Math.round(bound(v+rand('mock-test',j)*3.8+(effect==='mock'?gain:0))));
-    mock.push(Math.round(bound((mean(learned)+learned[3])/2+rand('history',5)*5)));
-    const hidden={...(prev?.hidden||{record:43,speak:46,write:46})};
-    hidden.record=bound(hidden.record+research*(run.type===2?3.7:3.1));
-    hidden.speak=bound(hidden.speak+expression*2.6);
-    hidden.write=bound(hidden.write+expression*2.8+(run.balanceVersion===2?practice*.7:0));
-    if(effect!=='mock')hidden[effect]=bound(hidden[effect]+gain);
-    const record=[events[i][4+plan.event]];
-    if(i===2&&research>0)record.push(run.history[1].plan.event===0?'지난 학기 통학 설문 자료를 다시 분석함':'지난 학기 온도 측정 자료와 비교함');
-    if(plan.tokens[2]>=2)record.push('추가 자료를 찾아 탐구 질문을 구체화함');
-    if(plan.tokens[3]>=2)record.push('답변을 녹음하고 글의 근거를 다시 다듬음');
-    return {i,effortEvent,plan:clone(plan),learned,practice:practiceScores,school,mock,grades:school.map(schoolGrade),levels:school.map(achievement),mockGrades:mock.map(mockGrade),hidden,record};
-  }
-  function finishTerm(r){
-    if(r.phase!=='plan'||r.history.length>=6||r.plan.tokens.reduce((a,b)=>a+b,0)!==6)return;
-    r.history.push(termReport(r,r.plan));r.phase='report';
-  }
-  function nextReport(r){
-    if(r.phase!=='report')return;
-    if(r.history.length===5){
-      r.checkpoint={history:clone(r.history),referred:r.referred};
-      r.phase='early';
-    }else if(r.history.length===6){
-      r.exam=finalExam(r);r.phase='exam';
-      r.lastTerm=clone(r.history[5]);
-    }else{r.plan=clone(r.plan);r.phase='plan';}
-  }
-  function finalExam(r){
-    const last=r.history[5];
-    const rehearsal=mean(r.history.map(term=>term.plan.tokens[1]));
-    const examPressure=r.balanceVersion===2?Math.max(0,4.4-.75*rehearsal):0;
-    const scores=last.practice.map((v,i)=>Math.round(bound(v+(noise(r.seed,'csat'+i)-.5)*9+(last.plan.event===1?1:0)-examPressure)));
-    scores.push(Math.round(bound(last.mock[5]+(noise(r.seed,'csat-history')-.5)*7)));
-    return {scores,grades:scores.map(mockGrade)};
-  }
   // Internal scores sit inside the same grade bands used by the admission model.
+  const scoreBands=new Map();
   function scoreInBand(grade, subject, school, seed) {
     const gradeOf=school?schoolGrade:score=>mockGrade(score,subject);
-    const band=Array.from({length:101},(_,n)=>n).filter(score=>gradeOf(score)===grade);
+    const key=[school,subject,grade].join('/');
+    if(!scoreBands.has(key))scoreBands.set(key,Array.from({length:101},(_,n)=>n).filter(score=>gradeOf(score)===grade));
+    const band=scoreBands.get(key);
     if(!band.length)throw new RangeError('등급 범위를 확인하세요.');
     const fraction=.25+.5*noise(seed,(school?'school':'exam')+'-band-'+subject);
     return band[Math.floor(fraction*band.length)];
   }
-  function makeProfile(mode, input, seed) {
-    const run=fresh(seed);
-    const draw=key=>noise(run.seed,key);
-    let grades,examGrades;
-    if(mode==='manual'){
-      grades=input.school.slice();examGrades=input.exam.slice();
-      if(grades.length!==5||examGrades.length!==6)throw new RangeError('과목별 등급을 입력하세요.');
-    }else{
-      const quiz=mode==='quiz'?input:null;
-      const base=quiz?[84,66,49][quiz[0]]+(draw('base')-.5)*12:38+draw('base')*60;
-      const skew=quiz?[5,-5,0][quiz[1]]:(draw('skew')-.5)*16;
-      const language=quiz?[6,-6,0][quiz[2]]:0, inquiry=quiz?[6,-6,0][quiz[4]]:0;
-      const traits=[language,quiz?[7,0,-7][quiz[3]]:0,-language,inquiry,-inquiry,0];
-      const strengths=traits.map((v,i)=>base+v+(draw('subject'+i)-.5)*16);
-      grades=strengths.slice(0,5).map((v,i)=>schoolGrade(bound(v+skew+(draw('class'+i)-.5)*8)));
-      const time=quiz?[-4,0,3][quiz[5]]:0;
-      examGrades=strengths.map((v,i)=>mockGrade(bound(v-skew+time+(draw('exam'+i)-.5)*10),i));
+  const pairedBands=[[1,4],[1,5],[3,7],[5,9],[6,9]];
+  function makeProfile(mode,input,seed=crypto.getRandomValues(new Uint32Array(1))[0]){
+    const draw=key=>noise(seed,key);
+    const quiz=mode==='quiz'?input:null;
+    const base=quiz?[88,77,65,53][quiz[0]]+(draw('base')-.5)*8:42+draw('base')*55;
+    const skew=quiz?[4,-4,0][quiz[1]]:(draw('skew')-.5)*12;
+    const language=quiz?[4,-4,0][quiz[2]]:0,inquiry=quiz?[6,-6,0][quiz[4]]:0;
+    const signal=index=>quiz?[5,0,-5][quiz[index]]:0;
+    const strengths=[language+signal(7),signal(3),-language+signal(6),inquiry,-inquiry,signal(8)]
+      .map((v,i)=>base+v+(draw('subject'+i)-.5)*14);
+    function candidate(lift){
+      const grades=mode==='manual'?input.school.slice():strengths.slice(0,5).map((v,i)=>schoolGrade(bound(v+skew+lift+(draw('school'+i)-.5)*7)));
+      const examGrades=mode==='manual'?input.exam.slice():strengths.map((v,i)=>{
+        const grade=mockGrade(bound(v-skew+lift+(quiz?[3,0,-4][quiz[5]]:0)+(draw('exam'+i)-.5)*8),i);
+        return i===5?grade:bound(grade,...pairedBands[grades[i]-1]);
+      });
+      if(grades.length!==5||examGrades.length!==6)throw new RangeError('과목별 등급을 확인하세요.');
+      const school=grades.map((g,i)=>scoreInBand(g,i,true,seed));
+      const scores=examGrades.map((g,i)=>scoreInBand(g,i,false,seed));
+      const hidden={};
+      ['record','speak','write'].forEach((key,i)=>{
+        const answer=quiz?[[9,5,-6],[9,3,-7],[10,3,-7]][i][quiz[i+9]]:0;
+        hidden[key]=Math.round(bound(.48*mean(school)+.22*mean(scores)+21+answer+(draw(key)-.5)*24));
+      });
+      return {version:4,balanceVersion:2,programModel:1,seed,phase:'early',profile:{grades,school,hidden},
+        exam:{grades:examGrades,scores},early:[],late:[],referred:false,replay:false,checkpoint:{referred:false},pendingReport:true};
     }
-    const school=grades.map((g,i)=>scoreInBand(g,i,true,run.seed));
-    const scores=examGrades.map((g,i)=>scoreInBand(g,i,false,run.seed));
-    const hidden={};
-    for(const key of ['record','speak','write']){
-      hidden[key]=Math.round(bound(.48*mean(school)+.22*mean(scores)+21+(draw(key)-.5)*32));
+    if(mode==='manual')return candidate(0);
+    for(const lift of [0,3,6,9,12,15,24,65]){
+      const run=candidate(lift);
+      const accepted=new Set();
+      for(const c of RegularCases){
+        if(outcome(run,c,true).accepted)accepted.add(c.name);
+        if(accepted.size>=2)return run;
+      }
+      for(const c of EarlyCases){
+        if(c.name!=='경희대'&&outcome(run,c,false).accepted)accepted.add(c.name);
+        if(accepted.size>=2)return run;
+      }
     }
-    return {...run,version:4,profile:{grades,school,hidden},exam:{grades:examGrades,scores},
-      phase:'early',checkpoint:{referred:false},pendingReport:true};
+    throw new Error('생성된 지원 경로를 확인할 수 없습니다.');
   }
   function minMet(c,g){
     const [k,e,m,s,p,h]=g, t=Math.min(s,p), v=[k,m,e,t].sort((a,b)=>a-b);
+    if(c.baseId==='부산대')return m+Math.min(k,e,t)<=5;
+    if(c.baseId==='아주대')return v[0]+v[1]<=5;
+    if(c.baseId==='경북대')return v[0]+v[1]<=7;
     switch(c.id){
       case 'inha-essay':
       case '아주대':return v[0]+v[1]<=6;
@@ -187,8 +114,8 @@ const EARLY_LIMIT = 5;
       default:return true;
     }
   }
-  function earlyScore(c,hist,modern){
-    const academic=mean(hist.map(t=>mean(t.school))), {record,speak,write}=hist.at(-1).hidden;
+  function earlyScore(c,profile,modern){
+    const academic=mean(profile.school), {record,speak,write}=profile.hidden;
     if(c.name==='부산대'||c.id==='knu-grades')return .80*academic+.20*(.65*academic+.35*record);
     if(c.name==='경희대')return .70*academic+.30*(.65*academic+.35*record);
     if(c.kind==='교과')return academic;
@@ -202,29 +129,83 @@ const EARLY_LIMIT = 5;
     const share=({'아주대':.3,'동아대':.4,'서울대':.5,'연세대':.3,'가천대':.5,'인천대':.4,'충남대':1/3,'국립공주대':.3,'전북대':.2,'인하대':.3,'전남대':.3})[c.name]??.3;
     return (1-share)*document+share*speak;
   }
-  function lateScore(c,scores,hist){
+  function examComponent(c,scores){
+    const [k,e,m,s,p]=scores,t=Math.max(s,p),natural=['자연','공학'].includes(c.lateField||c.field);
+    switch(c.name){
+      case '아주대':return natural?.2*k+.4*m+.1*e+.05*s+.25*p:.25*k+.35*m+.15*e+.2*s+.05*p;
+      case '부산대':return natural?.2*k+.3*m+.2*e+.075*s+.225*p:.3*k+.25*m+.2*e+.1875*s+.0625*p;
+      case '경북대':return natural?(2*k+3*m+e+s+2*p)/9:(3*k+2*m+e+2*s+p)/9;
+      case '서울대':{
+        const englishPenalty=[0,.5,2,4,6,8,10,12,14][mockGrade(e,1)-1];
+        return (100*k+120*m+(natural?30:50)*s+(natural?50:30)*p)/300-englishPenalty/3;
+      }
+      case '연세대':return (3*k+2*m+e+2*s+p)/9;
+      case '경희대':return .35*k+.35*m+.3*t;
+      case '고려대':{
+        const math=natural?240:200,inquiry=natural?200:160;
+        const deduction=[0,1,3,6,12,15,18,21,24][mockGrade(e,1)-1];
+        return (200*k+math*m+inquiry*(s+p)/2)/(200+math+inquiry)-deduction/10;
+      }
+      case '강원대':return mean([k,e,m,s,p].sort((a,b)=>b-a).slice(0,3));
+      case '가천대':{
+        const top=[k,e,m,s,p].sort((a,b)=>b-a);
+        return (5*top[0]+4*top[1]+3*top[2]+2*top[3])/14;
+      }
+      case '세명대':return mean([k,e,m,s,p].sort((a,b)=>b-a).slice(0,2));
+      case '한남대':{
+        const rest=[natural?k:m,e,t].sort((a,b)=>b-a);
+        return ((natural?m:k)+rest[0]+rest[1])/3;
+      }
+      case '국립공주대':{
+        const core=[k,e,t].sort((a,b)=>b-a);
+        return c.lateMajor==='수학교육과'?(m+core[0]+core[1])/3:mean([...core,m].sort((a,b)=>b-a).slice(0,3));
+      }
+      case '전남대':return .4*k+.3*m+.1*e+.1*(s+p);
+      case '충남대':return .4*k+.3*m+.15*(s+p)-[0,2,5,8,11,14,18,22,26][mockGrade(e,1)-1]/3;
+      case '전북대':return natural?.2*k+.3*m+.2*e+.05*s+.25*p:.3*k+.2*m+.2*e+.2*s+.1*p;
+      case '제주대':return (natural?.2*k+.3*m:.3*k+.2*m)+.2*e+.3*t;
+      case '인하대':return natural?.25*k+.35*m+.1*e+.15*(s+p):.35*k+.25*m+.15*e+.125*(s+p);
+      case '경상국립대':
+      case '충북대':return natural?.2*k+.3*m+.2*e+.1*s+.2*p:.3*k+.2*m+.2*e+.2*s+.1*p;
+      case '동아대':return .25*(k+m+e)+.125*(s+p);
+      case '인천대':return (natural?.25*k+.35*m:.35*k+.25*m)+.2*e+.2*t;
+      case '국립군산대':return (natural?.2*k+.3*m:.3*k+.2*m)+.3*e+.1*(s+p);
+      case '건국대':return .45*Math.max(k,m)+.35*Math.min(k,m)+.10*e+.10*t;
+      case '조선대':return c.lateMajor==='약학과'?.25*k+.35*m+.15*e+.25*p:.25*k+.3*m+.25*e+.2*t;
+      default:return natural?.20*k+.15*e+.35*m+.10*s+.20*p:.30*k+.18*e+.24*m+.18*s+.10*p;
+    }
+  }
+  function lateScore(c,scores,profile,model){
     const [k,e,m,s,p]=scores;
-    if(c.name==='조선대')return .25*k+.15*e+.35*m+.25*p;
-    const academic=mean(hist.map(t=>mean(t.school)));
+    if(!model&&c.name==='조선대')return .25*k+.15*e+.35*m+.25*p;
+    const academic=mean(profile.school);
     const field=c.lateField||c.field;
-    const exam=field==='공학'||field==='자연'?.20*k+.15*e+.35*m+.10*s+.20*p:.30*k+.18*e+.24*m+.18*s+.10*p;
+    const exam=model?examComponent(c,scores):field==='공학'||field==='자연'?.20*k+.15*e+.35*m+.10*s+.20*p:.30*k+.18*e+.24*m+.18*s+.10*p;
     const schoolShare=({'서울대':.4,'연세대':.1,'경북대':.1,'부산대':.2,'충남대':.15})[c.name]||0;
     if(c.name==='충남대')return .8*exam+.15*academic+5;
     return exam*(1-schoolShare)+academic*schoolShare;
   }
+  function subjectReason(c,run){
+    const scores=run.exam.scores;
+    const full=lateScore(c,scores,run.profile,run.programModel||c.baseId);
+    let greatest=0,subject='';
+    for(let i=0;i<5;i++){
+      const adjusted=scores.slice();
+      adjusted[i]=65;
+      const difference=full-lateScore(c,adjusted,run.profile,run.programModel||c.baseId);
+      if(difference>greatest){greatest=difference;subject=mockSubjects[i];}
+    }
+    return greatest>.05?'이 모집단위의 반영 방식에서 '+subject+' 성적이 내부 기준점 대비 총점을 가장 많이 높였습니다.':'이 모집단위는 이번 성적의 영역별 반영점수를 합산해 평가합니다.';
+  }
   function toggleLate(r,id){
-    const c=Admissions.find(u=>u.name===id),list=r.late;
+    const c=regularById.get(id),list=r.late;
     if(!c||r.phase!=='late')return;
     if(list.includes(id)){list.splice(list.indexOf(id),1);return;}
-    if(list.some(n=>Admissions.find(u=>u.name===n).group===c.group))return;
+    if(list.some(n=>regularById.get(n).group===c.group))return;
     list.push(id);
   }
   function editApplications(r){
     if(r.phase!=='ending')return;
-    if(!r.profile){
-      r.lastTerm=clone(r.history[5]);
-      r.history=clone(r.checkpoint.history);
-    }
     r.referred=r.checkpoint.referred;
     r.registered=null;
     r.replay=true;
@@ -232,29 +213,17 @@ const EARLY_LIMIT = 5;
   }
   function submitEarly(r){
     if(r.phase!=='early'||r.early.length>EARLY_LIMIT)return;
-    if(r.profile){
-      if(results(r).some(row=>row.accepted))r.late=[];
-      r.phase=r.early.length?'fill':'late';
-      return;
-    }
-    if(r.replay){
-      r.history.push(clone(r.lastTerm));
-      r.exam??=finalExam(r);
-      // An early offer closes regular admission, including any drafts retained on return.
-      if(results(r).some(row=>row.accepted))r.late=[];
-      r.phase='exam';
-    }
-    else if(r.quick){
-      r.plan=fastPlan(r,5);r.phase='plan';finishTerm(r);nextReport(r);
-    }else{r.plan=clone(r.history[4].plan);r.phase='plan';}
+    if(results(r).some(row=>row.accepted))r.late=[];
+    r.phase=r.early.length?'fill':'late';
   }
   function outcome(r,c,late){
-    const hist=r.profile?[r.profile]:r.checkpoint.history, baseline=late?(c.lateTarget||c.target):c.target;
-    const key=late?c.name:c.id;
-    const calibration=(late?AdmissionCalibration.late:AdmissionCalibration.early)[key];
+    const profile=r.profile, baseline=late?(c.lateTarget||c.target):c.target;
+    const key=c.id;
+    const calibration=(late?AdmissionCalibration.late:AdmissionCalibration.early)[c.baseId||key];
     const modern=r.balanceVersion===2;
-    const target=modern&&calibration?calibration.target:baseline;
-    const score=late?lateScore(c,r.exam.scores,hist):earlyScore(c,hist,modern);
+    const inherited=c.baseId&&c.name==='조선대'&&late?c.target:baseline;
+    const target=(modern&&calibration&&!(c.baseId&&c.name==='조선대'&&late)?calibration.target:inherited)+(late?c.lateShift||0:c.earlyShift||0);
+    const score=late?lateScore(c,r.exam.scores,profile,r.programModel||c.baseId):earlyScore(c,profile,modern);
     const draw=key+(late?'정시':'수시');
     // Selective pools share part of the same cohort. Drawing each in isolation
     // would inflate the chance that at least one of three schools offers a place.
@@ -270,7 +239,7 @@ const EARLY_LIMIT = 5;
     const reason=!late&&c.kind==='논술'&&!['최초합격','충원합격'].includes(status)?(!passes?'수능최저 미충족':(c.minimum.includes('없음')?'수능최저 없음':'수능최저 충족')+' · 논술전형 총점 부족'):'';
     return {reason,name:c.name,major:late?(c.lateMajor||c.major):c.major,kind:late?c.group+'군 '+c.late:c.early,status,wait:waiting,position,moved,accepted:['최초합격','충원합격'].includes(status)};
   }
-  const results=(r,late=false)=>(late?r.late:r.early).map(id=>outcome(r,late?Admissions.find(c=>c.name===id):EarlyCases.find(c=>c.id===id),late));
+  const results=(r,late=false)=>(late?r.late:r.early).map(id=>outcome(r,late?regularById.get(id):earlyById.get(id),late));
   function saveEnding(r,name){
     r.registered=name;r.phase='ending';
   }
@@ -280,20 +249,23 @@ function compareStrategies(r){
     const scenarios=[];
     function evaluate(c,late){
       const row=outcome(r,c,late);
-      const applied=late?r.late.includes(c.name):r.early.includes(c.id);
+      const applied=late?r.late.includes(c.id):r.early.includes(c.id);
       scenarios.push({c,row,late,applied,route:late?'정시':category(c)});
     }
     EarlyCases.filter(c=>c.name!=='경희대'||r.checkpoint.referred).forEach(c=>evaluate(c,false));
-    Admissions.forEach(c=>evaluate(c,true));
+    RegularCases.forEach(c=>evaluate(c,true));
     const offers=scenarios.filter(x=>x.row.accepted).sort((a,b)=>
       compareAdmissionOrder(a.c,b.c) || Number(b.applied)-Number(a.applied) ||
       Number(b.row.status==='최초합격')-Number(a.row.status==='최초합격'));
     const best=offers[0];
     const actual=offers.find(x=>x.applied);
-    return {best,actual,equivalent:best?.c.order!=null?offers.filter(x=>x.c.order===best.c.order):[],
+    const appliedSchools=new Set(scenarios.filter(x=>x.applied).map(x=>x.c.name));
+    const otherMajors=offers.filter(x=>!x.applied&&appliedSchools.has(x.c.name)&&
+      !scenarios.some(p=>p.applied&&p.c.name===x.c.name&&p.row.major===x.row.major));
+    return {best,actual,otherMajors,equivalent:best?.c.order!=null?offers.filter(x=>x.c.order===best.c.order):[],
       routes:['학생부교과','학생부종합','논술','정시'].map(route=>({
         route,top:offers.find(x=>x.route===route),tested:scenarios.filter(x=>x.route===route).length
       }))};
   }
-  return {makeProfile,subjects,mockSubjects,types,typesText,terms,tasks,events,blank,fresh,finishTerm,nextReport,submitEarly,saveEnding,compareStrategies,results,toggleLate,editApplications,category,quickStart,addEarly,removeEarly,EARLY_LIMIT,minMet,mean,bound};
+  return {makeProfile,subjectReason,subjects,mockSubjects,submitEarly,saveEnding,compareStrategies,results,toggleLate,editApplications,category,addEarly,removeEarly,earlyConflict,EARLY_LIMIT,minMet,mean};
 })();
