@@ -243,7 +243,7 @@ function decisionDifference(x){
         (alternatives.length?'<p><b>같은 순위의 다른 선택</b>　'+alternatives.join(' / ')+'</p>':'')+'</section>':'')+
       '<h2 class="routeHeading">전형별로 어디까지 가능했을까요?</h2><ul class="routeResults">'+routeList+'</ul>'+
       '<p class="fine basis">수시는 고3 1학기까지의 학생부와 저장된 추천 자격을, 정시는 수시 합격이 없는 경로를 적용했습니다. 성적·경쟁자·충원은 이번 회차와 같습니다. 합격 가능한 대학 중 목록의 국내 순위가 가장 높은 곳을 ‘최선’으로 정했습니다. 각 행은 따로 선택했을 때의 사후 결과입니다.</p>'+
-      btn('내 지원 결과로 돌아가기','ending','thin')+$('seminarInvite').innerHTML;
+      btn('내 지원 결과로 돌아가기','ending','thin');
   }
   function render(focus=false,award=false){
     map();const fn={setup,plan,report:reportPage,early:()=>applications(false),exam,fill:outcomePage,late:()=>applications(true),lateResults:outcomePage,register,ending,best:bestPage};
@@ -263,7 +263,20 @@ function decisionDifference(x){
   function sources(){
     dialog('공식 전형과 게임의 가정','<p>2026년 중3 학생이 2030학년도에 지원하는 가상 상황입니다. 대학 사례는 2028학년도 시행계획을 사용합니다. 2030학년도 실제 전형은 해당 연도 모집요강을 확인하세요.</p><p>학생은 국내 일반고 전 과정을 이수하고 수능 6개 과목에 응시합니다. 수시는 학생부교과·학생부종합·논술 사례에서 게임용 원서 5장을 고릅니다. 실제 일반대학 수시 지원 한도는 원칙적으로 6회입니다. 같은 대학의 복수지원 가능 여부는 해당 연도 모집요강을 확인하세요.</p><p>학기 점수·경쟁선·지원자·예비 이동은 게임에서 생성합니다. 게임의 선발 점수는 실제 대학의 환산식이나 실측 합격 확률을 재현하지 않습니다. 학생부는 교과와 탐구 과정, 면접과 논술은 설명과 글쓰기 연습을 반영합니다.</p><p class="fine">자료 · 교육부 「2028 대학입시제도 개편 확정안」, 한국대학교육협의회 「2028학년도 대학입학전형기본사항」.</p><p class="fine">대학 목록 정렬 · 2026년 7월 Webometrics 국내 대학 순위.</p>'+Admissions.map(c=>'<p><b>'+c.name+'</b><br>수시 · '+src(c,false)+'<br>정시 · '+src(c,true)+'</p>').join(''));
   }
-  function navigate(phase,award=false){draftCategory='';draftSchool='';draftId='';reportIndex=null;r.phase=phase;render(true,award);}
+  const invite=$('seminarInvite');
+  function showInvite(){
+    if(r.phase==='best'&&!invite.open)invite.showModal();
+  }
+  $('dismissInvite').addEventListener('click',()=>{
+    invite.close();
+    $('stageTitle')?.focus({preventScroll:true});
+  });
+  invite.addEventListener('cancel',event=>event.preventDefault());
+  window.addEventListener('pageshow',event=>{if(event.persisted)showInvite();});
+  function navigate(phase,award=false){
+    draftCategory='';draftSchool='';draftId='';reportIndex=null;r.phase=phase;
+    render(true,award);showInvite();
+  }
   document.addEventListener('click',e=>{
     const el=e.target.closest('[data-act]');if(!el)return;
     const act=el.dataset.act,v=el.dataset.v,phase=r.phase;
@@ -337,5 +350,5 @@ function decisionDifference(x){
       if(!draftSchool)$('schoolPicker')?.focus({preventScroll:true});
     }
   });
-  render();
+  render();showInvite();
 })();

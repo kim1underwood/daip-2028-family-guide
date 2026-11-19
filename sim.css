@@ -36,9 +36,10 @@
 @media(max-width:480px){.strategyPair{grid-template-columns:1fr}.offerCard{padding:.7rem .8rem}.startChoices{gap:.3rem}.startChoices button{font-size:.86rem}.routeResults li{grid-template-columns:4.2rem 1fr}.routeResults li>small{grid-column:2;font-size:.7rem}.routeResults strong{font-size:.87rem}}
 
 .resultActions{gap:.5rem;flex-wrap:wrap}
-.seminarInvite{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:1rem;margin-top:1.5rem;padding:clamp(1rem,3vw,1.6rem);border-radius:9px;background:#1e493a;color:#fff9e8}
+#seminarInvite{width:min(92vw,32rem);margin:clamp(1rem,12vh,6rem) auto auto;max-height:82dvh;background:#1e493a;border:0;box-shadow:0 .8rem 3rem #122b2159}
+.seminarInvite{display:grid;gap:1.2rem;padding:clamp(1rem,3vw,1.6rem);border-radius:9px;background:#1e493a;color:#fff9e8}
 .seminarInvite h2{font-family:Batang,Georgia,serif;color:#fff9e8;margin:0 0 .4rem;font-size:1.35rem}
 .seminarInvite p{margin:0;color:#e1e9db;font-size:.9rem}
 .seminarInvite a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:.55rem .95rem;border-radius:5px;background:#fae6a7;color:#263c2e;text-decoration:none;font-weight:750;white-space:nowrap}
-.seminarInvite a:hover{background:#fff1c5}
+.inviteActions{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap}.inviteActions button{min-height:44px;padding:.5rem 1rem;border-color:#abc1b4;color:#fff9e8;background:transparent}.inviteActions :focus-visible{outline:3px solid #ffda78;outline-offset:3px}.seminarInvite a:hover{background:#fff1c5}
 @media(max-width:580px){.seminarInvite{grid-template-columns:1fr}.resultActions>*{flex:1;padding:.65rem .3rem;font-size:.86rem}}
