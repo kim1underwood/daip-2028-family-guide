@@ -35,31 +35,10 @@ termTabs.forEach((tab, index) => {
 const treeCards = [...document.querySelectorAll('.route-story')];
 const treeOverlay = document.querySelector('.map-focus');
 const treeSlide = slides[treePage - 1];
-const letterMs = 36;
-let treePlaying = false;
+let treeIndex = -1;
 let treeTimer = 0;
 let chipFlight = null;
 
-// Keep the final text in the layout so the card does not resize as characters appear.
-for (const card of treeCards) {
- const line = card.querySelector('.story-line');
- const walker = document.createTreeWalker(line, NodeFilter.SHOW_TEXT);
- const runs = [];
- while (walker.nextNode()) runs.push(walker.currentNode);
- let count = 0;
- for (const run of runs) {
-  const fragment = document.createDocumentFragment();
-  if (run.parentElement.matches('b')) run.parentElement.style.setProperty('--word-at', count * letterMs + 'ms');
-  for (const letter of run.textContent) {
-   const span = document.createElement('span');
-   span.textContent = letter;
-   span.style.setProperty('--appear-at', count++ * letterMs + 'ms');
-   fragment.append(span);
-  }
-  run.replaceWith(fragment);
- }
- card.dataset.typeMs = count * letterMs;
-}
 function stopTree() {
  clearTimeout(treeTimer);
  chipFlight?.cancel();
@@ -67,52 +46,50 @@ function stopTree() {
 }
 function finishTree() {
  stopTree();
- treePlaying = false;
+ treeIndex = treeCards.length;
  treeSlide.classList.remove('tree-opening', 'tree-root-only');
  treeOverlay.hidden = true;
- treeCards.forEach(card => {card.hidden = true;});
+ treeCards.forEach(card => { card.hidden = true; });
  treeNodes.forEach(node => node.classList.add('revealed'));
+}
+function showTreeCard(index) {
+ stopTree();
+ treeSlide.classList.remove('tree-opening', 'tree-root-only');
+ treeIndex = index;
+ treeCards.forEach((card, i) => { card.hidden = i !== index; });
+ treeOverlay.hidden = false;
 }
 function startTree() {
  finishTree();
- treePlaying = true;
+ treeIndex = -1;
  treeNodes.forEach(node => node.classList.remove('revealed'));
  treeSlide.classList.add('tree-opening', 'tree-root-only');
  treeTimer = setTimeout(() => {
   treeSlide.classList.remove('tree-root-only');
-  treeTimer = setTimeout(() => {
-   treeSlide.classList.remove('tree-opening');
-   playTree(0);
-  }, 1100);
+  treeTimer = setTimeout(() => showTreeCard(0), 1100);
  }, 450);
 }
-function playTree(index) {
- if (index === treeCards.length) { finishTree(); return; }
- const card = treeCards[index];
- treeOverlay.hidden = false;
- treeCards.forEach(item => {
-  item.hidden = item !== card;
-  item.classList.remove('spell-out');
- });
- treeNodes.forEach((node, i) => node.classList.toggle('revealed', i < index));
- const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
- treeTimer = setTimeout(() => {
-  card.classList.add('spell-out');
-  treeTimer = setTimeout(() => {
-   const source = card.querySelector('mark').getBoundingClientRect();
-   treeOverlay.hidden = true;
-   treeNodes[index].classList.add('revealed');
-   if (!reduced) {
-    const chip = treeNodes[index].querySelector('strong');
-    const end = chip.getBoundingClientRect();
-    chipFlight = chip.animate([
-     {transform:`translate(${source.left-end.left}px, ${source.top-end.top}px) scale(1.15)`},
-     {transform:'none'}
-    ], {duration:380, easing:'ease-out'});
-   }
-   treeTimer = setTimeout(() => playTree(index + 1), reduced ? 0 : 380);
-  }, 2000);
- }, reduced ? 0 : Number(card.dataset.typeMs));
+function advanceTree() {
+ if (treeIndex < 0) { showTreeCard(0); return; }
+ // A second input during the chip's flight should not dismiss the upcoming card.
+ if (treeOverlay.hidden) return;
+ const source = treeCards[treeIndex].querySelector('mark').getBoundingClientRect();
+ treeOverlay.hidden = true;
+ const node = treeNodes[treeIndex];
+ node.classList.add('revealed');
+ const next = treeIndex + 1;
+ const land = () => {
+  if (next === treeCards.length) finishTree();
+  else showTreeCard(next);
+ };
+ if (matchMedia('(prefers-reduced-motion: reduce)').matches) { land(); return; }
+ const chip = node.querySelector('strong');
+ const end = chip.getBoundingClientRect();
+ chipFlight = chip.animate([
+  {transform:`translate(${source.left-end.left}px, ${source.top-end.top}px) scale(1.15)`},
+  {transform:'none'}
+ ], {duration:380, easing:'ease-out'});
+ treeTimer = setTimeout(land, 380);
 }
 
 const chapterStarts=[1,3,6,12,40,45,59];
@@ -189,7 +166,7 @@ function showContents(){
  dialog.showModal();dialog.scrollTop=0;
 }
 function advance(direction){
- if (direction > 0 && page === treePage && treePlaying) { finishTree(); return; }
+ if (direction > 0 && page === treePage && treeIndex < treeCards.length) { advanceTree(); return; }
  if (page === glossaryPage && step + direction >= 0 && step + direction < termTabs.length) {
   go(page, step + direction); return;
  }
