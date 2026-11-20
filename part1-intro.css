@@ -169,3 +169,29 @@
   .score-layout { grid-template-columns: minmax(0,1fr); }
   .score-report th, .score-report td { padding: .32em .5em; }
 }
+
+#term-panel-1 .record-sheet dt b { display: block; margin: .12em 0 0; }
+.grade-metrics em small { display: block; font-size: .6em; font-weight: 500; }
+[data-record-cue="example-label"] { display: block; margin-top: .35em; font-weight: 700; }
+@media screen and (prefers-reduced-motion: no-preference) {
+ #term-panel-1:not([hidden]) [data-record-cue] { animation: record-reveal .2s ease-out var(--cue-at) backwards; }
+ #term-panel-1:not([hidden]) mark { animation: record-highlight .3s ease-out var(--mark-at) backwards; }
+ #term-panel-1 h2 mark { --mark-at: .45s; }
+ [data-record-cue="short-name"] { --cue-at: .95s; }
+ #term-panel-1:not([hidden]) .record-sheet { --cue-at: 1.55s; animation-name: record-open; animation-duration: .4s; }
+ [data-record-cue="grade-label"] { --cue-at: 2.15s; }
+ [data-record-cue="note-label"] { --cue-at: 2.7s; --mark-at: 3.85s; }
+ [data-record-cue="grade-short"] { --cue-at: 3.3s; }
+ [data-record-cue="note-short"] { --cue-at: 4.35s; }
+ [data-record-cue="metrics"] { --cue-at: 5s; }
+ [data-record-cue="raw-definition"] { --cue-at: 5.7s; }
+ [data-record-cue="achievement-definition"] { --cue-at: 6.7s; }
+ [data-record-cue="rank-definition"] { --cue-at: 7.7s; }
+ [data-record-cue="scores"] { --cue-at: 8.85s; }
+ [data-record-cue="note-definition"] { --cue-at: 9.9s; }
+ [data-record-cue="example-label"] { --cue-at: 11.1s; }
+ [data-record-cue="example-text"] { --cue-at: 11.8s; }
+ @keyframes record-reveal { from { opacity: 0; } to { opacity: 1; } }
+ @keyframes record-highlight { from { background-color: transparent; color: inherit; box-shadow: inset 0 0 transparent; } }
+ @keyframes record-open { from { opacity: 0; clip-path: inset(0 0 100%); } to { opacity: 1; clip-path: inset(0); } }
+}
