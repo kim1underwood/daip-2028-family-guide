@@ -34,7 +34,9 @@ termTabs.forEach((tab, index) => {
 
 const treeCards = [...document.querySelectorAll('.route-story')];
 const treeOverlay = document.querySelector('.map-focus');
+const treeSlide = slides[treePage - 1];
 const letterMs = 36;
+let treePlaying = false;
 let treeTimer = 0;
 let chipFlight = null;
 
@@ -63,16 +65,36 @@ function stopTree() {
  chipFlight?.cancel();
  chipFlight = null;
 }
-function playTree(index = 0) {
+function finishTree() {
  stopTree();
+ treePlaying = false;
+ treeSlide.classList.remove('tree-opening', 'tree-root-only');
+ treeOverlay.hidden = true;
+ treeCards.forEach(card => {card.hidden = true;});
+ treeNodes.forEach(node => node.classList.add('revealed'));
+}
+function startTree() {
+ finishTree();
+ treePlaying = true;
+ treeNodes.forEach(node => node.classList.remove('revealed'));
+ treeSlide.classList.add('tree-opening', 'tree-root-only');
+ treeTimer = setTimeout(() => {
+  treeSlide.classList.remove('tree-root-only');
+  treeTimer = setTimeout(() => {
+   treeSlide.classList.remove('tree-opening');
+   playTree(0);
+  }, 1100);
+ }, 450);
+}
+function playTree(index) {
+ if (index === treeCards.length) { finishTree(); return; }
  const card = treeCards[index];
- treeOverlay.hidden = !card;
+ treeOverlay.hidden = false;
  treeCards.forEach(item => {
   item.hidden = item !== card;
   item.classList.remove('spell-out');
  });
  treeNodes.forEach((node, i) => node.classList.toggle('revealed', i < index));
- if (!card) return;
  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
  treeTimer = setTimeout(() => {
   card.classList.add('spell-out');
@@ -89,8 +111,8 @@ function playTree(index = 0) {
     ], {duration:380, easing:'ease-out'});
    }
    treeTimer = setTimeout(() => playTree(index + 1), reduced ? 0 : 380);
-  }, reduced ? 0 : 300);
- }, reduced ? 3000 : Number(card.dataset.typeMs));
+  }, 2000);
+ }, reduced ? 0 : Number(card.dataset.typeMs));
 }
 
 const chapterStarts=[1,3,6,12,40,45,59];
@@ -126,8 +148,8 @@ function show(n,s){
   guidePanels.forEach((panel,i)=>{panel.hidden=i!==s});
   slide.querySelectorAll('[data-step]').forEach((button,i)=>button.setAttribute('aria-pressed',String(i===s)));
  }
- if (prevPage === treePage && n !== treePage) stopTree();
- if (treePage && n === treePage && prevPage !== n) playTree();
+ if (prevPage === treePage && n !== treePage) finishTree();
+ if (treePage && n === treePage && prevPage !== n) startTree();
  if (glossaryPage && n === glossaryPage) selectTerm(s);
  const cueRoot = n === guidePage ? guidePanels[s] : slide;
  if (!isMapDeck && (prevPage !== n || previousStep !== s)) {
@@ -167,6 +189,7 @@ function showContents(){
  dialog.showModal();dialog.scrollTop=0;
 }
 function advance(direction){
+ if (direction > 0 && page === treePage && treePlaying) { finishTree(); return; }
  if (page === glossaryPage && step + direction >= 0 && step + direction < termTabs.length) {
   go(page, step + direction); return;
  }

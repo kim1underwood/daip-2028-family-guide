@@ -122,16 +122,39 @@
   #term-panel-1 .record-sheet { margin-top: .55em; }
   #term-panel-1 .record-sheet dt, #term-panel-1 .record-sheet dd { padding-block: .45em; }
 }
-.record-change { margin-top: .7em; padding: .55em .9em; background: #e9efe0; border-left: .22em solid #81a16a; }
-.record-change p { margin: .2em 0; font-size: .91em; }
-.record-change a { color: #375d49; font-size: .77em; }
+.grade-metrics { list-style: none; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .6em; margin: 0; padding: 0; }
+.grade-metrics li { padding: .45em .6em; background: #f0f4ed; }
+.grade-metrics strong, .grade-metrics em { display: block; }
+.grade-metrics em { font-size: 1.35em; font-weight: 750; }
+.grade-metrics p { font-size: .86em; line-height: 1.45; }
+@media screen and (max-width: 700px) {
+ .grade-metrics { grid-template-columns: 1fr; }
+ .grade-metrics li { display: grid; grid-template-columns: 4.5em 1fr; align-items: baseline; }
+ .grade-metrics p { grid-column: 1/-1; }
+}
+@media screen {
+ .tree-root-only .routes { visibility: hidden; }
+ .tree-root-only .route-root::after { visibility: hidden; }
+}
+@media screen and (max-width:700px) and (orientation:portrait), screen and (pointer:coarse) and (orientation:landscape) and (max-height:550px) {
+ .tree-opening .routes { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .5em; margin-top: .55em; }
+ .tree-opening .routes::before { display: block; left: 25%; right: 25%; }
+ .tree-opening .route-root::after { height: .88em; }
+ .tree-opening .route-children { display: none; }
+}
+@media screen and (prefers-reduced-motion: no-preference) {
+ .tree-root-only .route-root, .tree-opening:not(.tree-root-only) .routes { animation: tree-enter 280ms ease-out both; }
+ @keyframes tree-enter { from { opacity: 0; transform: translateY(-.25em); } }
+}
+#term-panel-0 { --rule-time: 1600ms; }
+.score-report td { --grade-at: calc(var(--rule-time) + var(--grade-step) * 240ms); }
 .grade-value { display: inline-block; }
 @media screen and (prefers-reduced-motion: no-preference) {
- #term-panel-0:not([hidden]) .score-rule { animation: rule-flash 460ms ease-out; }
+ #term-panel-0:not([hidden]) .score-rule { animation: rule-flash var(--rule-time) linear; }
  #term-panel-0:not([hidden]) .grade-value { animation: grade-hop 240ms ease-out var(--grade-at) both; }
  #term-panel-0:not([hidden]) td.chosen { animation: grade-pick 240ms linear var(--grade-at) both; }
- #term-panel-0:not([hidden]) .score-verdict { animation: score-result 220ms ease-out 3340ms both; }
- @keyframes rule-flash { 35%,70% { background: #e4eeb1; box-shadow: 0 0 0 .15em #e4eeb1; } }
+ #term-panel-0:not([hidden]) .score-verdict { animation: score-result 220ms ease-out calc(var(--rule-time) + 2880ms) both; }
+ @keyframes rule-flash { 0%,15%,100% { background: transparent; box-shadow: none; } 25%,87.5% { background: #e4eeb1; box-shadow: 0 0 0 .15em #e4eeb1; } }
  @keyframes grade-hop { 0%,100% {transform: none;} 45% {transform: translateY(-.24em) scale(1.2);} }
  @keyframes grade-pick { 0% { background: transparent; color: inherit; font-weight: 400; } 45%,100% { background: #e7efda; color: #244f3d; font-weight: 750; } }
  @keyframes score-result { from { opacity: 0; transform: translateY(.25em); } to { opacity: 1; transform: none; } }
