@@ -7,8 +7,65 @@ const total=slides.length;
 const isMapDeck=slides[0].classList.contains('mapSlide');
 const guidePage=slides.findIndex(slide=>slide.classList.contains('family-guide'))+1;
 const guidePanels=[...document.querySelectorAll('.family-guide .family-panel')];
-const chapterStarts=[1,4,10,38,43,57];
-const chapterLabels=['표지와 목차','2028 인원 분석','5등급제 실시에 따른 변화','논서술형 평가 역량 변화','통합형 수능에 따른 변화','마무리'];
+const treeNodes = [...document.querySelectorAll('[data-leaf]')];
+const treePage = slides.findIndex(slide => slide.dataset.n === 'intro-map') + 1;
+const glossaryPage = slides.findIndex(slide => slide.dataset.n === 'intro-terms') + 1;
+const termTabs = [...document.querySelectorAll('.gloss-tabs [role="tab"]')];
+
+function selectTerm(index) {
+ termTabs.forEach((tab, i) => {
+  tab.setAttribute('aria-selected', String(i === index));
+  tab.tabIndex = i === index ? 0 : -1;
+  byId(tab.getAttribute('aria-controls')).hidden = i !== index;
+ });
+}
+termTabs.forEach((tab, index) => {
+ tab.addEventListener('click', () => selectTerm(index));
+ tab.addEventListener('keydown', event => {
+  const positions = {ArrowRight:(index + 1) % termTabs.length, ArrowLeft:(index + termTabs.length - 1) % termTabs.length, Home:0, End:termTabs.length - 1};
+  if (!(event.key in positions)) return;
+  event.preventDefault();
+  event.stopPropagation();
+  const target = positions[event.key];
+  selectTerm(target);
+  termTabs[target].focus();
+ });
+});
+
+function showTree(stage, animate) {
+ const slide = slides[treePage - 1];
+ const focus = slide.querySelector('.focus-term');
+ const hint = slide.querySelector('.focus-hint');
+ const fullNames = ['학생부교과전형', '학생부종합전형', '논술전형', '수능위주전형'];
+ treeNodes.forEach((node, index) => {
+  node.classList.toggle('revealed', index < stage);
+  node.querySelector('strong').getAnimations().forEach(animation => animation.cancel());
+ });
+ focus.textContent = stage ? fullNames[stage - 1] : '대학입학전형';
+ if (stage === 2) {
+  focus.replaceChildren();
+  for (const [text, emphasized] of [['학',true],['생부',false],['종',true],['합전형',false]]) {
+   const part = document.createElement(emphasized ? 'mark' : 'span');
+   part.textContent = text;
+   focus.append(part);
+  }
+ }
+ hint.textContent = stage ? (stage <= 3 ? '수시모집' : '정시모집') : '다음 화살표로 전형을 하나씩 펼쳐 보세요.';
+ if (!stage || !animate || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+ const chip = treeNodes[stage - 1].querySelector('strong');
+ const from = focus.getBoundingClientRect(), to = chip.getBoundingClientRect();
+ const dx = from.left + from.width / 2 - to.left - to.width / 2;
+ const dy = from.bottom - to.top;
+ chip.animate([
+  {transform:`translate(${dx}px, ${dy}px)`, opacity:0, offset:0},
+  {transform:`translate(${dx}px, ${dy}px)`, opacity:0, offset:.52},
+  {transform:`translate(${dx}px, ${dy}px)`, opacity:1, offset:.61},
+  {transform:'none', opacity:1}
+ ], {duration:1400, easing:'ease-in-out'});
+}
+
+const chapterStarts=[1,3,7,13,41,46,60];
+const chapterLabels=['표지와 목차','00 시작하기 전에','2028 인원 분석','5등급제 실시에 따른 변화','논서술형 평가 역량 변화','통합형 수능에 따른 변화','마무리'];
 function route(){
  const m=location.hash.match(/^#(\d+)(?:\.(\d+))?$/);
  // The former combined deck opened Part 2 at pages 80–85.
@@ -19,8 +76,8 @@ function route(){
   target.hash=String(formerMapPage)+(m[2]?'.'+m[2]:'');
   location.replace(target.href);return;
  }
- const n=Math.max(1,Math.min(total,requested>=76 && requested<=79 ? requested-19 : requested));
- const steps=n===guidePage?guidePanels.length:isMapDeck?journey[n-1].steps.length:1;
+ const n=Math.max(1,Math.min(total,requested>=76 && requested<=79 ? requested-16 : requested));
+ const steps=n===treePage?treeNodes.length+1:n===guidePage?guidePanels.length:isMapDeck?journey[n-1].steps.length:1;
  const s=Math.max(0,Math.min(steps-1,m?Number(m[2]||1)-1:0));
  show(n,s);
 }
@@ -40,6 +97,8 @@ function show(n,s){
   guidePanels.forEach((panel,i)=>{panel.hidden=i!==s});
   slide.querySelectorAll('[data-step]').forEach((button,i)=>button.setAttribute('aria-pressed',String(i===s)));
  }
+ if (treePage && n === treePage) showTree(s, prevPage !== n || s > previousStep);
+ if (glossaryPage && n === glossaryPage && prevPage !== n) selectTerm(0);
  const cueRoot = n === guidePage ? guidePanels[s] : slide;
  if (!isMapDeck && (prevPage !== n || previousStep !== s)) {
   const previousRoot = prevPage === guidePage ? guidePanels[previousStep] : slides[prevPage - 1];
@@ -78,6 +137,10 @@ function showContents(){
  dialog.showModal();dialog.scrollTop=0;
 }
 function advance(direction){
+ if (page === treePage && step + direction >= 0 && step + direction <= treeNodes.length) {
+  go(page, step + direction); return;
+ }
+ if (treePage && page === treePage + 1 && direction < 0) { go(treePage, treeNodes.length); return; }
  if(page===guidePage&&step+direction>=0&&step+direction<guidePanels.length){go(page,step+direction);return}
  if(guidePage&&page===guidePage+1&&direction<0){go(guidePage,guidePanels.length-1);return}
  go(page+direction);
