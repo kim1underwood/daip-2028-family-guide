@@ -50,7 +50,7 @@
   .slide[data-n] :is(.phone-scroll, .aligned-scroll) :is(th, td) {
     padding: 6px; word-break: keep-all; overflow-wrap: normal; white-space: normal;
   }
-  .slide[data-n] :is(.phone-scroll, .aligned-scroll) th:first-child:not(.phone-row-label) { position: static; }
+  .slide[data-n] :is(.phone-scroll, .aligned-scroll) .native th:first-child:not(.phone-row-label) { position: static; }
   .slide[data-n] :is(.phone-scroll, .aligned-scroll) .phone-row-label {
     position: sticky; left: 0; z-index: 2;
   }
