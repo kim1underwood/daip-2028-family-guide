@@ -69,30 +69,40 @@
 }
 @media print { .route-leaf:not(.revealed) { visibility: visible; } }
 
-/* On entry, introduce each route before placing its short name in the diagram. */
-.slide[data-n="intro-map"] .intro-body { gap: .55em; }
-.map-focus { min-height: 0; text-align: left; }
-.route-story {
-  max-width: 58em; margin: 0 auto; padding: .8em 1.25em;
-  background: #fffefa; border: 1px solid #bfd0c2; border-left: .33em solid var(--tone);
-  box-shadow: 0 .22em .9em #183c3312;
-}
-.route-story header { display: flex; gap: .75em; align-items: baseline; }
-.route-story header small { color: var(--tone); font-weight: 700; }
-.route-story h2 { font-size: 1.55em; }
-.route-story > p { margin: .32em 0; }
-.route-story .story-tip { border-top: 1px solid #d6dfd4; padding-top: .4em; }
-.route-story mark, .gloss-panel mark { padding: 0; background: transparent; color: inherit; }
-.route-story.spell-out mark, .gloss-panel mark {
-  color: #154c40; background: #deecb0; box-shadow: inset 0 -.1em #8cab64;
-}
-.tree-replay { display: block; margin: .5em auto; }
+/* The overlay occupies the tree's existing canvas; revealed and unrevealed leaves have the same geometry. */
+.slide[data-n="intro-map"] .intro-body { position: relative; gap: 1.1em; }
+.route-root { font-size: 1.65em; min-width: 6.3em; padding: .42em 1.4em; text-align: center; border-radius: 5px; }
+.route-root::after { height: .56em; }
+.routes { margin-top: 0; }
+.route-branch { padding: 1.05em .7em .85em; }
+.route-leaf { padding: .65em .35em; }
 .route-leaf strong { position: relative; z-index: 1; }
+.route-leaf .route-date { display: block; margin-top: .6em; padding-top: .5em; border-top: 1px solid #cedacf; font-size: .82em; color: #364e44; }
+.route-leaf small { line-height: 1.4; }
+.map-focus { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; padding: 1em; background: rgba(247,248,241,.78); }
+.route-story { width: min(42em,100%); padding: 1.3em 1.6em; background: #fffefa; border: 1px solid #bacbbc; border-top: .28em solid var(--tone); box-shadow: 0 .6em 2em #183c3326; }
+.route-story small { font-weight: 700; color: var(--tone); }
+.route-story h2 { margin: .15em 0 .4em; font-size: 1.65em; }
+.story-schools { border-block: 1px solid #d7e1d6; padding: .45em 0; color: var(--tone); font-weight: 700; }
+.story-line { margin-top: .65em; }
+.route-story mark, .gloss-panel mark { padding: 0; background: transparent; color: inherit; }
+.route-story.spell-out mark, .gloss-panel mark { color: #154c40; background: #deecb0; box-shadow: inset 0 -.1em #8cab64; }
+.story-line b { display: inline-block; color: var(--tone); }
 @media screen and (prefers-reduced-motion: no-preference) {
-  .route-story:not([hidden]) { animation: story-enter 300ms ease-out; }
-  .route-story mark { transition: background-color 380ms ease, box-shadow 380ms ease; }
-  @keyframes story-enter { from { opacity: 0; transform: translateY(.4em); } to { opacity: 1; transform: none; } }
+ .route-story:not([hidden]) .story-line span { animation: type-letter 1ms steps(1,end) var(--appear-at) backwards; }
+ .route-story:not([hidden]) .story-line b { animation: word-pop 300ms ease-out var(--word-at) both; }
+ @keyframes type-letter { from { opacity: 0; } to { opacity: 1; } }
+ @keyframes word-pop { 0% { transform: none; } 45% { transform: translateY(-.16em) scale(1.09); } 100% { transform: none; background: #e6efd0; } }
 }
+@media screen and (max-width:700px) and (orientation:portrait), screen and (pointer:coarse) and (orientation:landscape) and (max-height:550px) {
+ .route-leaf:not(.revealed) { display: block; visibility: hidden; }
+ .route-leaf .route-date { margin: .2em 0 0; padding: 0; border: 0; }
+ .route-branch { padding: .65em; }
+ .route-root { font-size: 1.35em; }
+ .map-focus { align-items: start; padding: 12px 4px; }
+ .route-story { position: sticky; top: 4px; padding: 1em; }
+}
+@media print { .map-focus { display: none; } }
 .gloss-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .score-layout { display: grid; grid-template-columns: 1.1fr 1fr; gap: 1.2em; margin-top: .55em; align-items: start; }
 .score-report { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; line-height: 1.22; }
@@ -107,10 +117,24 @@
 .score-verdict h3 { font-size: 1.04em; }
 .score-verdict strong { font-size: 1.28em; }
 .score-verdict p { font-size: .9em; }
+@media (min-width: 1001px) {
+  #term-panel-1 { font-size: .94em; padding: .85em 1.15em; }
+  #term-panel-1 .record-sheet { margin-top: .55em; }
+  #term-panel-1 .record-sheet dt, #term-panel-1 .record-sheet dd { padding-block: .45em; }
+}
+.record-change { margin-top: .7em; padding: .55em .9em; background: #e9efe0; border-left: .22em solid #81a16a; }
+.record-change p { margin: .2em 0; font-size: .91em; }
+.record-change a { color: #375d49; font-size: .77em; }
+.grade-value { display: inline-block; }
 @media screen and (prefers-reduced-motion: no-preference) {
-  .gloss-panel:not([hidden]) .score-verdict { animation: score-result 400ms ease 1.2s both; }
-  .gloss-panel:not([hidden]) .score-verdict + .score-verdict { animation-delay: 1.7s; }
-  @keyframes score-result { from { opacity: 0; transform: translateY(.3em); } to { opacity: 1; transform: none; } }
+ #term-panel-0:not([hidden]) .score-rule { animation: rule-flash 460ms ease-out; }
+ #term-panel-0:not([hidden]) .grade-value { animation: grade-hop 240ms ease-out var(--grade-at) both; }
+ #term-panel-0:not([hidden]) td.chosen { animation: grade-pick 240ms linear var(--grade-at) both; }
+ #term-panel-0:not([hidden]) .score-verdict { animation: score-result 220ms ease-out 3340ms both; }
+ @keyframes rule-flash { 35%,70% { background: #e4eeb1; box-shadow: 0 0 0 .15em #e4eeb1; } }
+ @keyframes grade-hop { 0%,100% {transform: none;} 45% {transform: translateY(-.24em) scale(1.2);} }
+ @keyframes grade-pick { 0% { background: transparent; color: inherit; font-weight: 400; } 45%,100% { background: #e7efda; color: #244f3d; font-weight: 750; } }
+ @keyframes score-result { from { opacity: 0; transform: translateY(.25em); } to { opacity: 1; transform: none; } }
 }
 @media screen and (max-width:700px) and (orientation:portrait), screen and (pointer:coarse) and (orientation:landscape) and (max-height:550px) {
   .route-story { padding: .75em .8em; }

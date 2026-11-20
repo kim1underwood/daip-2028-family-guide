@@ -20,23 +20,44 @@ function selectTerm(index) {
  });
 }
 termTabs.forEach((tab, index) => {
- tab.addEventListener('click', () => selectTerm(index));
+ tab.addEventListener('click', () => go(glossaryPage, index));
  tab.addEventListener('keydown', event => {
   const positions = {ArrowRight:(index + 1) % termTabs.length, ArrowLeft:(index + termTabs.length - 1) % termTabs.length, Home:0, End:termTabs.length - 1};
   if (!(event.key in positions)) return;
   event.preventDefault();
   event.stopPropagation();
   const target = positions[event.key];
-  selectTerm(target);
+  go(glossaryPage, target);
   termTabs[target].focus();
  });
 });
 
 const treeCards = [...document.querySelectorAll('.route-story')];
-const replayTree = document.querySelector('.tree-replay');
+const treeOverlay = document.querySelector('.map-focus');
+const letterMs = 36;
 let treeTimer = 0;
 let chipFlight = null;
 
+// Keep the final text in the layout so the card does not resize as characters appear.
+for (const card of treeCards) {
+ const line = card.querySelector('.story-line');
+ const walker = document.createTreeWalker(line, NodeFilter.SHOW_TEXT);
+ const runs = [];
+ while (walker.nextNode()) runs.push(walker.currentNode);
+ let count = 0;
+ for (const run of runs) {
+  const fragment = document.createDocumentFragment();
+  if (run.parentElement.matches('b')) run.parentElement.style.setProperty('--word-at', count * letterMs + 'ms');
+  for (const letter of run.textContent) {
+   const span = document.createElement('span');
+   span.textContent = letter;
+   span.style.setProperty('--appear-at', count++ * letterMs + 'ms');
+   fragment.append(span);
+  }
+  run.replaceWith(fragment);
+ }
+ card.dataset.typeMs = count * letterMs;
+}
 function stopTree() {
  clearTimeout(treeTimer);
  chipFlight?.cancel();
@@ -44,36 +65,33 @@ function stopTree() {
 }
 function playTree(index = 0) {
  stopTree();
- const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
- treeNodes.forEach((leaf, i) => leaf.classList.toggle('revealed', i < index));
- treeCards.forEach((card, i) => {
-  card.hidden = i !== index;
-  card.classList.remove('spell-out');
+ const card = treeCards[index];
+ treeOverlay.hidden = !card;
+ treeCards.forEach(item => {
+  item.hidden = item !== card;
+  item.classList.remove('spell-out');
  });
- replayTree.hidden = index < treeCards.length;
- if (index >= treeCards.length) return;
- const card = treeCards[index], leaf = treeNodes[index];
- // Give the audience time to read the full name and both preparation notes first.
+ treeNodes.forEach((node, i) => node.classList.toggle('revealed', i < index));
+ if (!card) return;
+ const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
  treeTimer = setTimeout(() => {
   card.classList.add('spell-out');
   treeTimer = setTimeout(() => {
-   leaf.classList.add('revealed');
+   const source = card.querySelector('mark').getBoundingClientRect();
+   treeOverlay.hidden = true;
+   treeNodes[index].classList.add('revealed');
    if (!reduced) {
-    const target = leaf.querySelector('strong');
-    const source = card.querySelector('mark').getBoundingClientRect();
-    const end = target.getBoundingClientRect();
-    const x = source.left - end.left;
-    const y = source.top - end.top;
-    chipFlight = target.animate([
-     {transform:`translate(${x}px, ${y}px) scale(1.18)`},
+    const chip = treeNodes[index].querySelector('strong');
+    const end = chip.getBoundingClientRect();
+    chipFlight = chip.animate([
+     {transform:`translate(${source.left-end.left}px, ${source.top-end.top}px) scale(1.15)`},
      {transform:'none'}
-    ], {duration:680, easing:'cubic-bezier(.25,.7,.2,1)'});
+    ], {duration:380, easing:'ease-out'});
    }
-   treeTimer = setTimeout(() => playTree(index + 1), 1000);
-  }, 1200);
- }, 6500);
+   treeTimer = setTimeout(() => playTree(index + 1), reduced ? 0 : 380);
+  }, reduced ? 0 : 300);
+ }, reduced ? 3000 : Number(card.dataset.typeMs));
 }
-replayTree?.addEventListener('click', () => playTree());
 
 const chapterStarts=[1,3,6,12,40,45,59];
 const chapterLabels=['표지와 목차','00 시작하기 전에','2028 인원 분석','5등급제 실시에 따른 변화','논서술형 평가 역량 변화','통합형 수능에 따른 변화','마무리'];
@@ -88,7 +106,7 @@ function route(){
   location.replace(target.href);return;
  }
  const n=Math.max(1,Math.min(total,requested>=76 && requested<=79 ? requested-17 : requested));
- const steps=n===guidePage?guidePanels.length:isMapDeck?journey[n-1].steps.length:1;
+ const steps=n===glossaryPage?termTabs.length:n===guidePage?guidePanels.length:isMapDeck?journey[n-1].steps.length:1;
  const s=Math.max(0,Math.min(steps-1,m?Number(m[2]||1)-1:0));
  show(n,s);
 }
@@ -110,7 +128,7 @@ function show(n,s){
  }
  if (prevPage === treePage && n !== treePage) stopTree();
  if (treePage && n === treePage && prevPage !== n) playTree();
- if (glossaryPage && n === glossaryPage && prevPage !== n) selectTerm(0);
+ if (glossaryPage && n === glossaryPage) selectTerm(s);
  const cueRoot = n === guidePage ? guidePanels[s] : slide;
  if (!isMapDeck && (prevPage !== n || previousStep !== s)) {
   const previousRoot = prevPage === guidePage ? guidePanels[previousStep] : slides[prevPage - 1];
@@ -149,6 +167,12 @@ function showContents(){
  dialog.showModal();dialog.scrollTop=0;
 }
 function advance(direction){
+ if (page === glossaryPage && step + direction >= 0 && step + direction < termTabs.length) {
+  go(page, step + direction); return;
+ }
+ if (glossaryPage && page === glossaryPage + 1 && direction < 0) {
+  go(glossaryPage, termTabs.length - 1); return;
+ }
  if(page===guidePage&&step+direction>=0&&step+direction<guidePanels.length){go(page,step+direction);return}
  if(guidePage&&page===guidePage+1&&direction<0){go(guidePage,guidePanels.length-1);return}
  go(page+direction);
