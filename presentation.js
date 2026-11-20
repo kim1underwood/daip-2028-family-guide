@@ -165,7 +165,14 @@ function showContents(){
   labels.forEach((label,i)=>{let a=document.createElement('a');a.href='#'+(i+1);a.innerHTML='<b>'+String(i+1).padStart(2,'0')+'</b>';a.append(document.createTextNode(label));if(i+1===page)a.setAttribute('aria-current','page');list.append(a)});inside.append(list);
  dialog.showModal();dialog.scrollTop=0;
 }
+function finishTermAnimation() {
+ const panel = byId(termTabs[step].getAttribute('aria-controls'));
+ const running = panel.getAnimations({subtree: true}).filter(animation => animation.playState === 'running');
+ for (const animation of running) animation.finish();
+ return running.length > 0;
+}
 function advance(direction){
+ if (direction > 0 && page === glossaryPage && finishTermAnimation()) return;
  if (direction > 0 && page === treePage && treeIndex < treeCards.length) { advanceTree(); return; }
  if (page === glossaryPage && step + direction >= 0 && step + direction < termTabs.length) {
   go(page, step + direction); return;
